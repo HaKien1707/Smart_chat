@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    tools:context="com.example.Smart_Chat.fragment.ProfileFragment">
+
+    <ImageView
+        android:id="@+id/profile_image"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:background="@drawable/circle_bg"
+        android:backgroundTint="@color/my_primary"
+        android:src="@drawable/ic_person"
+        android:layout_margin="10dp"
+        android:scaleType="centerCrop">
+
+    </ImageView>
+
+    <EditText
+        android:id="@+id/Username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="25dp"
+        android:background="@drawable/input_box"
+        android:elevation="10dp"
+        android:inputType="text"
+        android:hint="@string/enter_username"
+        android:padding="15dp"
+        android:textSize="20sp"
+        android:gravity="center">
+    </EditText>
+
+    <EditText
+        android:id="@+id/phone_number"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="25dp"
+        android:background="@drawable/input_box"
+        android:elevation="10dp"
+        android:inputType="phone"
+        android:enabled="false"
+        android:hint="@string/enter_phone_num"
+        android:padding="15dp"
+        android:textSize="20sp"
+        android:gravity="center">
+    </EditText>
+
+    <Button
+        android:id="@+id/updateBTN"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/round_corner_button"
+        android:layout_margin="30dp"
+        android:text="@string/updateProfile"
+        android:gravity="center"
+        android:textSize="20sp">
+    </Button>
+
+    <TextView
+        android:id="@+id/logout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/logout"
+        android:textSize="16sp"
+        android:layout_marginTop="80dp">
+
+    </TextView>
+
+</LinearLayout>
