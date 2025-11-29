@@ -81,7 +81,6 @@ class GroupFragment : Fragment() {
     }
 
     private fun showCreateGroupDialog() {
-        // TODO: Open CreateGroupActivity or show dialog
         val intent = android.content.Intent(requireContext(), com.example.Smart_Chat.CreateGroupActivity::class.java)
         startActivity(intent)
     }
