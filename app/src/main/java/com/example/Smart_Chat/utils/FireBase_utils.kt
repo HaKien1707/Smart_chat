@@ -71,7 +71,7 @@ object FireBase_utils {
 
     @JvmStatic
     fun allGroupsCollection(): CollectionReference {
-        return FirebaseFirestore.getInstance().collection("groups")
+        return FirebaseFirestore.getInstance().collection("chatgroups")
     }
 
     @JvmStatic
@@ -91,6 +91,8 @@ object FireBase_utils {
             .orderBy("lastMsgTimestamp", Query.Direction.DESCENDING)
     }
 
+
+    // ========== log - sign ==========
     @JvmStatic
     fun logout() {
         FirebaseAuth.getInstance().signOut()

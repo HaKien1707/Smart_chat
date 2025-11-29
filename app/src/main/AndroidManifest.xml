@@ -15,7 +15,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Smart_Chat">
         <activity
-            android:name=".GroupchatActivity"
+            android:name=".GroupChatActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CreateGroupActivity"
             android:exported="false" />
         <activity
             android:name=".chatActivity"

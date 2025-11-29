@@ -13,11 +13,13 @@ import com.example.Smart_Chat.adapters.GroupRecyclerAdapter
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class GroupFragment : Fragment() {
 
     private lateinit var groupRecycler: RecyclerView
     private lateinit var emptyGroupText: TextView
+    private lateinit var fabCreateGroup: FloatingActionButton
     private var adapter: GroupRecyclerAdapter? = null
 
     override fun onCreateView(
@@ -29,6 +31,12 @@ class GroupFragment : Fragment() {
 
         groupRecycler = view.findViewById(R.id.groupRecycler)
         emptyGroupText = view.findViewById(R.id.emptyGroupText)
+        fabCreateGroup = view.findViewById(R.id.fab_create_group)
+
+        // Click listener for FAB
+        fabCreateGroup.setOnClickListener {
+            showCreateGroupDialog()
+        }
 
         setupGroupRecyclerView()
 
@@ -70,6 +78,12 @@ class GroupFragment : Fragment() {
                 groupRecycler.visibility = if (isEmpty) View.GONE else View.VISIBLE
             }
         })
+    }
+
+    private fun showCreateGroupDialog() {
+        // TODO: Open CreateGroupActivity or show dialog
+        val intent = android.content.Intent(requireContext(), com.example.Smart_Chat.CreateGroupActivity::class.java)
+        startActivity(intent)
     }
 
     override fun onStart() {

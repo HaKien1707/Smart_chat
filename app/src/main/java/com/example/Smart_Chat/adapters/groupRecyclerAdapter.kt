@@ -11,12 +11,12 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import android.widget.Toast
+import com.example.Smart_Chat.GroupChatActivity
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
-import kotlin.jvm.java
 
 class GroupRecyclerAdapter(
     options: FirestoreRecyclerOptions<groupModel>,
@@ -77,7 +77,8 @@ class GroupRecyclerAdapter(
     }
 
     inner class GroupViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val groupImage: ImageView = itemView.findViewById(R.id.group_image)
+        private val profileContainer: View = itemView.findViewById(R.id.group_image_container)
+        val groupImage: ImageView = profileContainer.findViewById(R.id.profile_image)
         val groupNameText: TextView = itemView.findViewById(R.id.groupNameText)
         val lastMsg: TextView = itemView.findViewById(R.id.lastMsg)
         val lastMsgTime: TextView = itemView.findViewById(R.id.lastMsgTime)
