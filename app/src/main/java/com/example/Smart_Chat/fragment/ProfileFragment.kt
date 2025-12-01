@@ -15,7 +15,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.splashScreenActivity
+import com.example.Smart_Chat.activities.splashScreenActivity
 import com.example.Smart_Chat.utils.FireBase_utils.currentUserDetails
 import com.example.Smart_Chat.utils.FireBase_utils.currentUserID
 import com.example.Smart_Chat.utils.FireBase_utils.logout
@@ -76,7 +76,7 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    /** 🔹 Load user information from Firestore */
+    /**  Load user information from Firestore */
     private fun loadUserData() {
         setInProgress(true)
 

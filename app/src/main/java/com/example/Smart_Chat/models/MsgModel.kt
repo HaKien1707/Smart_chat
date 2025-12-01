@@ -8,6 +8,10 @@ class MsgModel {
     @JvmField
     var msg: String? = null
     var timestamp: Timestamp? = null
+    @JvmField
+    var imageUrl: String? = null  // NEW: For image messages
+    @JvmField
+    var messageType: String? = "text"  // NEW: "text" or "image"
 
     constructor()
 
@@ -15,5 +19,14 @@ class MsgModel {
         this.senderID = senderID
         this.msg = msg
         this.timestamp = timestamp
+        this.messageType = "text"
+    }
+
+    constructor(senderID: String?, msg: String?, timestamp: Timestamp?, imageUrl: String?, messageType: String?) {
+        this.senderID = senderID
+        this.msg = msg
+        this.timestamp = timestamp
+        this.imageUrl = imageUrl
+        this.messageType = messageType
     }
 }

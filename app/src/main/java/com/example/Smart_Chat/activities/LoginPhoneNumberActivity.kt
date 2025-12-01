@@ -1,4 +1,4 @@
-package com.example.Smart_Chat
+package com.example.Smart_Chat.activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,9 +6,10 @@ import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import com.example.Smart_Chat.R
 import com.hbb20.CountryCodePicker
 
-class LoginPhoneNumber : AppCompatActivity() {
+class LoginPhoneNumberActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login_phone_number)

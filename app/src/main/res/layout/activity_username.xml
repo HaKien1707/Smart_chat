@@ -8,7 +8,7 @@
     android:gravity="center"
     android:background="@color/lazuli"
     android:weightSum="100"
-    tools:context="com.example.Smart_Chat.UsernameSignInActivity">
+    tools:context="com.example.Smart_Chat.activities.UsernameSignInActivity">
 
     <!-- USERNAME INPUT aligned with phoneNumberSection / otpSection -->
     <ImageView

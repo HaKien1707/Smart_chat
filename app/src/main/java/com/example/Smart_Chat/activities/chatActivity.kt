@@ -1,7 +1,8 @@
-package com.example.Smart_Chat
+package com.example.Smart_Chat.activities
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -9,6 +10,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.cloudinary.android.MediaManager
+import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.MsgRecyclerAdapter
 import com.example.Smart_Chat.models.MsgModel
 import com.example.Smart_Chat.models.chatRoomModel
@@ -65,7 +68,7 @@ class chatActivity : AppCompatActivity() {
         chatBox = findViewById(R.id.chatBox)
         sendBtn = findViewById(R.id.sendBtn)
         chatList = findViewById(R.id.chatList)
-        val profileContainer = findViewById<android.view.View>(R.id.profile_image_container)
+        val profileContainer = findViewById<View>(R.id.profile_image_container)
         profileImage = profileContainer.findViewById(R.id.profile_image)
 
         // Set click listeners

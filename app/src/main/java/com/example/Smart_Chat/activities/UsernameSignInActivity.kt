@@ -1,4 +1,4 @@
-package com.example.Smart_Chat
+package com.example.Smart_Chat.activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,10 +8,12 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.toObject
 
 class UsernameSignInActivity : AppCompatActivity() {
 
@@ -37,7 +39,7 @@ class UsernameSignInActivity : AppCompatActivity() {
 
         // Load user from Firestore
         FireBase_utils.currentUserDetails().get().addOnSuccessListener { doc ->
-            val user = doc.toObject(com.example.Smart_Chat.models.userModel::class.java)
+            val user = doc.toObject<userModel>()
 
             if (user != null && !user.profileImage.isNullOrEmpty()) {
                 androidUtils.setProfileImageFromBase64(
@@ -70,7 +72,7 @@ class UsernameSignInActivity : AppCompatActivity() {
                 return@addOnCompleteListener
             }
 
-            userModel = task.result.toObject(com.example.Smart_Chat.models.userModel::class.java)
+            userModel = task.result.toObject<userModel>()
 
             if (userModel != null) {
                 // ---- Existing user ----
@@ -162,7 +164,7 @@ class UsernameSignInActivity : AppCompatActivity() {
     // ------------------------------------------------------------
     private fun goToMain() {
         val intent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         startActivity(intent)
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)

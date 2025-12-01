@@ -1,4 +1,4 @@
-package com.example.Smart_Chat
+package com.example.Smart_Chat.activities
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
+import com.example.Smart_Chat.R
 import com.example.Smart_Chat.fragment.ChatFragment
 import com.example.Smart_Chat.fragment.GroupFragment
 import com.example.Smart_Chat.fragment.ProfileFragment

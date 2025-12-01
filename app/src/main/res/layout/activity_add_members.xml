@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".AddMembersActivity">
+
+    <!-- Top Panel -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/lazuli"
+        android:padding="10dp">
+
+        <ImageButton
+            android:id="@+id/back_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/ic_back"
+            android:contentDescription="@string/backBTN" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Add Members"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+    </RelativeLayout>
+
+    <!-- Instructions -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Select members to add to the group"
+        android:textSize="16sp"
+        android:padding="15dp"
+        android:background="@android:color/white"
+        android:textColor="@android:color/darker_gray" />
+
+    <!-- Member List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/member_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="10dp" />
+
+    <!-- Add Button -->
+    <Button
+        android:id="@+id/add_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        android:background="@drawable/round_corner_button"
+        android:text="Select members to add"
+        android:textSize="16sp"
+        android:padding="15dp"
+        android:enabled="false" />
+
+</LinearLayout>

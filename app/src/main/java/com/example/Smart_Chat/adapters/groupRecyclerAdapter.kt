@@ -2,6 +2,7 @@ package com.example.Smart_Chat.adapters
 
 import android.content.Context
 import android.content.Intent
+import android.widget.ImageButton
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,8 +11,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import android.widget.Toast
-import com.example.Smart_Chat.GroupChatActivity
+import com.example.Smart_Chat.activities.GroupChatActivity
+import com.example.Smart_Chat.activities.GroupChatSettingsActivity
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
@@ -53,8 +54,12 @@ class GroupRecyclerAdapter(
             holder.lastMsg.text = "No messages yet"
         }
 
-        // --- Last message time ---
-        holder.lastMsgTime.text = androidUtils.timestampToString(model.lastMsgTimestamp)
+        // --- Last message time (handle null timestamp) ---
+        if (model.lastMsgTimestamp != null) {
+            holder.lastMsgTime.text = androidUtils.timestampToString(model.lastMsgTimestamp)
+        } else {
+            holder.lastMsgTime.text = ""
+        }
 
         // --- Member count ---
         val memberCount = model.memberIDs?.size ?: 0
@@ -65,6 +70,14 @@ class GroupRecyclerAdapter(
             val intent = Intent(context, GroupChatActivity::class.java)
             intent.putExtra("groupID", model.groupID)
             intent.putExtra("groupName", model.groupName)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
+        }
+
+        // --- Settings button click ---
+        holder.settingsBtn.setOnClickListener {
+            val intent = Intent(context, GroupChatSettingsActivity::class.java)
+            intent.putExtra("groupID", model.groupID)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             context.startActivity(intent)
         }
@@ -83,5 +96,6 @@ class GroupRecyclerAdapter(
         val lastMsg: TextView = itemView.findViewById(R.id.lastMsg)
         val lastMsgTime: TextView = itemView.findViewById(R.id.lastMsgTime)
         val memberCount: TextView = itemView.findViewById(R.id.memberCount)
+        val settingsBtn: ImageButton = itemView.findViewById(R.id.group_settings_btn)
     }
 }

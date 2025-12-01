@@ -10,7 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.chatActivity
+import com.example.Smart_Chat.activities.chatActivity
 import com.example.Smart_Chat.models.chatRoomModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils

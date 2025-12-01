@@ -10,6 +10,7 @@
         android:id="@+id/sender"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:padding="10dp"
         android:background="@drawable/input_box"
         android:backgroundTint="@color/lime"
@@ -17,6 +18,14 @@
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/senderImage"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:layout_marginBottom="5dp" />
 
         <TextView
             android:id="@+id/senderMsg"
@@ -31,6 +40,7 @@
         android:id="@+id/receiver"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:padding="10dp"
         android:background="@drawable/input_box"
         android:backgroundTint="@color/violet"
@@ -38,6 +48,14 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/receiverImage"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:layout_marginBottom="5dp" />
 
         <TextView
             android:id="@+id/receiverMsg"

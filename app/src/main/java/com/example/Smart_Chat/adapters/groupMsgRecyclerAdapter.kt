@@ -26,17 +26,29 @@ class GroupMsgRecyclerAdapter(
 
     override fun onBindViewHolder(holder: GroupMsgViewHolder, position: Int, model: GroupMsgModel) {
 
-        if (model.senderID == currentUserID()) {
-            // My message → show on right (receiver side)
+        val isMe = model.senderID == currentUserID()
+
+        if (isMe) {
+            // My message
             holder.sender.visibility = View.GONE
             holder.receiver.visibility = View.VISIBLE
+
+            // Always reset receiver content
             holder.receiverMsg.text = model.msg
+
+            // Clear sender fields (avoid recycled trash)
+            holder.senderName.text = ""
+            holder.senderMsg.text = ""
         } else {
-            // Other's message → show on left (sender side) with name
+            // Other user's message
             holder.sender.visibility = View.VISIBLE
             holder.receiver.visibility = View.GONE
+
             holder.senderName.text = model.senderName ?: "Unknown"
             holder.senderMsg.text = model.msg
+
+            // Clear receiver text (avoid recycled trash)
+            holder.receiverMsg.text = ""
         }
     }
 

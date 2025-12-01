@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.Smart_Chat.chatActivity">
+    tools:context="com.example.Smart_Chat.activities.chatActivity">
 
     <RelativeLayout
         android:id="@+id/panel"
@@ -80,21 +80,30 @@
             android:hint="@string/writeMSG"
             android:layout_margin="5dp"
             android:elevation="5dp"
-            android:layout_toLeftOf="@id/sendBtn">
+            android:layout_toStartOf="@id/send_image_btn">
         </EditText>
-        
+
+        <ImageButton
+            android:id="@+id/send_image_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_centerInParent="true"
+            android:src="@drawable/ic_image"
+            app:tint="@color/my_primary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_toStartOf="@id/sendBtn" />
+
         <ImageButton
             android:id="@+id/sendBtn"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_centerInParent="true"
             android:src="@drawable/ic_send"
-            app:tint = "@color/my_primary"
+            app:tint="@color/my_primary"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:layout_alignParentEnd="true"
-            android:layout_marginHorizontal="10dp">
+            android:layout_alignParentEnd="true">
         </ImageButton>
-        
+
     </RelativeLayout>
 
 </RelativeLayout>

@@ -1,6 +1,5 @@
-package com.example.Smart_Chat
+package com.example.Smart_Chat.activities
 
-import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -18,13 +17,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.SelectMemberAdapter
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.FirebaseFirestore
 import java.io.ByteArrayOutputStream
 import java.util.UUID
 
@@ -42,7 +41,7 @@ class CreateGroupActivity : AppCompatActivity() {
 
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-            if (result.resultCode == Activity.RESULT_OK) {
+            if (result.resultCode == RESULT_OK) {
                 val uri = result.data?.data
                 if (uri != null) {
                     convertImageToBase64(uri)

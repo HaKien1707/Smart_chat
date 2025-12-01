@@ -1,14 +1,18 @@
-package com.example.Smart_Chat
+package com.example.Smart_Chat.activities
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.GroupMsgRecyclerAdapter
 import com.example.Smart_Chat.models.GroupMsgModel
 import com.example.Smart_Chat.models.groupModel
@@ -29,11 +33,18 @@ import java.io.IOException
 class GroupChatActivity : AppCompatActivity() {
 
     private lateinit var backBTN: ImageButton
-    private lateinit var PanelName: TextView
+    private lateinit var panelName: TextView
     private lateinit var chatBox: EditText
     private lateinit var sendBtn: ImageButton
     private lateinit var chatList: RecyclerView
     private lateinit var groupImage: ImageView
+
+    private val settingsLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        // Reload group details after returning from settings
+        loadGroupDetails()
+    }
 
     private lateinit var groupID: String
     private var groupName: String? = null
@@ -43,7 +54,7 @@ class GroupChatActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_groupchat)
+        setContentView(R.layout.activity_group_chat)
 
         // Get group data from intent
         groupID = intent.getStringExtra("groupID") ?: ""
@@ -57,11 +68,11 @@ class GroupChatActivity : AppCompatActivity() {
 
         // Initialize views
         backBTN = findViewById(R.id.back_btn)
-        PanelName = findViewById(R.id.panelName)
+        panelName = findViewById(R.id.panelName)
         chatBox = findViewById(R.id.chatBox)
         sendBtn = findViewById(R.id.sendBtn)
         chatList = findViewById(R.id.chatList)
-        val profileContainer = findViewById<android.view.View>(R.id.profile_image_container)
+        val profileContainer = findViewById<View>(R.id.profile_image_container)
         groupImage = profileContainer.findViewById(R.id.profile_image)
 
         // Set click listeners
@@ -70,13 +81,16 @@ class GroupChatActivity : AppCompatActivity() {
         }
 
         // Set group name
-        PanelName.text = groupName
+        panelName.text = groupName
 
         // Load current user's name
         getCurrentUserName()
 
         // Load group details
         loadGroupDetails()
+
+        // Listen for group changes (member removal)
+        listenForGroupChanges()
 
         sendBtn.setOnClickListener {
             val msg = chatBox.text.toString().trim()
@@ -118,6 +132,41 @@ class GroupChatActivity : AppCompatActivity() {
             }
     }
 
+    private fun listenForGroupChanges() {
+        // Listen to group document changes in real-time
+        FireBase_utils.getGroupReference(groupID)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("GroupChatActivity", "Listen failed: ${error.message}")
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    val updatedGroup = snapshot.toObject(groupModel::class.java)
+                    val memberIDs = updatedGroup?.memberIDs ?: emptyList()
+
+                    // Check if current user is still a member
+                    if (!memberIDs.contains(FireBase_utils.currentUserID())) {
+                        // User was removed from group
+                        Toast.makeText(
+                            this,
+                            "You have been removed from this group",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        finish()
+                    }
+                } else {
+                    // Group was deleted
+                    Toast.makeText(
+                        this,
+                        "This group has been deleted",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    finish()
+                }
+            }
+    }
+
     private fun sendMsgToGroup(msg: String) {
         // Update last message info in group
         FireBase_utils.getGroupReference(groupID)
@@ -153,6 +202,7 @@ class GroupChatActivity : AppCompatActivity() {
 
         val options = FirestoreRecyclerOptions.Builder<GroupMsgModel>()
             .setQuery(query, GroupMsgModel::class.java)
+            .setLifecycleOwner(this)  // IMPORTANT: Auto-manage lifecycle
             .build()
 
         adapter = GroupMsgRecyclerAdapter(options, applicationContext)
@@ -162,10 +212,11 @@ class GroupChatActivity : AppCompatActivity() {
 
         chatList.layoutManager = manager
         chatList.adapter = adapter
-        adapter.startListening()
+        // No need to call startListening() - lifecycle owner handles it
 
         adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                super.onItemRangeInserted(positionStart, itemCount)
                 chatList.smoothScrollToPosition(adapter.itemCount - 1)
             }
         })
@@ -279,11 +330,21 @@ class GroupChatActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        adapter.startListening()
+        // Lifecycle owner handles adapter automatically
     }
 
     override fun onStop() {
         super.onStop()
-        adapter.stopListening()
+        // Lifecycle owner handles adapter automatically
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Only reload if needed (removed automatic reload)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Lifecycle owner handles adapter automatically
     }
 }

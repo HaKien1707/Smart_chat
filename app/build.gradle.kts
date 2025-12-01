@@ -96,6 +96,13 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:5.3.2")
 
     implementation("com.google.auth:google-auth-library-oauth2-http:1.19.0")
+
+    // Cloudinary for image store
+    implementation("com.cloudinary:cloudinary-android:3.1.2")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.navigation:navigation-fragment:2.7.7")
+    implementation("androidx.navigation:navigation-ui:2.7.7")
+    implementation("com.cloudinary:kotlin-url-gen:1.11.0")
 }
 }
 dependencies {
@@ -103,4 +110,5 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.preference)
 }

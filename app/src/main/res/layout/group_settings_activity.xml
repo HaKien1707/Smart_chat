@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Top Panel -->
+    <RelativeLayout
+        android:id="@+id/panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/lazuli"
+        android:gravity="center"
+        android:padding="19dp">
+
+        <TextView
+            android:id="@+id/panelName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/menu_settings"
+            android:textColor="@color/black"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/back_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/ic_back"
+            android:contentDescription="@string/backBTN" />
+    </RelativeLayout>
+
+    <!-- Scrollable Content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Group Image Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Group Photo"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp" />
+
+            <ImageView
+                android:id="@+id/group_image"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_group"
+                android:scaleType="centerCrop"
+                android:background="@drawable/circle_bg"
+                android:padding="20dp"
+                android:layout_marginBottom="5dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Tap to change"
+                android:textSize="12sp"
+                android:textColor="@android:color/darker_gray"
+                android:layout_marginBottom="30dp" />
+
+            <!-- Group Name Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Group Name"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="30dp">
+
+                <EditText
+                    android:id="@+id/group_name_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/input_box"
+                    android:hint="Group name"
+                    android:padding="15dp"
+                    android:textSize="16sp"
+                    android:inputType="text"
+                    android:maxLines="1" />
+
+                <Button
+                    android:id="@+id/save_name_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Save"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/round_corner_button" />
+            </LinearLayout>
+
+            <!-- Members Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Members"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp" />
+
+            <Button
+                android:id="@+id/add_member_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="➕ Add Members"
+                android:background="@drawable/round_corner_button"
+                android:layout_marginBottom="10dp"
+                android:padding="15dp" />
+
+            <!-- Member List -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/members_recycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="30dp"
+                android:nestedScrollingEnabled="false" />
+
+            <!-- Danger Zone -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"
+                android:layout_marginVertical="20dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Danger Zone"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/holo_red_dark"
+                android:layout_marginBottom="10dp" />
+
+            <Button
+                android:id="@+id/leave_group_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Leave Group"
+                android:textColor="@color/white"
+                android:backgroundTint="@android:color/holo_orange_dark"
+                android:layout_marginBottom="10dp"
+                android:padding="15dp" />
+
+            <Button
+                android:id="@+id/delete_group_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="⚠️ Delete Group"
+                android:textColor="@color/white"
+                android:backgroundTint="@android:color/holo_red_dark"
+                android:padding="15dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

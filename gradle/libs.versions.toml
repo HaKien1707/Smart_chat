@@ -14,6 +14,7 @@ googleGmsGoogleServices = "4.4.4"
 firebaseFirestore = "26.0.2"
 firebaseStorage = "22.0.1"
 firebaseMessaging = "25.0.1"
+preference = "1.2.0"
 
 [libraries]
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
@@ -29,6 +30,7 @@ activity = { group = "androidx.activity", name = "activity", version.ref = "acti
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
+preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

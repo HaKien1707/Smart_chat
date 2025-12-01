@@ -9,7 +9,7 @@
     android:gravity="center"
     android:background="@color/lazuli"
     android:weightSum="100"
-    tools:context="com.example.Smart_Chat.LoginPhoneNumber">
+    tools:context="com.example.Smart_Chat.activities.LoginPhoneNumberActivity">
 
     <ImageView
         android:id="@+id/icon"

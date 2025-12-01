@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
+import com.example.Smart_Chat.activities.CreateGroupActivity
 import com.example.Smart_Chat.adapters.GroupRecyclerAdapter
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.utils.FireBase_utils
@@ -81,7 +82,7 @@ class GroupFragment : Fragment() {
     }
 
     private fun showCreateGroupDialog() {
-        val intent = android.content.Intent(requireContext(), com.example.Smart_Chat.CreateGroupActivity::class.java)
+        val intent = android.content.Intent(requireContext(), CreateGroupActivity::class.java)
         startActivity(intent)
     }
 
