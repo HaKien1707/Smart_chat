@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
     <!-- Add these permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <application
         android:allowBackup="true"
@@ -15,13 +18,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Smart_Chat">
         <activity
+            android:name=".activities.FullScreenImageActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
             android:name=".activities.GroupChatActivity"
             android:exported="false" />
         <activity
             android:name=".activities.GroupChatSettingsActivity"
             android:exported="false" />
         <activity
-            android:name=".AddMembersActivity"
+            android:name=".activities.AddMembersActivity"
             android:exported="false" />
         <activity
             android:name=".activities.CreateGroupActivity"
@@ -73,7 +79,7 @@
             android:resource="@color/lazuli" />
         <meta-data
             android:name="CLOUDINARY_URL"
-            android:value="cloudinary://847358819539111:nyFKBIj_khUl-CxCFUveSl6AE6Y@dtfu6e0ia"/>
+            android:value="cloudinary://847358819539111:nyFKBIj_khUl-CxCFUveSl6AE6Y@dtfu6e0ia" />
     </application>
 
 </manifest>

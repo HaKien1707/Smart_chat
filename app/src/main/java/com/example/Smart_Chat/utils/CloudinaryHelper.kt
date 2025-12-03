@@ -15,8 +15,8 @@ object CloudinaryHelper {
     fun initCloudinary(context: Context) {
         if (!isInitialized) {
             val config = hashMapOf(
-                "cloud_name" to "Root",  // Replace with your cloud name
-                "api_key" to "8847358819539111",        // Replace with your API key
+                "cloud_name" to "dtfu6e0ia",  // Replace with your cloud name
+                "api_key" to "847358819539111",        // Replace with your API key
                 "api_secret" to "nyFKBIj_khUl-CxCFUveSl6AE6Y"   // Replace with your API secret
             )
             MediaManager.init(context, config)
@@ -32,14 +32,11 @@ object CloudinaryHelper {
         onError: (String) -> Unit
     ) {
         try {
-            // Initialize if not already done
             initCloudinary(context)
 
-            // Get file path from URI
-            val file = File(imageUri.path ?: "")
+            Log.d("Cloudinary", "Starting upload: $imageUri")
 
-            Log.d("Cloudinary", "Starting upload: ${file.absolutePath}")
-
+            // ✅ Pass the URI directly - MediaManager handles it
             MediaManager.get().upload(imageUri)
                 .option("folder", "chat_images")
                 .option("resource_type", "image")
@@ -49,6 +46,11 @@ object CloudinaryHelper {
                     }
 
                     override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {
+                        if (totalBytes <= 0) {
+                            Log.d("Cloudinary", "Upload progress: waiting for total size… ($bytes bytes uploaded)")
+                            return
+                        }
+
                         val progress = (bytes * 100 / totalBytes).toInt()
                         Log.d("Cloudinary", "Upload progress: $progress%")
                     }
@@ -76,6 +78,47 @@ object CloudinaryHelper {
 
         } catch (e: Exception) {
             Log.e("Cloudinary", "Upload error", e)
+            onError(e.message ?: "Upload failed")
+        }
+    }
+
+    fun uploadImageWithHash(
+        context: Context,
+        imageUri: Uri,
+        publicId: String,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        try {
+            initCloudinary(context)
+
+            MediaManager.get().upload(imageUri)
+                .option("folder", "chat_images/${FireBase_utils.currentUserID()}")
+                .option("resource_type", "image")
+                .option("public_id", publicId) // Use hash as public_id
+                .option("resource_type", "image")
+                .option("overwrite", false) // Don't overwrite if exists
+                .callback(object : UploadCallback {
+                    override fun onSuccess(requestId: String, resultData: Map<*, *>) {
+                        val url = resultData["secure_url"] as? String
+                        if (url != null) {
+                            onSuccess(url)
+                        } else {
+                            onError("Failed to get image URL")
+                        }
+                    }
+
+                    override fun onError(requestId: String, error: ErrorInfo) {
+                        onError(error.description ?: "Upload failed")
+                    }
+
+                    override fun onStart(requestId: String) {}
+                    override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {}
+                    override fun onReschedule(requestId: String, error: ErrorInfo) {}
+                })
+                .dispatch()
+
+        } catch (e: Exception) {
             onError(e.message ?: "Upload failed")
         }
     }

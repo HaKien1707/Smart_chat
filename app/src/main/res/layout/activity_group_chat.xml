@@ -12,33 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/lazuli"
-        android:gravity="center"
         android:padding="10dp">
-
-        <TextView
-            android:id="@+id/panelName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="10dp"
-            android:text="@string/menu_users"
-            android:layout_centerVertical="true"
-            android:textColor="@color/black"
-            android:textSize="30sp"
-            android:textStyle="bold">
-
-        </TextView>
-
-        <include
-            android:id="@+id/profile_image_container"
-            layout="@layout/profile_ic_view"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_margin="10dp"
-            android:layout_toStartOf="@id/panelName">
-
-        </include>
 
         <ImageButton
             android:id="@+id/back_btn"
@@ -47,9 +21,42 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:background="@drawable/ic_back"
-            android:contentDescription="@string/backBTN">
+            android:contentDescription="@string/backBTN" />
 
-        </ImageButton>
+        <include
+            android:id="@+id/profile_image_container"
+            layout="@layout/profile_ic_view"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_margin="10dp"
+            android:layout_toEndOf="@id/back_btn" />
+
+        <TextView
+            android:id="@+id/panelName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/profile_image_container"
+            android:layout_toStartOf="@id/group_settings_btn"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/menu_users"
+            android:layout_centerVertical="true"
+            android:textColor="@color/black"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:ellipsize="end"
+            android:maxLines="1" />
+
+        <ImageButton
+            android:id="@+id/group_settings_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_options"
+            android:layout_alignParentEnd="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_margin="10dp"
+            android:layout_centerVertical="true"
+            android:contentDescription="Group Settings" />
 
     </RelativeLayout>
 
@@ -59,9 +66,7 @@
         android:layout_height="match_parent"
         android:layout_below="@id/panel"
         android:layout_above="@id/bottomPanel"
-        android:padding="10dp">
-
-    </androidx.recyclerview.widget.RecyclerView>
+        android:padding="10dp" />
 
     <RelativeLayout
         android:id="@+id/bottomPanel"
@@ -70,28 +75,38 @@
         android:layout_alignParentBottom="true"
         android:padding="10dp">
 
-        <EditText
-            android:id="@+id/chatBox"
+        <!-- Chat box with image button inside -->
+        <RelativeLayout
+            android:id="@+id/chatBoxContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:padding="15dp"
-            android:background="@drawable/input_box"
-            android:hint="@string/writeMSG"
+            android:layout_toStartOf="@id/sendBtn"
             android:layout_margin="5dp"
-            android:elevation="5dp"
-            android:layout_toStartOf="@id/send_image_btn">
-        </EditText>
+            android:background="@drawable/input_box"
+            android:elevation="5dp">
 
-        <ImageButton
-            android:id="@+id/send_image_btn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_centerInParent="true"
-            android:src="@drawable/ic_image"
-            app:tint="@color/my_primary"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:layout_toStartOf="@id/sendBtn" />
+            <EditText
+                android:id="@+id/chatBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/send_image_btn"
+                android:padding="15dp"
+                android:background="@android:color/transparent"
+                android:hint="@string/writeMSG" />
+
+            <ImageButton
+                android:id="@+id/send_image_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/ic_image"
+                app:tint="@color/my_primary"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Send Image" />
+        </RelativeLayout>
 
         <ImageButton
             android:id="@+id/sendBtn"
@@ -101,8 +116,8 @@
             android:src="@drawable/ic_send"
             app:tint="@color/my_primary"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:layout_alignParentEnd="true">
-        </ImageButton>
+            android:layout_alignParentEnd="true"
+            android:contentDescription="Send Message" />
 
     </RelativeLayout>
 

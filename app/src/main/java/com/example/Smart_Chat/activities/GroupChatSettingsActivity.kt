@@ -19,7 +19,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.Smart_Chat.AddMembersActivity
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.GroupMemberAdapter
 import com.example.Smart_Chat.models.groupModel

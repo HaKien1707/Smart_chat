@@ -1,4 +1,4 @@
-package com.example.Smart_Chat
+package com.example.Smart_Chat.activities
 
 import android.os.Bundle
 import android.widget.Button
@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.SelectMemberAdapter
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.models.userModel

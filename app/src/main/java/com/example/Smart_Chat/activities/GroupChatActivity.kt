@@ -1,5 +1,7 @@
 package com.example.Smart_Chat.activities
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -8,6 +10,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,9 +20,11 @@ import com.example.Smart_Chat.adapters.GroupMsgRecyclerAdapter
 import com.example.Smart_Chat.models.GroupMsgModel
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.models.userModel
+import com.example.Smart_Chat.utils.CloudinaryHelper
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
+import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
@@ -33,9 +38,11 @@ import java.io.IOException
 class GroupChatActivity : AppCompatActivity() {
 
     private lateinit var backBTN: ImageButton
+    private lateinit var groupSettingsBtn: ImageButton
     private lateinit var panelName: TextView
     private lateinit var chatBox: EditText
     private lateinit var sendBtn: ImageButton
+    private lateinit var sendImageBtn: ImageButton
     private lateinit var chatList: RecyclerView
     private lateinit var groupImage: ImageView
 
@@ -46,6 +53,16 @@ class GroupChatActivity : AppCompatActivity() {
         loadGroupDetails()
     }
 
+    private val imagePickerLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode == RESULT_OK) {
+                val uri = result.data?.data
+                if (uri != null) {
+                    uploadAndSendImage(uri)
+                }
+            }
+        }
+
     private lateinit var groupID: String
     private var groupName: String? = null
     private var group: groupModel? = null
@@ -55,6 +72,9 @@ class GroupChatActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_group_chat)
+
+        // Initialize Cloudinary
+        CloudinaryHelper.initCloudinary(this)
 
         // Get group data from intent
         groupID = intent.getStringExtra("groupID") ?: ""
@@ -68,9 +88,11 @@ class GroupChatActivity : AppCompatActivity() {
 
         // Initialize views
         backBTN = findViewById(R.id.back_btn)
+        groupSettingsBtn = findViewById(R.id.group_settings_btn)
         panelName = findViewById(R.id.panelName)
         chatBox = findViewById(R.id.chatBox)
         sendBtn = findViewById(R.id.sendBtn)
+        sendImageBtn = findViewById(R.id.send_image_btn)
         chatList = findViewById(R.id.chatList)
         val profileContainer = findViewById<View>(R.id.profile_image_container)
         groupImage = profileContainer.findViewById(R.id.profile_image)
@@ -78,6 +100,12 @@ class GroupChatActivity : AppCompatActivity() {
         // Set click listeners
         backBTN.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
+        }
+
+        groupSettingsBtn.setOnClickListener {
+            val intent = Intent(this, GroupChatSettingsActivity::class.java)
+            intent.putExtra("groupID", groupID)
+            settingsLauncher.launch(intent)
         }
 
         // Set group name
@@ -99,7 +127,87 @@ class GroupChatActivity : AppCompatActivity() {
             }
         }
 
+        sendImageBtn.setOnClickListener {
+            pickImage()
+        }
+
         setupChatRecycler()
+    }
+
+    private fun pickImage() {
+        ImagePicker.with(this)
+            .compress(1024)
+            .maxResultSize(1080, 1080)
+            .createIntent { intent -> imagePickerLauncher.launch(intent) }
+    }
+
+    private fun uploadAndSendImage(imageUri: Uri) {
+        // Disable button to prevent multiple clicks
+        sendImageBtn.isEnabled = false
+
+        // Show progress indicator
+        Toast.makeText(this, "Uploading image...", Toast.LENGTH_SHORT).show()
+
+        CloudinaryHelper.uploadImage(
+            this,
+            imageUri,
+            onSuccess = { imageUrl ->
+                runOnUiThread {
+                    sendImageMessage(imageUrl)
+                    sendImageBtn.isEnabled = true
+                    Toast.makeText(this, "Image sent!", Toast.LENGTH_SHORT).show()
+                }
+            },
+            onError = { error ->
+                runOnUiThread {
+                    sendImageBtn.isEnabled = true
+                    Toast.makeText(this, "Upload failed: $error", Toast.LENGTH_LONG).show()
+                    Log.e("GroupChatActivity", "Image upload failed: $error")
+                }
+            }
+        )
+    }
+
+    private fun sendImageMessage(imageUrl: String) {
+        if (imageUrl.isEmpty()) {
+            Log.e("GroupChatActivity", "Cannot send empty image URL")
+            return
+        }
+
+        // Update last message info in group
+        FireBase_utils.getGroupReference(groupID)
+            .update(
+                mapOf(
+                    "lastMsg" to "📷 Photo",
+                    "lastMsgSenderID" to FireBase_utils.currentUserID(),
+                    "lastMsgTimestamp" to Timestamp.now()
+                )
+            )
+            .addOnFailureListener { e ->
+                Log.e("GroupChatActivity", "Failed to update group", e)
+            }
+
+        // Create image message
+        val msgModel = GroupMsgModel(
+            FireBase_utils.currentUserID(),
+            currentUserName ?: "Unknown",
+            "📷 Photo",
+            Timestamp.now(),
+            imageUrl,
+            "image"
+        )
+
+        // Send message
+        FireBase_utils.getGroupMessagesReference(groupID)
+            .add(msgModel)
+            .addOnSuccessListener {
+                Log.d("GroupChatActivity", "Image message sent successfully")
+                sendNotificationToMembers("📷 Photo")
+            }
+            .addOnFailureListener { e ->
+                Log.e("GroupChatActivity", "Failed to send image message", e)
+                Toast.makeText(this, "Failed to send image", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun getCurrentUserName() {
@@ -108,12 +216,18 @@ class GroupChatActivity : AppCompatActivity() {
                 val user = document.toObject(userModel::class.java)
                 currentUserName = user?.username
             }
+            .addOnFailureListener { e ->
+                Log.e("GroupChatActivity", "Failed to load username: ${e.message}")
+            }
     }
 
     private fun loadGroupDetails() {
         FireBase_utils.getGroupReference(groupID).get()
             .addOnSuccessListener { document ->
                 group = document.toObject(groupModel::class.java)
+
+                // Update group name in case it changed
+                panelName.text = group?.groupName ?: groupName
 
                 // Load group image
                 val imageUrl = group?.groupImage
@@ -177,6 +291,9 @@ class GroupChatActivity : AppCompatActivity() {
                     "lastMsgTimestamp" to Timestamp.now()
                 )
             )
+            .addOnFailureListener { e ->
+                Log.e("GroupChatActivity", "Failed to update group", e)
+            }
 
         // Add actual message to messages subcollection
         val msgModel = GroupMsgModel(
@@ -188,11 +305,13 @@ class GroupChatActivity : AppCompatActivity() {
 
         FireBase_utils.getGroupMessagesReference(groupID)
             .add(msgModel)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    chatBox.setText("")
-                    sendNotificationToMembers(msg)
-                }
+            .addOnSuccessListener {
+                chatBox.setText("")
+                sendNotificationToMembers(msg)
+            }
+            .addOnFailureListener { e ->
+                Log.e("GroupChatActivity", "Failed to send message", e)
+                Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -202,22 +321,38 @@ class GroupChatActivity : AppCompatActivity() {
 
         val options = FirestoreRecyclerOptions.Builder<GroupMsgModel>()
             .setQuery(query, GroupMsgModel::class.java)
-            .setLifecycleOwner(this)  // IMPORTANT: Auto-manage lifecycle
+            .setLifecycleOwner(this)
             .build()
 
-        adapter = GroupMsgRecyclerAdapter(options, applicationContext)
+        adapter = GroupMsgRecyclerAdapter(options, this)
+
+        // Disable item animator to avoid RecyclerView inconsistency crashes
+        try {
+            val animator = chatList.itemAnimator
+            if (animator is androidx.recyclerview.widget.SimpleItemAnimator) {
+                animator.supportsChangeAnimations = false
+            }
+            chatList.itemAnimator = null
+        } catch (e: Exception) {
+            Log.w("GroupChatActivity", "Failed to modify itemAnimator: ${e.message}")
+        }
+
         val manager = LinearLayoutManager(this).apply {
             stackFromEnd = true
         }
 
         chatList.layoutManager = manager
         chatList.adapter = adapter
-        // No need to call startListening() - lifecycle owner handles it
 
         adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                 super.onItemRangeInserted(positionStart, itemCount)
-                chatList.smoothScrollToPosition(adapter.itemCount - 1)
+                // Use post to avoid crash during layout
+                chatList.post {
+                    if (adapter.itemCount > 0) {
+                        chatList.scrollToPosition(adapter.itemCount - 1)
+                    }
+                }
             }
         })
     }
@@ -260,7 +395,7 @@ class GroupChatActivity : AppCompatActivity() {
                         put("message", JSONObject().apply {
                             put("token", fcmToken)
                             put("notification", JSONObject().apply {
-                                put("title", "$senderName (${groupName ?: "Group"})")
+                                put("title", "$senderName (${group?.groupName ?: "Group"})")
                                 put("body", msg)
                             })
                             put("data", JSONObject().apply {
@@ -275,18 +410,17 @@ class GroupChatActivity : AppCompatActivity() {
                     Log.e("GROUP_NOTIFICATION", "Error creating notification", e)
                 }
             }
+            .addOnFailureListener { e ->
+                Log.e("GROUP_NOTIFICATION", "Failed to get member token", e)
+            }
     }
 
     private fun callAPI(jsonObject: JSONObject) {
         Thread {
             try {
-                // Get access token
                 val accessToken = getAccessToken()
-
                 val json = "application/json".toMediaType()
                 val client = OkHttpClient()
-
-                // V1 API URL format
                 val projectId = FirebaseApp.getInstance().options.projectId
                 val url = "https://fcm.googleapis.com/v1/projects/$projectId/messages:send"
 
@@ -326,25 +460,5 @@ class GroupChatActivity : AppCompatActivity() {
 
         googleCredentials.refresh()
         return googleCredentials.accessToken.tokenValue
-    }
-
-    override fun onStart() {
-        super.onStart()
-        // Lifecycle owner handles adapter automatically
-    }
-
-    override fun onStop() {
-        super.onStop()
-        // Lifecycle owner handles adapter automatically
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // Only reload if needed (removed automatic reload)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // Lifecycle owner handles adapter automatically
     }
 }

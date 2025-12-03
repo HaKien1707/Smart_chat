@@ -42,6 +42,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    buildFeatures {
+        viewBinding = true
+    }
 
     kotlin {compilerOptions {
         jvmTarget.set(JvmTarget.JVM_11)
@@ -102,7 +105,8 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.navigation:navigation-fragment:2.7.7")
     implementation("androidx.navigation:navigation-ui:2.7.7")
-    implementation("com.cloudinary:kotlin-url-gen:1.11.0")
+
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
 }
 }
 dependencies {
