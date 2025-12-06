@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
+import com.example.Smart_Chat.utils.LanguageManager
+import com.example.Smart_Chat.utils.ThemeManager
 import com.example.Smart_Chat.utils.androidUtils
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.toObject
@@ -18,7 +20,7 @@ import com.google.firebase.firestore.toObject
 class UsernameSignInActivity : AppCompatActivity() {
 
     private lateinit var inputUsername: EditText
-    private lateinit var confirmBTN: Button
+    private lateinit var loginUsernameBTN: Button
     private lateinit var profileImage: ImageView
 
     private var phoneNumber: String? = null
@@ -26,11 +28,15 @@ class UsernameSignInActivity : AppCompatActivity() {
     private var isNewUser = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply theme and language
+        ThemeManager.applySavedTheme(this)
+        LanguageManager.applySavedLanguage(this)
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_username)
 
         inputUsername = findViewById(R.id.inputUsername)
-        confirmBTN = findViewById(R.id.confirmBTN)
+        loginUsernameBTN = findViewById(R.id.login_username_BTN)
         profileImage = findViewById(R.id.icon)
 
         phoneNumber = intent.getStringExtra("phoneNumber")
@@ -48,11 +54,11 @@ class UsernameSignInActivity : AppCompatActivity() {
                     profileImage
                 )
             } else {
-                profileImage.setImageResource(R.drawable.ic_person)
+                profileImage.setImageResource(R.drawable.ic_profile)
             }
         }
 
-        confirmBTN.setOnClickListener {
+        loginUsernameBTN.setOnClickListener {
             onConfirmClicked()
         }
     }
@@ -80,13 +86,13 @@ class UsernameSignInActivity : AppCompatActivity() {
 
                 inputUsername.setText(userModel?.username)
                 inputUsername.isEnabled = false  // cannot change
-                confirmBTN.text = getString(R.string.login)
+                loginUsernameBTN.text = getString(R.string.login)
             } else {
                 // ---- New user ----
                 isNewUser = true
 
                 inputUsername.isEnabled = true
-                confirmBTN.text = getString(R.string.signUp)
+                loginUsernameBTN.text = getString(R.string.signUp)
             }
         }
     }

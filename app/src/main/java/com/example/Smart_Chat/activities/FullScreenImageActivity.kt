@@ -22,6 +22,8 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.example.Smart_Chat.R
+import com.example.Smart_Chat.utils.LanguageManager
+import com.example.Smart_Chat.utils.ThemeManager
 import com.github.chrisbanes.photoview.PhotoView
 
 class FullScreenImageActivity : AppCompatActivity() {
@@ -36,6 +38,10 @@ class FullScreenImageActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply theme and language
+        ThemeManager.applySavedTheme(this)
+        LanguageManager.applySavedLanguage(this)
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_fullscreen_image)
 

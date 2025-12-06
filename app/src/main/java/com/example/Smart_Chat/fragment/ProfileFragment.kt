@@ -63,10 +63,6 @@ class ProfileFragment : Fragment() {
             updateProfile()
         }
 
-        binding.logout.setOnClickListener {
-            performLogout()
-        }
-
         binding.profileImage.setOnClickListener {
             ImagePicker.with(this)
                 .cropSquare()
@@ -153,20 +149,6 @@ class ProfileFragment : Fragment() {
                 }
         } catch (e: Exception) {
             Log.e("PROFILE", "Failed to save image", e)
-        }
-    }
-
-    /** 🔹 Logout user */
-    private fun performLogout() {
-        FirebaseMessaging.getInstance().deleteToken().addOnCompleteListener {
-
-            logout() // local logout
-
-            val intent = Intent(requireContext(), splashScreenActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-
-            requireActivity().finish()
         }
     }
 

@@ -85,6 +85,7 @@
                 android:id="@+id/chatBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:inputType="text"
                 android:layout_toStartOf="@id/send_image_btn"
                 android:padding="15dp"
                 android:background="@android:color/transparent"
@@ -100,7 +101,7 @@
                 android:src="@drawable/ic_image"
                 app:tint="@color/my_primary"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Send Image" />
+                android:contentDescription="@string/sendImage" />
         </RelativeLayout>
 
         <ImageButton

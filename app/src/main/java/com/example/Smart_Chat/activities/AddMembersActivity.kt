@@ -12,6 +12,8 @@ import com.example.Smart_Chat.adapters.SelectMemberAdapter
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
+import com.example.Smart_Chat.utils.LanguageManager
+import com.example.Smart_Chat.utils.ThemeManager
 
 class AddMembersActivity : AppCompatActivity() {
 
@@ -25,6 +27,10 @@ class AddMembersActivity : AppCompatActivity() {
     private lateinit var memberAdapter: SelectMemberAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply theme and language
+        ThemeManager.applySavedTheme(this)
+        LanguageManager.applySavedLanguage(this)
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_members)
 
@@ -128,7 +134,7 @@ class AddMembersActivity : AppCompatActivity() {
         if (selectedMembers.isEmpty()) return
 
         addBtn.isEnabled = false
-        addBtn.text = "Adding..."
+        addBtn.text = getString(R.string.adding)
 
         // Get current members and add new ones
         val updatedMembers = group?.memberIDs?.toMutableList() ?: mutableListOf()

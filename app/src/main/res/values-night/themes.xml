@@ -1,12 +1,29 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Chat_java" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
-    </style>
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Dark Theme -->
+    <style name="Theme.SmartChat" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/lazuli</item>
+        <item name="colorPrimaryVariant">@color/lazuli</item>
+        <item name="colorOnPrimary">@color/white</item>
 
-    <style name="ThemeOverlay.Chat_java.FullscreenContainer" parent="">
-        <item name="fullscreenBackgroundColor">@color/light_blue_900</item>
-        <item name="fullscreenTextColor">@color/light_blue_A400</item>
+        <!-- Background colors -->
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="backgroundColor">@color/background_dark</item>
+        <item name="cardBackgroundColor">@color/card_background_dark</item>
+
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">@color/text_primary_dark</item>
+        <item name="android:textColorSecondary">@color/text_secondary_dark</item>
+
+        <!-- EditText colors -->
+        <item name="editTextColor">@color/text_primary_light</item>
+        <item name="android:editTextColor">@color/text_primary_light</item>
+        <item name="android:textColorHint">@color/text_secondary_light</item>
+
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/lazuli</item>
+
+        <item name="inputBoxBackground">@drawable/input_box_dark</item>
     </style>
 </resources>

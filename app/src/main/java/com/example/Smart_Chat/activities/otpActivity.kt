@@ -10,6 +10,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
+import com.example.Smart_Chat.utils.LanguageManager
+import com.example.Smart_Chat.utils.ThemeManager
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
@@ -25,7 +27,7 @@ class otpActivity : AppCompatActivity() {
     private var token: PhoneAuthProvider.ForceResendingToken? = null
 
     private lateinit var inputOTP: EditText
-    private lateinit var confirmBTN: Button
+    private lateinit var confirmOtpBTN: Button
     private lateinit var textResendOTP: TextView
 
     private val mAuth = FirebaseAuth.getInstance()
@@ -34,18 +36,22 @@ class otpActivity : AppCompatActivity() {
     private val resendIntervalMs = 30_000L // 30 seconds
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply theme and language
+        ThemeManager.applySavedTheme(this)
+        LanguageManager.applySavedLanguage(this)
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_otp)
 
         phoneNumber = intent.getStringExtra("phoneNumber")
 
         inputOTP = findViewById(R.id.inputOTP)
-        confirmBTN = findViewById(R.id.confirmBTN)
+        confirmOtpBTN = findViewById(R.id.confirm_OTP_btn)
         textResendOTP = findViewById(R.id.resendOTP)
 
         sendOTP(phoneNumber, false)
 
-        confirmBTN.setOnClickListener {
+        confirmOtpBTN.setOnClickListener {
             val otp = inputOTP.text.toString().trim()
             if (otp.isEmpty()) {
                 inputOTP.error = "Enter OTP"
@@ -97,10 +103,10 @@ class otpActivity : AppCompatActivity() {
 
     private fun signIn(phoneAuthCredential: PhoneAuthCredential) {
         // Disable button while verifying
-        confirmBTN.isEnabled = false
+        confirmOtpBTN.isEnabled = false
 
         mAuth.signInWithCredential(phoneAuthCredential).addOnCompleteListener { task ->
-            confirmBTN.isEnabled = true  // Re-enable button
+            confirmOtpBTN.isEnabled = true  // Re-enable button
 
             if (task.isSuccessful) {
                 val intent = Intent(this, UsernameSignInActivity::class.java).apply {
@@ -129,12 +135,12 @@ class otpActivity : AppCompatActivity() {
         resendTimer = object : CountDownTimer(resendIntervalMs, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val secondsLeft = millisUntilFinished / 1000
-                textResendOTP.text = "Resend OTP in $secondsLeft seconds"
+                textResendOTP.text = getString(R.string.resend_otp_text, secondsLeft)
             }
 
             override fun onFinish() {
                 textResendOTP.isEnabled = true
-                textResendOTP.text = "Resend OTP"
+                textResendOTP.text = getString(R.string.resendOTP)
             }
         }.start()
     }

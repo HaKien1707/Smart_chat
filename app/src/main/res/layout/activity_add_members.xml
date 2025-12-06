@@ -26,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="Add Members"
+            android:text="@string/addMember"
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="@color/black" />
@@ -36,7 +36,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select members to add to the group"
+        android:text="@string/selectMember"
         android:textSize="16sp"
         android:padding="15dp"
         android:background="@android:color/white"
@@ -57,7 +57,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="15dp"
         android:background="@drawable/round_corner_button"
-        android:text="Select members to add"
+        android:text="@string/confirm"
         android:textSize="16sp"
         android:padding="15dp"
         android:enabled="false" />

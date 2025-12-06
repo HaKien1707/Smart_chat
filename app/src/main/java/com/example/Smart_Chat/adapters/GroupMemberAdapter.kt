@@ -57,7 +57,7 @@ class GroupMemberAdapter(
         } else {
             val profileContainer = holder.itemView.findViewById<View>(R.id.profile_image_container)
             val profileImage = profileContainer.findViewById<ImageView>(R.id.profile_image)
-            profileImage.setImageResource(R.drawable.ic_person)
+            profileImage.setImageResource(R.drawable.ic_profile)
         }
 
         // Show remove button only if:

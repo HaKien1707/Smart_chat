@@ -12,6 +12,8 @@ import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.SearchUserRecyclerAdapter
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils.allUsersCollection
+import com.example.Smart_Chat.utils.LanguageManager
+import com.example.Smart_Chat.utils.ThemeManager
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 
 class SearchUserActivity : AppCompatActivity() {
@@ -25,6 +27,10 @@ class SearchUserActivity : AppCompatActivity() {
     private var adapter: SearchUserRecyclerAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply theme and language
+        ThemeManager.applySavedTheme(this)
+        LanguageManager.applySavedLanguage(this)
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search_user)
 
@@ -63,7 +69,7 @@ class SearchUserActivity : AppCompatActivity() {
             .setQuery(query, userModel::class.java)
             .build()
 
-        adapter = SearchUserRecyclerAdapter(options, applicationContext)
+        adapter = SearchUserRecyclerAdapter(options, this)
         userList.layoutManager = LinearLayoutManager(this)
         userList.adapter = adapter
         adapter?.startListening()

@@ -12,9 +12,12 @@ class userModel {
     var userID: String? = null
     @JvmField
     var fcmToken: String? = null
-
     @JvmField
     var profileImage: String? = null
+
+    // NEW: Blocked users list
+    @JvmField
+    var blockedUsers: MutableList<String> = mutableListOf()
 
     constructor()
 
@@ -32,5 +35,6 @@ class userModel {
         this.userID = userID
         this.profileImage = profileImage
         this.fcmToken = fcm
+        this.blockedUsers = mutableListOf()
     }
 }

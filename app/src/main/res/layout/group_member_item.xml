@@ -36,7 +36,7 @@
             android:id="@+id/member_role"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Admin"
+            android:text="@string/admin"
             android:textSize="12sp"
             android:textColor="@android:color/holo_green_dark"
             android:visibility="gone" />

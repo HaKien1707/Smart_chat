@@ -56,7 +56,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:layout_margin="10dp"
             android:layout_centerVertical="true"
-            android:contentDescription="Group Settings" />
+            android:contentDescription="@string/menu_settings" />
 
     </RelativeLayout>
 
@@ -91,6 +91,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_toStartOf="@id/send_image_btn"
+                android:inputType="text"
                 android:padding="15dp"
                 android:background="@android:color/transparent"
                 android:hint="@string/writeMSG" />
@@ -105,7 +106,7 @@
                 android:src="@drawable/ic_image"
                 app:tint="@color/my_primary"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Send Image" />
+                android:contentDescription="@string/sendImage" />
         </RelativeLayout>
 
         <ImageButton
@@ -117,7 +118,7 @@
             app:tint="@color/my_primary"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:layout_alignParentEnd="true"
-            android:contentDescription="Send Message" />
+            android:contentDescription="@string/sendMsg" />
 
     </RelativeLayout>
 

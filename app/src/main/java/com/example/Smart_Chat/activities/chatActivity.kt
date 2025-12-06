@@ -1,5 +1,6 @@
 package com.example.Smart_Chat.activities
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -21,6 +22,8 @@ import com.example.Smart_Chat.models.chatRoomModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.CloudinaryHelper
 import com.example.Smart_Chat.utils.FireBase_utils
+import com.example.Smart_Chat.utils.LanguageManager
+import com.example.Smart_Chat.utils.ThemeManager
 import com.example.Smart_Chat.utils.androidUtils
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.github.dhaval2404.imagepicker.ImagePicker
@@ -62,6 +65,10 @@ class chatActivity : AppCompatActivity() {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply theme and language
+        ThemeManager.applySavedTheme(this)
+        LanguageManager.applySavedLanguage(this)
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
 
@@ -77,6 +84,31 @@ class chatActivity : AppCompatActivity() {
             return
         }
 
+        // CHECK FRIENDSHIP STATUS FIRST
+        checkFriendshipBeforeChat()
+    }
+
+    private fun checkFriendshipBeforeChat() {
+        FireBase_utils.checkFriendshipStatus(user2nd?.userID ?: "") { status ->
+            runOnUiThread {
+                when (status) {
+                    FireBase_utils.FriendshipStatus.FRIENDS -> {
+                        // They're friends - proceed with chat setup
+                        setupChat()
+                    }
+                    else -> {
+                        // Not friends - redirect to NotFriendsActivity
+                        val intent = Intent(this, NotFriendsActivity::class.java)
+                        androidUtils.passUserModelAsIntent(intent, user2nd)
+                        startActivity(intent)
+                        finish()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setupChat() {
         chatRoomID = FireBase_utils.getChatRoomID(
             user2nd?.userID,
             FireBase_utils.currentUserID()
@@ -103,7 +135,7 @@ class chatActivity : AppCompatActivity() {
         if (!imageUrl.isNullOrBlank()) {
             androidUtils.setProfileImageFromBase64(this, imageUrl, profileImage)
         } else {
-            profileImage.setImageResource(R.drawable.ic_person)
+            profileImage.setImageResource(R.drawable.ic_profile)
         }
 
         sendBtn.setOnClickListener {

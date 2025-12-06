@@ -1,5 +1,6 @@
 package com.example.Smart_Chat.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,10 +10,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.adapters.RecentChatRecyclerAdapter
 import com.example.Smart_Chat.R
+import com.example.Smart_Chat.activities.SearchUserActivity
 import com.example.Smart_Chat.models.chatRoomModel
 import com.example.Smart_Chat.utils.FireBase_utils.allChatRoomsCollectionReference
 import com.example.Smart_Chat.utils.FireBase_utils.currentUserID
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.Query
 
 class ChatFragment : Fragment() {

@@ -1,67 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:background="@drawable/input_box"
-    android:layout_margin="10dp">
-
-    <!-- Group Image (reused structure) -->
-    <include layout="@layout/profile_ic_view"
-        android:id="@+id/group_image_container"
-        android:layout_margin="10dp"
-        android:layout_height="52dp"
-        android:layout_width="52dp"
-        android:layout_gravity="center" />
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="?attr/cardBackgroundColor">
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:layout_gravity="center">
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:background="?attr/selectableItemBackground">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <!-- Group Image -->
+        <include layout="@layout/profile_ic_view"
+            android:id="@+id/group_image_container"
+            android:layout_margin="8dp"
+            android:layout_height="52dp"
+            android:layout_width="52dp"
+            android:layout_gravity="center" />
 
-            <!-- Group Name -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_gravity="center"
+            android:layout_marginStart="8dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <!-- Group Name -->
+                <TextView
+                    android:id="@+id/groupNameText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/groupName"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="?android:textColorPrimary"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <!-- Last Message Time -->
+                <TextView
+                    android:id="@+id/lastMsgTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/time"
+                    android:textColor="?android:textColorSecondary"
+                    android:textSize="12sp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="4dp" />
+            </RelativeLayout>
+
+            <!-- Member Count -->
             <TextView
-                android:id="@+id/groupNameText"
+                android:id="@+id/memberCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Group Name"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:text="5 members"
+                android:textSize="12sp"
+                android:textColor="?android:textColorSecondary"
+                android:layout_marginTop="2dp" />
 
-            <!-- Last Message Time -->
+            <!-- Last Message -->
             <TextView
-                android:id="@+id/lastMsgTime"
+                android:id="@+id/lastMsg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/time"
-                android:layout_alignParentEnd="true"
-                android:layout_marginEnd="10dp" />
-        </RelativeLayout>
+                android:text="@string/blank_number"
+                android:textColor="?android:textColorSecondary"
+                android:textSize="14sp"
+                android:layout_marginTop="2dp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+        </LinearLayout>
 
-        <!-- Member Count (NEW for groups) -->
-        <TextView
-            android:id="@+id/memberCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="5 members"
-            android:textSize="12sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="2dp" />
-
-        <!-- Last Message -->
-        <TextView
-            android:id="@+id/lastMsg"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/blank_number"
-            android:layout_marginTop="2dp" />
     </LinearLayout>
 
-</LinearLayout>
+</androidx.cardview.widget.CardView>

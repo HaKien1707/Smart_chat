@@ -24,6 +24,8 @@ import com.example.Smart_Chat.adapters.GroupMemberAdapter
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
+import com.example.Smart_Chat.utils.LanguageManager
+import com.example.Smart_Chat.utils.ThemeManager
 import com.example.Smart_Chat.utils.androidUtils
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.firestore.FirebaseFirestore
@@ -56,6 +58,10 @@ class GroupChatSettingsActivity : AppCompatActivity() {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply theme and language
+        ThemeManager.applySavedTheme(this)
+        LanguageManager.applySavedLanguage(this)
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.group_settings_activity)
 

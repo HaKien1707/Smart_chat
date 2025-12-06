@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Base Colors -->
     <color name="my_primary">#0034c3</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="lazuli">#53abff</color>
-    <color name="grey">#5e5a5a</color>
+    <color name="gray">#5e5a5a</color>
     <color name="dark_blue">#0034c3</color>
     <color name="lime">#00FF00</color>
     <color name="red">#FF0000</color>
@@ -14,4 +15,18 @@
     <color name="light_blue_A200">#FF40C4FF</color>
     <color name="light_blue_A400">#FF00B0FF</color>
     <color name="black_overlay">#66000000</color>
+    <color name="green">#008000</color>
+    <color name="orange">#FF7F00</color>
+
+    <!-- Light Theme Colors -->
+    <color name="background_light">#FFFFFF</color>
+    <color name="card_background_light">#F5F5F5</color>
+    <color name="text_primary_light">#000000</color>
+    <color name="text_secondary_light">#808080</color>
+
+    <!-- Dark Theme Colors -->
+    <color name="background_dark">#121212</color>
+    <color name="card_background_dark">#1E1E1E</color>
+    <color name="text_primary_dark">#FFFFFF</color>
+    <color name="text_secondary_dark">#B0B0B0</color>
 </resources>

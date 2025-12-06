@@ -13,7 +13,7 @@
         android:layout_height="160dp"
         android:background="@drawable/circle_bg"
         android:backgroundTint="@color/my_primary"
-        android:src="@drawable/ic_person"
+        android:src="@drawable/ic_profile"
         android:layout_margin="10dp"
         android:scaleType="centerCrop">
 
@@ -54,19 +54,10 @@
         android:layout_height="wrap_content"
         android:background="@drawable/round_corner_button"
         android:layout_margin="30dp"
+        android:padding="10dp"
         android:text="@string/updateProfile"
         android:gravity="center"
         android:textSize="20sp">
     </Button>
-
-    <TextView
-        android:id="@+id/logout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/logout"
-        android:textSize="16sp"
-        android:layout_marginTop="80dp">
-
-    </TextView>
 
 </LinearLayout>

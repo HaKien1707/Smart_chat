@@ -8,11 +8,14 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
+import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.androidUtils
 
 class splashScreenActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply theme and language
+        LanguageManager.applySavedLanguage(this)
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
 

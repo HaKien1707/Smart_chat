@@ -41,7 +41,7 @@ class SelectMemberAdapter(
                 holder.profileImage
             )
         } else {
-            holder.profileImage.setImageResource(R.drawable.ic_person)
+            holder.profileImage.setImageResource(R.drawable.ic_profile)
         }
 
         // Set checkbox state

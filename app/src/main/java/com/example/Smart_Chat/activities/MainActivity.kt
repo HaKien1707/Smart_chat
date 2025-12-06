@@ -6,67 +6,227 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.ImageButton
+import android.view.MenuItem
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.fragment.app.Fragment
 import com.example.Smart_Chat.R
+import com.example.Smart_Chat.databinding.ActivityMainBinding
 import com.example.Smart_Chat.fragment.ChatFragment
 import com.example.Smart_Chat.fragment.GroupFragment
 import com.example.Smart_Chat.fragment.ProfileFragment
+import com.example.Smart_Chat.fragment.FriendsListFragment
+import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.Smart_Chat.utils.androidUtils
+import com.google.android.material.navigation.NavigationView
 import com.google.firebase.messaging.FirebaseMessaging
+import androidx.core.view.size
+import androidx.core.view.get
+import com.example.Smart_Chat.fragment.SettingsFragment
+import com.example.Smart_Chat.utils.LanguageManager
+import com.example.Smart_Chat.utils.ThemeManager
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
-    private lateinit var searchBTN: ImageButton
-    private lateinit var bottomNavigationView: BottomNavigationView
-
-    private lateinit var chatFragment: ChatFragment
-    private lateinit var groupFragment: GroupFragment
-    private lateinit var profileFragment: ProfileFragment
+    private lateinit var binding: ActivityMainBinding
+    private var currentTab = "chat" // Track current tab
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply saved theme and language BEFORE super.onCreate()
+        ThemeManager.applySavedTheme(this)
+        LanguageManager.applySavedLanguage(this)
+
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         createNotificationChannel()
 
-        searchBTN = findViewById(R.id.main_search_btn)
-        bottomNavigationView = findViewById(R.id.bottom_navigation)
+        // Handle back press
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
+                } else {
+                    finish()
+                }
+            }
+        })
 
-        chatFragment = ChatFragment()
-        groupFragment = GroupFragment()
-        profileFragment = ProfileFragment()
+        // Load default fragment
+        replaceFragment(ChatFragment())
 
-        searchBTN.setOnClickListener {
-            val intent = Intent(this, SearchUserActivity::class.java)
+        // Set up Navigation Drawer
+        setupNavigationDrawer()
+
+        // Set up menu button to open drawer
+        binding.menuBtn.setOnClickListener {
+            binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        // Set up notification button
+        binding.notificationBtn.setOnClickListener {
+            val intent = Intent(this, FriendRequestActivity::class.java)
             startActivity(intent)
         }
 
-        bottomNavigationView.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.menu_chat -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_frame, chatFragment)
-                        .commit()
+        // Set up FAB - DYNAMIC BASED ON TAB
+        binding.fabSearchUser.setOnClickListener {
+            when (currentTab) {
+                "chat" -> {
+                    val intent = Intent(this, SearchUserActivity::class.java)
+                    startActivity(intent)
                 }
-                R.id.menu_group -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_frame, groupFragment)
-                        .commit()
-                }
-                R.id.menu_profile -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_frame, profileFragment)
-                        .commit()
+                "group" -> {
+                    val intent = Intent(this, SearchGroupActivity::class.java)
+                    startActivity(intent)
                 }
             }
-            true
         }
 
-        bottomNavigationView.selectedItemId = R.id.menu_chat
+        // Set up bottom navigation
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_chat -> {
+                    currentTab = "chat"
+                    updateFabIcon()
+                    replaceFragment(ChatFragment())
+                    true
+                }
+                R.id.menu_group -> {
+                    currentTab = "group"
+                    updateFabIcon()
+                    replaceFragment(GroupFragment())
+                    true
+                }
+                else -> false
+            }
+        }
 
         getFCMtoken()
+        loadUserDataIntoDrawer()
+    }
+
+    private fun updateFabIcon() {
+        when (currentTab) {
+            "chat" -> {
+                binding.fabSearchUser.setImageResource(R.drawable.ic_search)
+                binding.fabSearchUser.show()
+            }
+            "group" -> {
+                binding.fabSearchUser.setImageResource(R.drawable.ic_search)
+                binding.fabSearchUser.show()
+            }
+            else -> {
+                binding.fabSearchUser.hide()
+            }
+        }
+    }
+
+    private fun setupNavigationDrawer() {
+        binding.navView.setNavigationItemSelectedListener(this)
+    }
+
+    private fun loadUserDataIntoDrawer() {
+        FireBase_utils.currentUserDetails().get()
+            .addOnSuccessListener { document ->
+                val user = document.toObject(userModel::class.java)
+
+                val headerView = binding.navView.getHeaderView(0)
+                val nameTextView = headerView.findViewById<TextView>(R.id.nav_header_name)
+                val phoneTextView = headerView.findViewById<TextView>(R.id.nav_header_phone)
+                val imageView = headerView.findViewById<ImageView>(R.id.nav_header_image)
+
+                nameTextView.text = user?.username ?: "User"
+                phoneTextView.text = user?.phoneNumber ?: ""
+
+                if (!user?.profileImage.isNullOrBlank()) {
+                    androidUtils.setProfileImageFromBase64(
+                        this,
+                        user?.profileImage,
+                        imageView
+                    )
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("MainActivity", "Failed to load user data", e)
+            }
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.nav_profile -> {
+                deselectBottomNavigation()
+                replaceFragment(ProfileFragment())
+            }
+            R.id.nav_contacts -> {
+                deselectBottomNavigation()
+                replaceFragment(FriendsListFragment())
+            }
+            R.id.nav_settings -> {
+                deselectBottomNavigation()
+                replaceFragment(SettingsFragment())
+            }
+            R.id.nav_logout -> {
+                logoutUser()
+            }
+        }
+
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
+        return true
+    }
+
+    // Helper function to deselect bottom navigation
+    private fun deselectBottomNavigation() {
+        // Temporarily disable group checkable behavior
+        binding.bottomNavigation.menu.setGroupCheckable(0, true, false)
+
+        // Uncheck all items
+        for (i in 0 until binding.bottomNavigation.menu.size) {
+            binding.bottomNavigation.menu[i].isChecked = false
+        }
+
+        // Re-enable group checkable behavior
+        binding.bottomNavigation.menu.setGroupCheckable(0, true, true)
+
+        // Hide FAB and reset tab
+        binding.fabSearchUser.hide()
+        currentTab = "none"
+    }
+
+    private fun logoutUser() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Logout")
+            .setMessage("Are you sure you want to logout?")
+            .setPositiveButton("Yes") { _, _ ->
+                FirebaseMessaging.getInstance().deleteToken()
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Log.d("FCM_TOKEN", "Token deleted successfully")
+                        } else {
+                            Log.e("FCM_TOKEN", "Failed to delete token", task.exception)
+                        }
+
+                        FireBase_utils.logout()
+
+                        val intent = Intent(this, splashScreenActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        finish()
+                    }
+            }
+            .setNegativeButton("No", null)
+            .show()
+    }
+
+    private fun replaceFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_frame, fragment)
+            .commit()
     }
 
     private fun getFCMtoken() {
