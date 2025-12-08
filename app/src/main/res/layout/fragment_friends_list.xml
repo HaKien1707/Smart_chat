@@ -3,13 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="?attr/backgroundColor">
 
     <!-- Friends List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/friends_recycler"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="?attr/backgroundColor"
         android:padding="8dp"
         android:clipToPadding="false" />
 
@@ -28,7 +29,8 @@
             android:layout_height="120dp"
             android:src="@drawable/ic_no_friends"
             android:contentDescription="@string/noFriend"
-            app:tint="@color/gray" />
+            android:alpha="0.5"
+            app:tint="?android:textColorSecondary" />
 
         <TextView
             android:id="@+id/empty_text"
@@ -36,7 +38,7 @@
             android:layout_height="wrap_content"
             android:text="@string/noFriend"
             android:textSize="18sp"
-            android:textColor="@color/gray"
+            android:textColor="?android:textColorSecondary"
             android:layout_marginTop="16dp" />
 
         <TextView
@@ -44,7 +46,7 @@
             android:layout_height="wrap_content"
             android:text="@string/searchFriend"
             android:textSize="14sp"
-            android:textColor="@color/gray"
+            android:textColor="?android:textColorSecondary"
             android:layout_marginTop="8dp" />
 
     </LinearLayout>

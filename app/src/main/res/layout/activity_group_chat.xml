@@ -83,17 +83,19 @@
             android:layout_centerInParent="true"
             android:layout_toStartOf="@id/sendBtn"
             android:layout_margin="5dp"
-            android:background="@drawable/input_box"
+            android:background="?attr/inputBoxBackground"
             android:elevation="5dp">
 
             <EditText
                 android:id="@+id/chatBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_toStartOf="@id/send_image_btn"
                 android:inputType="text"
+                android:layout_toStartOf="@id/send_image_btn"
                 android:padding="15dp"
                 android:background="@android:color/transparent"
+                android:textColor="?attr/editTextColor"
+                android:textColorHint="?android:textColorSecondary"
                 android:hint="@string/writeMSG" />
 
             <ImageButton

@@ -67,7 +67,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:background="@drawable/input_box"
+            android:background="?attr/inputBoxBackground"
+            android:textColor="?attr/editTextColor"
+            android:textColorHint="?android:textColorSecondary"
             android:hint="@string/enterGroupName"
             android:padding="15dp"
             android:textSize="18sp"
@@ -83,7 +85,6 @@
         android:textSize="16sp"
         android:textStyle="bold"
         android:padding="15dp"
-        android:background="@android:color/white"
         android:textColor="@color/black" />
 
     <!-- Member List -->

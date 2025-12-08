@@ -467,4 +467,8 @@ class GroupChatActivity : AppCompatActivity() {
         googleCredentials.refresh()
         return googleCredentials.accessToken.tokenValue
     }
+
+    fun getGroupID(): String {
+        return groupID
+    }
 }

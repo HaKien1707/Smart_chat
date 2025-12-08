@@ -17,13 +17,14 @@
         <item name="android:textColorSecondary">@color/text_secondary_light</item>
 
         <!-- EditText colors -->
-        <item name="editTextColor">@color/text_primary_dark</item>
-        <item name="android:editTextColor">@color/text_primary_dark</item>
-        <item name="android:textColorHint">@color/text_secondary_dark</item>
+        <item name="editTextColor">@color/text_primary_light</item>
+        <item name="android:editTextColor">@color/text_primary_light</item>
+        <item name="android:textColorHint">@color/text_secondary_light</item>
 
         <!-- Status bar -->
         <item name="android:statusBarColor">@color/lazuli</item>
 
+        <!-- Custom attributes -->
         <item name="inputBoxBackground">@drawable/input_box_light</item>
     </style>
 </resources>

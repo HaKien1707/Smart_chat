@@ -12,6 +12,7 @@ import com.example.Smart_Chat.adapters.RecentChatRecyclerAdapter
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.SearchUserActivity
 import com.example.Smart_Chat.models.chatRoomModel
+import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.FireBase_utils.allChatRoomsCollectionReference
 import com.example.Smart_Chat.utils.FireBase_utils.currentUserID
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
@@ -36,19 +37,22 @@ class ChatFragment : Fragment() {
         return view
     }
 
-    private fun setupRecentChatRecyclerView(searchQuery: String = "") {
-        val query = allChatRoomsCollectionReference()
-            .whereArrayContains("userID", currentUserID()!!)
+    private fun setupRecentChatRecyclerView() {
+        val currentUserID = FireBase_utils.currentUserID() ?: return
+
+        // Query excludes chats where current user has soft-deleted them
+        val query = FireBase_utils.allChatRoomsCollectionReference()
+            .whereArrayContains("userID", currentUserID)
             .orderBy("lastMsgTimestamp", Query.Direction.DESCENDING)
 
         val options = FirestoreRecyclerOptions.Builder<chatRoomModel>()
             .setQuery(query, chatRoomModel::class.java)
+            .setLifecycleOwner(viewLifecycleOwner)  // Important: use viewLifecycleOwner for fragments
             .build()
 
-        adapter = RecentChatRecyclerAdapter(options, requireContext())
+        adapter = RecentChatRecyclerAdapter(options, requireContext(), isDeletedView = false)
         chatRecycler.layoutManager = LinearLayoutManager(requireContext())
         chatRecycler.adapter = adapter
-        adapter?.startListening()
     }
 
     override fun onStart() {

@@ -1,17 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/backgroundColor">
+    tools:context="com.example.Smart_Chat.activities.SearchGroupActivity">
 
-    <!-- Top Bar -->
     <RelativeLayout
-        android:id="@+id/top_bar"
+        android:id="@+id/panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/lazuli"
-        android:padding="16dp">
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/searchGroup"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:textColor="@color/black"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_alignParentEnd="true">
+        </TextView>
 
         <ImageButton
             android:id="@+id/back_btn"
@@ -19,78 +33,73 @@
             android:layout_height="48dp"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_back"
-            android:contentDescription="@string/backBTN"
-            app:tint="@color/black" />
+            android:background="@drawable/ic_back"
+            android:layout_marginStart="10dp"
+            android:contentDescription="@string/backBTN">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="@string/searchGroup"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="@color/black" />
+        </ImageButton>
 
     </RelativeLayout>
 
-    <!-- Search Bar -->
-    <LinearLayout
-        android:id="@+id/search_bar"
+    <RelativeLayout
+        android:id="@+id/searchGroupPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/top_bar"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:background="?attr/backgroundColor"
-        android:gravity="center_vertical">
+        android:layout_below="@id/panel"
+        android:padding="15dp">
 
         <EditText
             android:id="@+id/searchGroupInput"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="@string/enterGroupName"
+            android:background="?attr/inputBoxBackground"
+            android:textColor="?attr/editTextColor"
+            android:layout_centerInParent="true"
+            android:layout_marginHorizontal="10dp"
             android:padding="12dp"
-            android:background="@drawable/input_box"
-            android:textColor="?android:textColorPrimary"
-            android:textColorHint="?android:textColorSecondary"
+            android:textSize="20sp"
             android:inputType="text"
-            android:maxLines="1" />
+            android:hint="@string/enterGroupName"
+            android:textColorHint="?android:textColorSecondary"
+            android:elevation="5dp"
+            android:layout_toStartOf="@id/searchGroupBTN">
+        </EditText>
 
         <ImageButton
             android:id="@+id/searchGroupBTN"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:background="@drawable/circle_bg"
-            android:backgroundTint="@color/lazuli"
             android:src="@drawable/ic_search"
-            android:contentDescription="Search"
-            app:tint="@color/black" />
+            android:layout_alignParentEnd="true"
+            android:layout_centerInParent="true"
+            android:layout_marginEnd="10dp"
+            app:tint = "@color/white"
+            android:background="@drawable/circle_bg"
+            android:backgroundTint="@color/my_primary">
 
-    </LinearLayout>
+        </ImageButton>
+    </RelativeLayout>
 
-    <!-- Group List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/groupList"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/search_bar"
-        android:background="?attr/backgroundColor"
-        android:padding="8dp"
-        android:visibility="gone" />
-
-    <!-- Empty State -->
+    <!-- Empty State Message -->
     <TextView
         android:id="@+id/emptyStateText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:text="@string/noGroup"
-        android:textSize="18sp"
-        android:textColor="?android:textColorSecondary"
-        android:visibility="visible" />
+        android:textSize="24sp"
+        android:textColor="@android:color/darker_gray"
+        android:visibility="gone"
+        tools:visibility="visible">
+    </TextView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/groupList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/searchGroupPanel"
+        android:padding="10dp">
+
+    </androidx.recyclerview.widget.RecyclerView>
 
 </RelativeLayout>

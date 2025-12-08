@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/popup_background"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/option_forward"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Forward"
+        android:textSize="16sp"
+        android:padding="12dp"
+        android:drawableStart="@drawable/ic_forward"
+        android:drawablePadding="12dp"
+        android:background="?attr/selectableItemBackground"
+        android:textColor="?android:textColorPrimary" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0" />
+
+    <TextView
+        android:id="@+id/option_delete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Delete"
+        android:textSize="16sp"
+        android:padding="12dp"
+        android:drawableStart="@drawable/ic_delete"
+        android:drawablePadding="12dp"
+        android:background="?attr/selectableItemBackground"
+        android:textColor="@color/red" />
+
+</LinearLayout>

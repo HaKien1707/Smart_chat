@@ -17,6 +17,7 @@ class SettingsFragment : Fragment() {
 
     private lateinit var themeOption: View
     private lateinit var languageOption: View
+    private lateinit var blockedUsersOption: View
     private lateinit var themeValue: TextView
     private lateinit var languageValue: TextView
 
@@ -29,14 +30,13 @@ class SettingsFragment : Fragment() {
 
         themeOption = view.findViewById(R.id.theme_option)
         languageOption = view.findViewById(R.id.language_option)
+        blockedUsersOption = view.findViewById(R.id.blocked_users_option)
         themeValue = view.findViewById(R.id.theme_value)
         languageValue = view.findViewById(R.id.language_value)
 
-        // Display current settings
         updateThemeValue()
         updateLanguageValue()
 
-        // Click listeners
         themeOption.setOnClickListener {
             showThemeDialog()
         }
@@ -45,7 +45,18 @@ class SettingsFragment : Fragment() {
             showLanguageDialog()
         }
 
+        blockedUsersOption.setOnClickListener {
+            openBlockedUsers()
+        }
+
         return view
+    }
+
+    private fun openBlockedUsers() {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.main_frame, BlockedUsersFragment())
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun updateThemeValue() {

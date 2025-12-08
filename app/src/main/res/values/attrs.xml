@@ -1,9 +1,6 @@
 <resources>
-    <declare-styleable name="FullscreenAttrs">
-        <attr name="fullscreenBackgroundColor" format="color" />
-        <attr name="fullscreenTextColor" format="color" />
-    </declare-styleable>
+    <attr name="inputBoxBackground" format="reference" />
     <attr name="backgroundColor" format="color" />
     <attr name="cardBackgroundColor" format="color" />
-    <attr name="inputBoxBackground" format="reference" />
+    <attr name="editTextColor" format="color" />
 </resources>

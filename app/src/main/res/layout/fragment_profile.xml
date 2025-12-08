@@ -24,13 +24,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="25dp"
-        android:background="@drawable/input_box"
+        android:background="?attr/inputBoxBackground"
+        android:textColor="?attr/editTextColor"
+        android:textColorHint="?android:textColorSecondary"
         android:elevation="10dp"
-        android:inputType="text"
+        android:gravity="center"
         android:hint="@string/enter_username"
+        android:inputType="text"
         android:padding="15dp"
-        android:textSize="20sp"
-        android:gravity="center">
+        android:textSize="20sp">
+
     </EditText>
 
     <EditText
@@ -38,7 +41,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="25dp"
-        android:background="@drawable/input_box"
+        android:background="?attr/inputBoxBackground"
+        android:textColor="?attr/editTextColor"
+        android:textColorHint="?android:textColorSecondary"
         android:elevation="10dp"
         android:inputType="phone"
         android:enabled="false"

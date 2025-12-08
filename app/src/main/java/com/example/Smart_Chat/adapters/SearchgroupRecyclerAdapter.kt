@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.GroupChatActivity
+import com.example.Smart_Chat.activities.GroupJoinRequestActivity
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
@@ -36,22 +37,22 @@ class SearchGroupRecyclerAdapter(
         holder.groupName.text = model.groupName
         holder.memberCount.text = "${model.memberIDs?.size ?: 0} members"
 
-        // Check if user is already a member
+        // Check if user is a member
         val isMember = model.memberIDs?.contains(FireBase_utils.currentUserID()) == true
 
-        if (isMember) {
-            holder.groupName.text = "${model.groupName} (Joined)"
-            holder.itemView.setOnClickListener {
+        holder.itemView.setOnClickListener {
+            if (isMember) {
+                // Open group chat
                 val intent = Intent(activity, GroupChatActivity::class.java)
                 intent.putExtra("groupID", model.groupID)
                 intent.putExtra("groupName", model.groupName)
                 activity.startActivity(intent)
-                activity.finish()
+            } else {
+                // Open join request screen
+                val intent = Intent(activity, GroupJoinRequestActivity::class.java)
+                intent.putExtra("groupID", model.groupID)
+                activity.startActivity(intent)
             }
-        } else {
-            // Not a member - show as disabled or request to join
-            holder.itemView.alpha = 0.5f
-            holder.itemView.setOnClickListener(null)
         }
     }
 

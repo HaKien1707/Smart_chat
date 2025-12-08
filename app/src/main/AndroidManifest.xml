@@ -18,13 +18,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartChat">
         <activity
+            android:name=".activities.ForwardMessageActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.DeletedChatsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.GroupJoinRequestActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.SearchGroupActivity"
             android:exported="false" />
         <activity
             android:name=".activities.NotFriendsActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.FriendRequestActivity"
+            android:name=".activities.NotificationActivity"
             android:exported="false" />
         <activity
             android:name=".activities.FullScreenImageActivity"

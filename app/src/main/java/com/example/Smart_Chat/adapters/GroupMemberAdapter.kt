@@ -13,11 +13,12 @@ import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.androidUtils
 
 class GroupMemberAdapter(
-    private val members: List<Pair<userModel, Boolean>>, // Pair<user, isAdmin>
+    val members: List<Pair<userModel, Boolean>>, // Pair<user, isAdmin>
     private val context: Context,
     private val currentUserIsAdmin: Boolean,
     private val currentUserID: String?,
-    private val onRemoveMember: (String) -> Unit
+    private val onRemoveMember: (String) -> Unit,
+    private val onBlockMember: (String) -> Unit // NEW: Block callback
 ) : RecyclerView.Adapter<GroupMemberAdapter.MemberViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MemberViewHolder {
@@ -60,20 +61,28 @@ class GroupMemberAdapter(
             profileImage.setImageResource(R.drawable.ic_profile)
         }
 
-        // Show remove button only if:
+        // Show action buttons only if:
         // 1. Current user is admin
-        // 2. Member is not the current user (can't remove yourself)
-        // 3. Member is not an admin (admins can't remove other admins)
-        val canRemove = currentUserIsAdmin &&
+        // 2. Member is not the current user (can't remove/block yourself)
+        // 3. Member is not an admin (admins can't remove/block other admins)
+        val canTakeAction = currentUserIsAdmin &&
                 user.userID != currentUserID &&
                 !isAdmin
 
-        if (canRemove) {
+        if (canTakeAction) {
+            // Show block button
+            holder.blockBtn.visibility = View.VISIBLE
+            holder.blockBtn.setOnClickListener {
+                onBlockMember(user.userID ?: "")
+            }
+
+            // Show remove button
             holder.removeBtn.visibility = View.VISIBLE
             holder.removeBtn.setOnClickListener {
                 onRemoveMember(user.userID ?: "")
             }
         } else {
+            holder.blockBtn.visibility = View.GONE
             holder.removeBtn.visibility = View.GONE
         }
     }
@@ -83,6 +92,7 @@ class GroupMemberAdapter(
     class MemberViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val memberName: TextView = itemView.findViewById(R.id.member_name)
         val memberRole: TextView = itemView.findViewById(R.id.member_role)
+        val blockBtn: ImageButton = itemView.findViewById(R.id.block_member_btn)
         val removeBtn: ImageButton = itemView.findViewById(R.id.remove_member_btn)
     }
 }

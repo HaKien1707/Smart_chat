@@ -220,12 +220,39 @@ class GroupChatSettingsActivity : AppCompatActivity() {
             members,
             this,
             isAdmin,
-            FireBase_utils.currentUserID()
-        ) { userID ->
-            // Remove member callback
-            removeMember(userID)
-        }
+            FireBase_utils.currentUserID(),
+            onRemoveMember = { userID ->
+                removeMember(userID)
+            },
+            onBlockMember = { userID -> // NEW: Block callback
+                blockMember(userID)
+            }
+        )
         membersRecycler.adapter = memberAdapter
+    }
+
+    // Add this function
+    private fun blockMember(userID: String) {
+        val member = memberAdapter.members.find { it.first.userID == userID }?.first
+
+        AlertDialog.Builder(this)
+            .setTitle("Block Member")
+            .setMessage("Block ${member?.username}? They will be removed from the group and won't be able to rejoin.")
+            .setPositiveButton("Block & Remove") { _, _ ->
+                FireBase_utils.blockUserFromGroup(
+                    groupID!!,
+                    userID,
+                    onSuccess = {
+                        Toast.makeText(this, "Member blocked and removed", Toast.LENGTH_SHORT).show()
+                        loadGroupDetails() // Reload members
+                    },
+                    onFailure = { e ->
+                        Toast.makeText(this, "Failed to block: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun updateGroupName() {

@@ -67,6 +67,20 @@
                 android:textColor="@color/gray"
                 android:layout_marginTop="2dp" />
 
+            <TextView
+                android:id="@+id/unreadCount"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/circle_bg"
+                android:backgroundTint="@color/red"
+                android:gravity="center"
+                android:text="3"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
         </LinearLayout>
 
         <!-- Delete Button -->

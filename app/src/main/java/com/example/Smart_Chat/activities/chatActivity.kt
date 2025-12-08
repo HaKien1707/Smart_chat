@@ -108,6 +108,10 @@ class chatActivity : AppCompatActivity() {
         }
     }
 
+    fun getChatRoomID(): String {
+        return chatRoomID
+    }
+
     private fun setupChat() {
         chatRoomID = FireBase_utils.getChatRoomID(
             user2nd?.userID,
@@ -155,7 +159,7 @@ class chatActivity : AppCompatActivity() {
 
     private fun pickImage() {
         ImagePicker.with(this)
-            .compress(512) // Reduce to max 512KB
+            .compress(512)
             .maxResultSize(1080, 1080)
             .createIntent { intent -> imagePickerLauncher.launch(intent) }
     }
@@ -164,13 +168,12 @@ class chatActivity : AppCompatActivity() {
         sendImageBtn.isEnabled = false
         Toast.makeText(this, "Uploading image...", Toast.LENGTH_SHORT).show()
 
-        // Generate unique hash for this image
         val imageHash = generateImageHash(imageUri)
 
         CloudinaryHelper.uploadImageWithHash(
             this,
             imageUri,
-            imageHash, // Use hash as public_id
+            imageHash,
             onSuccess = { imageUrl ->
                 runOnUiThread {
                     sendImageMessage(imageUrl)
@@ -200,7 +203,7 @@ class chatActivity : AppCompatActivity() {
             digest.digest().joinToString("") { "%02x".format(it) }
         } catch (e: Exception) {
             Log.e("chatActivity", "Hash generation failed", e)
-            UUID.randomUUID().toString() // Fallback to random
+            UUID.randomUUID().toString()
         }
     }
 
@@ -210,7 +213,6 @@ class chatActivity : AppCompatActivity() {
             return
         }
 
-        // Update chatroom
         FireBase_utils.getChatRoomReferences(chatRoomID)
             .update(
                 mapOf(
@@ -223,7 +225,6 @@ class chatActivity : AppCompatActivity() {
                 Log.e("chatActivity", "Failed to update chatroom", e)
             }
 
-        // Create message
         val msgModel = MsgModel(
             FireBase_utils.currentUserID(),
             "📷 Photo",
@@ -232,7 +233,6 @@ class chatActivity : AppCompatActivity() {
             "image"
         )
 
-        // Send message
         FireBase_utils.getChatRoomMessagesReferences(chatRoomID)
             .add(msgModel)
             .addOnSuccessListener {
@@ -252,11 +252,13 @@ class chatActivity : AppCompatActivity() {
                     chatRoom = task.result.toObject(chatRoomModel::class.java)
 
                     if (chatRoom == null) {
+                        // Create new chatroom
                         chatRoom = chatRoomModel(
                             chatRoomID,
                             mutableListOf(FireBase_utils.currentUserID(), user2nd?.userID),
-                            Timestamp.now(),
-                            FireBase_utils.currentUserID()
+                            "",
+                            "",
+                            Timestamp.now()
                         )
 
                         FireBase_utils.getChatRoomReferences(chatRoomID)
@@ -267,6 +269,21 @@ class chatActivity : AppCompatActivity() {
                             .addOnFailureListener { e ->
                                 Log.e("CHATROOM", "ERROR: ${e.message}")
                             }
+                    } else {
+                        // Check if chat was soft-deleted by current user
+                        val currentUserID = FireBase_utils.currentUserID()
+                        if (chatRoom?.deletedBy?.contains(currentUserID) == true) {
+                            // Auto-recover the chat when user opens it
+                            FireBase_utils.recoverChatRoom(
+                                chatRoomID,
+                                onSuccess = {
+                                    Log.d("CHATROOM", "Chat auto-recovered")
+                                },
+                                onFailure = { e ->
+                                    Log.e("CHATROOM", "Failed to auto-recover: ${e.message}")
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -298,7 +315,6 @@ class chatActivity : AppCompatActivity() {
             }
     }
 
-    // In chatActivity.setupChatRecycler()
     private fun setupChatRecycler() {
         val query = FireBase_utils.getChatRoomMessagesReferences(chatRoomID)
             .orderBy("timestamp", Query.Direction.ASCENDING)
@@ -310,7 +326,6 @@ class chatActivity : AppCompatActivity() {
 
         adapter = MsgRecyclerAdapter(options, this)
 
-        // disable item animator to avoid RecyclerView inconsistency crashes
         try {
             val animator = chatList.itemAnimator
             if (animator is androidx.recyclerview.widget.SimpleItemAnimator) {
@@ -338,7 +353,6 @@ class chatActivity : AppCompatActivity() {
                 }
             }
         })
-
     }
 
     private fun sendNotification(msg: String) {

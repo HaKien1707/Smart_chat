@@ -1,55 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:background="@drawable/input_box"
-    android:layout_margin="5dp"
-    android:padding="10dp"
-    android:gravity="center_vertical">
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="?attr/cardBackgroundColor">
 
-    <!-- Profile Image -->
-    <include
-        android:id="@+id/profile_image_container"
-        layout="@layout/profile_ic_view"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginEnd="10dp" />
-
-    <!-- User Info -->
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground">
 
-        <TextView
-            android:id="@+id/member_name"
+        <!-- Profile Image -->
+        <include
+            android:id="@+id/profile_image_container"
+            layout="@layout/profile_ic_view"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginEnd="12dp" />
+
+        <!-- User Info -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/member_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Member Name"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="?android:textColorPrimary"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/member_role"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/admin"
+                android:textSize="12sp"
+                android:textColor="@color/green"
+                android:layout_marginTop="2dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Action Buttons Container -->
+        <LinearLayout
+            android:id="@+id/action_buttons"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Member Name"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/black" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/member_role"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/admin"
-            android:textSize="12sp"
-            android:textColor="@android:color/holo_green_dark"
-            android:visibility="gone" />
+            <!-- Block Button -->
+            <ImageButton
+                android:id="@+id/block_member_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_block"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/block"
+                android:padding="8dp"
+                android:visibility="gone"
+                app:tint="@color/orange" />
+
+            <!-- Remove Button -->
+            <ImageButton
+                android:id="@+id/remove_member_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_close"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Remove member"
+                android:padding="8dp"
+                android:layout_marginStart="4dp"
+                android:visibility="gone"
+                app:tint="@color/red" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
-    <!-- Remove Button (only show for admins) -->
-    <ImageButton
-        android:id="@+id/remove_member_btn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@android:drawable/ic_delete"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Remove member"
-        android:visibility="gone" />
-
-</LinearLayout>
+</androidx.cardview.widget.CardView>

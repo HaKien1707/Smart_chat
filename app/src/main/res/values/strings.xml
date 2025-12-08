@@ -49,6 +49,10 @@
     <string name="selectMember">Select members to add to the group</string>
     <string name="blocked">You are blocked by this user</string>
     <string name="block">User blocked</string>
+    <string name="userBlocked">Blocked users</string>
+    <string name="NoBlockedUsers">No blocked users</string>
+    <string name="unblock">Unblock</string>
+    <string name="UsersBlockAppearHere">Users you block will appear here</string>
 
     <string name="searchUser">Search User</string>
     <string name="createGroup">Create Group</string>

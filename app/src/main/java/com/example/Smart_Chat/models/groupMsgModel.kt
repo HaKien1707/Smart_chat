@@ -5,15 +5,23 @@ import com.google.firebase.Timestamp
 class GroupMsgModel {
     @JvmField
     var senderID: String? = null
+
     @JvmField
     var senderName: String? = null
+
     @JvmField
     var msg: String? = null
+
     var timestamp: Timestamp? = null
+
     @JvmField
-    var imageUrl: String? = null  // NEW
+    var imageUrl: String? = null
+
     @JvmField
-    var messageType: String? = "text"  // NEW
+    var messageType: String? = "text"
+
+    @JvmField
+    var isDeleted: Boolean = false  // NEW: Track if message is deleted
 
     constructor()
 
@@ -28,6 +36,7 @@ class GroupMsgModel {
         this.msg = msg
         this.timestamp = timestamp
         this.messageType = "text"
+        this.isDeleted = false
     }
 
     constructor(
@@ -44,5 +53,6 @@ class GroupMsgModel {
         this.timestamp = timestamp
         this.imageUrl = imageUrl
         this.messageType = messageType
+        this.isDeleted = false
     }
 }

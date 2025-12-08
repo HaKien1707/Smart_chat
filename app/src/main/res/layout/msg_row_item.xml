@@ -97,17 +97,33 @@
                 android:contentDescription="Received image" />
         </FrameLayout>
 
-        <!-- Timestamp below message -->
-        <TextView
-            android:id="@+id/receiverTimestamp"
+        <!-- Timestamp and Read Status -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="11sp"
-            android:textColor="#808080"
-            android:layout_marginEnd="10dp"
-            android:layout_marginTop="2dp"
+            android:orientation="horizontal"
             android:layout_gravity="end"
-            android:text="10:30 AM" />
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="2dp">
+
+            <TextView
+                android:id="@+id/receiverTimestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:text="10:30 AM"
+                android:layout_marginEnd="4dp" />
+
+            <!-- Read Status Icon -->
+            <ImageView
+                android:id="@+id/readStatusIcon"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_message_sent"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="Message status" />
+        </LinearLayout>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

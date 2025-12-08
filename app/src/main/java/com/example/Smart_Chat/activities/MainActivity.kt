@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         // Set up notification button
         binding.notificationBtn.setOnClickListener {
-            val intent = Intent(this, FriendRequestActivity::class.java)
+            val intent = Intent(this, NotificationActivity::class.java)
             startActivity(intent)
         }
 
@@ -170,6 +170,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_settings -> {
                 deselectBottomNavigation()
                 replaceFragment(SettingsFragment())
+            }
+            R.id.nav_deleted_chats -> {
+                val intent = Intent(this, DeletedChatsActivity::class.java)
+                startActivity(intent)
             }
             R.id.nav_logout -> {
                 logoutUser()

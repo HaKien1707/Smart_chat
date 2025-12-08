@@ -1,6 +1,9 @@
 package com.example.Smart_Chat.utils
 
+import android.util.Log
 import com.example.Smart_Chat.models.FriendRequestModel
+import com.example.Smart_Chat.models.GroupJoinRequestModel
+import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.models.userModel
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -346,9 +349,86 @@ object FireBase_utils {
                 onFailure(e)
             }
     }
+    //===================== Handle Delete Chat Room ====================
+    /*@JvmStatic
+    fun deleteChatRoom(
+        chatRoomID: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val chatRoomRef = getChatRoomReferences(chatRoomID)
+
+        // First delete all messages in the chatroom
+        getChatRoomMessagesReferences(chatRoomID)
+            .get()
+            .addOnSuccessListener { messages ->
+                val batch = FirebaseFirestore.getInstance().batch()
+
+                // Add all message deletions to batch
+                messages.documents.forEach { doc ->
+                    batch.delete(doc.reference)
+                }
+
+                // Add chatroom deletion to batch
+                batch.delete(chatRoomRef)
+
+                // Commit batch delete
+                batch.commit()
+                    .addOnSuccessListener {
+                        onSuccess()
+                    }
+                    .addOnFailureListener { e ->
+                        onFailure(e)
+                    }
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }*/
+    @JvmStatic
+    fun softDeleteChatRoom(
+        chatRoomID: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val currentUserID = currentUserID() ?: return
+
+        getChatRoomReferences(chatRoomID)
+            .update(
+                "deletedBy",
+                com.google.firebase.firestore.FieldValue.arrayUnion(currentUserID)
+            )
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
 
     @JvmStatic
-    fun deleteChatRoom(
+    fun recoverChatRoom(
+        chatRoomID: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val currentUserID = currentUserID() ?: return
+
+        getChatRoomReferences(chatRoomID)
+            .update(
+                "deletedBy",
+                com.google.firebase.firestore.FieldValue.arrayRemove(currentUserID)
+            )
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+    @JvmStatic
+    fun permanentlyDeleteChatRoom(
         chatRoomID: String,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
@@ -383,6 +463,29 @@ object FireBase_utils {
             }
     }
 
+    // Query for active (non-deleted) chats
+    @JvmStatic
+    fun getActiveChatRoomsQuery(): Query {
+        val currentUserID = currentUserID() ?: return allChatRoomsCollectionReference()
+            .whereArrayContains("userID", "")
+
+        return allChatRoomsCollectionReference()
+            .whereArrayContains("userID", currentUserID)
+            .orderBy("lastMsgTimestamp", Query.Direction.DESCENDING)
+    }
+
+    // Query for deleted chats
+    @JvmStatic
+    fun getDeletedChatRoomsQuery(): Query {
+        val currentUserID = currentUserID() ?: return allChatRoomsCollectionReference()
+            .whereArrayContains("userID", "")
+
+        return allChatRoomsCollectionReference()
+            .whereArrayContains("deletedBy", currentUserID)
+            .orderBy("lastMsgTimestamp", Query.Direction.DESCENDING)
+    }
+
+    // ========== USER BLOCK FUNCTIONS ==========
     @JvmStatic
     fun blockUser(
         userID: String,
@@ -463,5 +566,344 @@ object FireBase_utils {
         REQUEST_SENT,
         REQUEST_RECEIVED,
         NOT_FRIENDS
+    }
+
+    // ========== GROUP BLOCK FUNCTIONS ==========
+
+    @JvmStatic
+    fun blockUserFromGroup(
+        groupID: String,
+        userID: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val batch = FirebaseFirestore.getInstance().batch()
+        val groupRef = getGroupReference(groupID)
+
+        // Add to blocked list
+        batch.update(groupRef, "blockedUserIDs",
+            com.google.firebase.firestore.FieldValue.arrayUnion(userID))
+
+        // Remove from members
+        batch.update(groupRef, "memberIDs",
+            com.google.firebase.firestore.FieldValue.arrayRemove(userID))
+
+        // Remove from admins if they are admin
+        batch.update(groupRef, "adminIDs",
+            com.google.firebase.firestore.FieldValue.arrayRemove(userID))
+
+        batch.commit()
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+    @JvmStatic
+    fun unblockUserFromGroup(
+        groupID: String,
+        userID: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        getGroupReference(groupID)
+            .update("blockedUserIDs",
+                com.google.firebase.firestore.FieldValue.arrayRemove(userID))
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+    @JvmStatic
+    fun isBlockedFromGroup(
+        groupID: String,
+        userID: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        getGroupReference(groupID).get()
+            .addOnSuccessListener { document ->
+                val group = document.toObject(groupModel::class.java)
+                val isBlocked = group?.blockedUserIDs?.contains(userID) == true
+                onResult(isBlocked)
+            }
+            .addOnFailureListener {
+                onResult(false)
+            }
+    }
+
+    // ========== GROUP JOIN REQUEST FUNCTIONS ==========
+
+    @JvmStatic
+    fun groupJoinRequestsCollection(): CollectionReference {
+        return FirebaseFirestore.getInstance().collection("groupJoinRequests")
+    }
+
+    @JvmStatic
+    fun getGroupJoinRequestReference(requestID: String): DocumentReference {
+        return groupJoinRequestsCollection().document(requestID)
+    }
+
+    @JvmStatic
+    fun sendGroupJoinRequest(
+        groupID: String,
+        groupName: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val currentUserID = currentUserID() ?: return
+
+        Log.d("GROUP_JOIN_UTIL", "=== sendGroupJoinRequest called ===")
+        Log.d("GROUP_JOIN_UTIL", "Current User ID: $currentUserID")
+        Log.d("GROUP_JOIN_UTIL", "Group ID: $groupID")
+
+        // Check if blocked first
+        isBlockedFromGroup(groupID, currentUserID) { isBlocked ->
+            Log.d("GROUP_JOIN_UTIL", "Is blocked: $isBlocked")
+
+            if (isBlocked) {
+                onFailure(Exception("You are blocked from this group"))
+                return@isBlockedFromGroup
+            }
+
+            // Check if already a member of the group
+            getGroupReference(groupID).get()
+                .addOnSuccessListener { groupDoc ->
+                    val group = groupDoc.toObject(groupModel::class.java)
+
+                    if (group?.memberIDs?.contains(currentUserID) == true) {
+                        onFailure(Exception("You are already a member of this group"))
+                        return@addOnSuccessListener
+                    }
+
+                    // Check if already sent request
+                    val requestID = "${groupID}_${currentUserID}"
+                    Log.d("GROUP_JOIN_UTIL", "Request ID: $requestID")
+
+                    getGroupJoinRequestReference(requestID).get()
+                        .addOnSuccessListener { document ->
+                            Log.d("GROUP_JOIN_UTIL", "Document exists: ${document.exists()}")
+
+                            if (document.exists()) {
+                                val request = document.toObject(GroupJoinRequestModel::class.java)
+                                Log.d("GROUP_JOIN_UTIL", "Request status: ${request?.status}")
+
+                                when (request?.status) {
+                                    "pending" -> {
+                                        onFailure(Exception("Request already sent"))
+                                        return@addOnSuccessListener
+                                    }
+                                    "accepted" -> {
+                                        // Previous request was accepted, but user might have been removed
+                                        // Delete old request and create new one
+                                        Log.d("GROUP_JOIN_UTIL", "Deleting old accepted request")
+                                        getGroupJoinRequestReference(requestID).delete()
+                                            .addOnSuccessListener {
+                                                // Now create new request
+                                                createNewJoinRequest(
+                                                    requestID,
+                                                    groupID,
+                                                    groupName,
+                                                    currentUserID,
+                                                    onSuccess,
+                                                    onFailure
+                                                )
+                                            }
+                                            .addOnFailureListener { e ->
+                                                Log.e("GROUP_JOIN_UTIL", "Failed to delete old request", e)
+                                                onFailure(e)
+                                            }
+                                        return@addOnSuccessListener
+                                    }
+                                    "rejected" -> {
+                                        // Previous request was rejected, delete and create new one
+                                        Log.d("GROUP_JOIN_UTIL", "Deleting old rejected request")
+                                        getGroupJoinRequestReference(requestID).delete()
+                                            .addOnSuccessListener {
+                                                createNewJoinRequest(
+                                                    requestID,
+                                                    groupID,
+                                                    groupName,
+                                                    currentUserID,
+                                                    onSuccess,
+                                                    onFailure
+                                                )
+                                            }
+                                            .addOnFailureListener { e ->
+                                                Log.e("GROUP_JOIN_UTIL", "Failed to delete old request", e)
+                                                onFailure(e)
+                                            }
+                                        return@addOnSuccessListener
+                                    }
+                                }
+                            }
+
+                            // No existing request, create new one
+                            createNewJoinRequest(
+                                requestID,
+                                groupID,
+                                groupName,
+                                currentUserID,
+                                onSuccess,
+                                onFailure
+                            )
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("GROUP_JOIN_UTIL", "❌ Failed to check existing request", e)
+                            onFailure(e)
+                        }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("GROUP_JOIN_UTIL", "Failed to check group membership", e)
+                    onFailure(e)
+                }
+        }
+    }
+
+    // Helper function to create a new join request
+    private fun createNewJoinRequest(
+        requestID: String,
+        groupID: String,
+        groupName: String,
+        currentUserID: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        currentUserDetails().get().addOnSuccessListener { userDoc ->
+            val currentUser = userDoc.toObject(userModel::class.java)
+            Log.d("GROUP_JOIN_UTIL", "Current user name: ${currentUser?.username}")
+
+            val request = GroupJoinRequestModel(
+                requestID,
+                groupID,
+                groupName,
+                currentUserID,
+                currentUser?.username,
+                "pending",
+                Timestamp.now()
+            )
+
+            Log.d("GROUP_JOIN_UTIL", "About to create request")
+
+            getGroupJoinRequestReference(requestID).set(request)
+                .addOnSuccessListener {
+                    Log.d("GROUP_JOIN_UTIL", "✅ Request created successfully!")
+                    onSuccess()
+                }
+                .addOnFailureListener { e ->
+                    Log.e("GROUP_JOIN_UTIL", "❌ Failed to create request", e)
+                    onFailure(e)
+                }
+        }.addOnFailureListener { e ->
+            Log.e("GROUP_JOIN_UTIL", "❌ Failed to get user details", e)
+            onFailure(e)
+        }
+    }
+
+    @JvmStatic
+    fun acceptGroupJoinRequest(
+        requestID: String,
+        groupID: String,
+        userID: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        // Update request status
+        getGroupJoinRequestReference(requestID).update("status", "accepted")
+            .addOnSuccessListener {
+                // Add user to group
+                getGroupReference(groupID).update(
+                    "memberIDs",
+                    com.google.firebase.firestore.FieldValue.arrayUnion(userID)
+                )
+                    .addOnSuccessListener {
+                        onSuccess()
+                    }
+                    .addOnFailureListener { e ->
+                        onFailure(e)
+                    }
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+    @JvmStatic
+    fun rejectGroupJoinRequest(
+        requestID: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        getGroupJoinRequestReference(requestID).update("status", "rejected")
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+    @JvmStatic
+    fun getPendingGroupJoinRequests(
+        groupID: String,
+        onSuccess: (List<GroupJoinRequestModel>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        groupJoinRequestsCollection()
+            .whereEqualTo("groupID", groupID)
+            .whereEqualTo("status", "pending")
+            .get()
+            .addOnSuccessListener { documents ->
+                val requests = documents.mapNotNull {
+                    it.toObject(GroupJoinRequestModel::class.java)
+                }
+                onSuccess(requests)
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+    @JvmStatic
+    fun getAllPendingGroupJoinRequestsForAdmin(
+        onSuccess: (List<GroupJoinRequestModel>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val currentUserID = currentUserID() ?: return
+
+        // Get all groups where user is admin
+        allGroupsCollection()
+            .whereArrayContains("adminIDs", currentUserID)
+            .get()
+            .addOnSuccessListener { groupDocs ->
+                val groupIDs = groupDocs.map { it.id }
+
+                if (groupIDs.isEmpty()) {
+                    onSuccess(emptyList())
+                    return@addOnSuccessListener
+                }
+
+                // Get all pending requests for these groups
+                groupJoinRequestsCollection()
+                    .whereIn("groupID", groupIDs)
+                    .whereEqualTo("status", "pending")
+                    .get()
+                    .addOnSuccessListener { requestDocs ->
+                        val requests = requestDocs.mapNotNull {
+                            it.toObject(GroupJoinRequestModel::class.java)
+                        }
+                        onSuccess(requests)
+                    }
+                    .addOnFailureListener { e ->
+                        onFailure(e)
+                    }
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
     }
 }
