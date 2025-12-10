@@ -16,6 +16,11 @@
             android:title="@string/menu_contact" />
 
         <item
+            android:id="@+id/nav_community"
+            android:icon="@drawable/ic_community"
+            android:title="Community" />
+
+        <item
             android:id="@+id/nav_deleted_chats"
             android:icon="@drawable/ic_delete"
             android:title="Deleted Chats" />

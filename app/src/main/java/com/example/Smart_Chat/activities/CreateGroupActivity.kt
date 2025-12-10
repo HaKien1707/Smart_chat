@@ -24,6 +24,7 @@ import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.androidUtils
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.Timestamp
 import java.io.ByteArrayOutputStream
@@ -46,7 +47,7 @@ class CreateGroupActivity : AppCompatActivity() {
             if (result.resultCode == RESULT_OK) {
                 val uri = result.data?.data
                 if (uri != null) {
-                    convertImageToBase64(uri)
+                    selectedImageBase64 = androidUtils.convertImageToBase64(this, uri)
                     groupImage.setImageURI(uri)
                 }
             }
@@ -123,12 +124,7 @@ class CreateGroupActivity : AppCompatActivity() {
 
     private fun convertImageToBase64(uri: Uri) {
         try {
-            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
-            val resized = Bitmap.createScaledBitmap(bitmap, 200, 200, true)
-
-            val baos = ByteArrayOutputStream()
-            resized.compress(Bitmap.CompressFormat.JPEG, 40, baos)
-            selectedImageBase64 = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
+            selectedImageBase64 = androidUtils.convertImageToBase64(this, uri)
         } catch (e: Exception) {
             Log.e("CreateGroup", "Failed to convert image", e)
         }

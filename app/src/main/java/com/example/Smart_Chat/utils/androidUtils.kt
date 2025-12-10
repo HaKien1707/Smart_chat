@@ -2,15 +2,19 @@ package com.example.Smart_Chat.utils
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.provider.MediaStore
 import android.util.Base64
+import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.Smart_Chat.models.userModel
 import com.google.firebase.Timestamp
+import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 
 object androidUtils {
@@ -60,5 +64,33 @@ object androidUtils {
             .load(bitmap)
             .apply(RequestOptions.circleCropTransform())
             .into(imageView)
+    }
+
+    /**
+     * Convert image URI to Base64 string
+     * @param context Application context
+     * @param uri Image URI
+     * @param maxSize Maximum size for the image (default 200x200)
+     * @param quality JPEG compression quality (0-100, default 40)
+     * @return Base64 encoded string or null if conversion fails
+     */
+    @JvmStatic
+    fun convertImageToBase64(
+        context: Context,
+        uri: Uri,
+        maxSize: Int = 200,
+        quality: Int = 40
+    ): String? {
+        return try {
+            val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+            val resized = Bitmap.createScaledBitmap(bitmap, maxSize, maxSize, true)
+
+            val baos = ByteArrayOutputStream()
+            resized.compress(Bitmap.CompressFormat.JPEG, quality, baos)
+            Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
+        } catch (e: Exception) {
+            Log.e("androidUtils", "Failed to convert image to Base64", e)
+            null
+        }
     }
 }

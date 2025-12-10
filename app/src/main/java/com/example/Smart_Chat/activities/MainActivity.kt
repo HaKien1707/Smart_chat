@@ -26,6 +26,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.firebase.messaging.FirebaseMessaging
 import androidx.core.view.size
 import androidx.core.view.get
+import com.example.Smart_Chat.fragment.CommunityFragment
 import com.example.Smart_Chat.fragment.SettingsFragment
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
@@ -170,6 +171,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_settings -> {
                 deselectBottomNavigation()
                 replaceFragment(SettingsFragment())
+            }
+            R.id.nav_community -> {
+                deselectBottomNavigation()
+                replaceFragment(CommunityFragment())
             }
             R.id.nav_deleted_chats -> {
                 val intent = Intent(this, DeletedChatsActivity::class.java)

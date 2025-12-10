@@ -18,6 +18,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartChat">
         <activity
+            android:name=".activities.UnbanUserActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.BanUserActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.CommunitySettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.CreateCommunityActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.CommunityChatActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.ForwardMessageActivity"
             android:exported="false" />
         <activity

@@ -1,6 +1,7 @@
 package com.example.Smart_Chat.utils
 
 import android.util.Log
+import com.example.Smart_Chat.models.CommunityModel
 import com.example.Smart_Chat.models.FriendRequestModel
 import com.example.Smart_Chat.models.GroupJoinRequestModel
 import com.example.Smart_Chat.models.groupModel
@@ -9,6 +10,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
@@ -350,41 +352,6 @@ object FireBase_utils {
             }
     }
     //===================== Handle Delete Chat Room ====================
-    /*@JvmStatic
-    fun deleteChatRoom(
-        chatRoomID: String,
-        onSuccess: () -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        val chatRoomRef = getChatRoomReferences(chatRoomID)
-
-        // First delete all messages in the chatroom
-        getChatRoomMessagesReferences(chatRoomID)
-            .get()
-            .addOnSuccessListener { messages ->
-                val batch = FirebaseFirestore.getInstance().batch()
-
-                // Add all message deletions to batch
-                messages.documents.forEach { doc ->
-                    batch.delete(doc.reference)
-                }
-
-                // Add chatroom deletion to batch
-                batch.delete(chatRoomRef)
-
-                // Commit batch delete
-                batch.commit()
-                    .addOnSuccessListener {
-                        onSuccess()
-                    }
-                    .addOnFailureListener { e ->
-                        onFailure(e)
-                    }
-            }
-            .addOnFailureListener { e ->
-                onFailure(e)
-            }
-    }*/
     @JvmStatic
     fun softDeleteChatRoom(
         chatRoomID: String,
@@ -637,7 +604,6 @@ object FireBase_utils {
     }
 
     // ========== GROUP JOIN REQUEST FUNCTIONS ==========
-
     @JvmStatic
     fun groupJoinRequestsCollection(): CollectionReference {
         return FirebaseFirestore.getInstance().collection("groupJoinRequests")
@@ -904,6 +870,103 @@ object FireBase_utils {
             }
             .addOnFailureListener { e ->
                 onFailure(e)
+            }
+    }
+
+    // ========== COMMUNITY FUNCTIONS ==========
+
+    @JvmStatic
+    fun allCommunitiesCollection(): CollectionReference {
+        return FirebaseFirestore.getInstance().collection("communities")
+    }
+
+    @JvmStatic
+    fun getCommunityReference(communityID: String): DocumentReference {
+        return allCommunitiesCollection().document(communityID)
+    }
+
+    @JvmStatic
+    fun getCommunityMessagesReference(communityID: String): CollectionReference {
+        return getCommunityReference(communityID).collection("messages")
+    }
+
+    @JvmStatic
+    fun createCommunity(
+        communityName: String,
+        communityDescription: String,
+        communityImage: String?,
+        onSuccess: (String) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val currentUserID = currentUserID() ?: return
+        val communityID = allCommunitiesCollection().document().id
+
+        val community = CommunityModel(
+            communityID,
+            communityName,
+            communityDescription,
+            communityImage,
+            currentUserID,
+            Timestamp.now()
+        )
+
+        getCommunityReference(communityID).set(community)
+            .addOnSuccessListener {
+                onSuccess(communityID)
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+    @JvmStatic
+    fun banUserFromCommunity(
+        communityID: String,
+        userID: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        getCommunityReference(communityID)
+            .update("bannedUserIDs", FieldValue.arrayUnion(userID))
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+    @JvmStatic
+    fun unbanUserFromCommunity(
+        communityID: String,
+        userID: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        getCommunityReference(communityID)
+            .update("bannedUserIDs", FieldValue.arrayRemove(userID))
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+    @JvmStatic
+    fun isBannedFromCommunity(
+        communityID: String,
+        userID: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        getCommunityReference(communityID).get()
+            .addOnSuccessListener { document ->
+                val community = document.toObject(CommunityModel::class.java)
+                val isBanned = community?.bannedUserIDs?.contains(userID) == true
+                onResult(isBanned)
+            }
+            .addOnFailureListener {
+                onResult(false)
             }
     }
 }
