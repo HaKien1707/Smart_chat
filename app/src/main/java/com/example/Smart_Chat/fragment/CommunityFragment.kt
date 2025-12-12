@@ -1,6 +1,5 @@
 package com.example.Smart_Chat.fragment
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,18 +9,15 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.CreateCommunityActivity
 import com.example.Smart_Chat.adapters.CommunityAdapter
 import com.example.Smart_Chat.models.CommunityModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.Query
 
 class CommunityFragment : Fragment() {
 
     private var communityRecycler: RecyclerView? = null
-    private var createCommunityFab: FloatingActionButton? = null
     private var adapter: CommunityAdapter? = null
 
     override fun onCreateView(
@@ -31,12 +27,6 @@ class CommunityFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_community, container, false)
 
         communityRecycler = view.findViewById(R.id.community_recycler)
-        createCommunityFab = view.findViewById(R.id.create_community_fab)
-
-        createCommunityFab?.setOnClickListener {
-            val intent = Intent(requireContext(), CreateCommunityActivity::class.java)
-            startActivity(intent)
-        }
 
         setupCommunityRecycler()
 
@@ -86,6 +76,5 @@ class CommunityFragment : Fragment() {
         communityRecycler?.adapter = null
         adapter = null
         communityRecycler = null
-        createCommunityFab = null
     }
 }

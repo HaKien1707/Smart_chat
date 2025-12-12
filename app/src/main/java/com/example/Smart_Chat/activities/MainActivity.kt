@@ -28,6 +28,7 @@ import androidx.core.view.size
 import androidx.core.view.get
 import com.example.Smart_Chat.fragment.CommunityFragment
 import com.example.Smart_Chat.fragment.SettingsFragment
+import com.example.Smart_Chat.fragment.TemporaryChatFragment
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
 
@@ -86,6 +87,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val intent = Intent(this, SearchGroupActivity::class.java)
                     startActivity(intent)
                 }
+                "temporary_chat" -> {
+                    val intent = Intent(this, CreateTemporaryChatActivity::class.java)
+                    startActivity(intent)
+                }
+                "community" -> {
+                    val intent = Intent(this, CreateCommunityActivity::class.java)
+                    startActivity(intent)
+                }
             }
         }
 
@@ -96,6 +105,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     currentTab = "chat"
                     updateFabIcon()
                     replaceFragment(ChatFragment())
+                    true
+                }
+                R.id.menu_temporary_chat -> {
+                    currentTab = "temporary_chat"
+                    updateFabIcon()
+                    replaceFragment(TemporaryChatFragment())
+                    true
+                }
+                R.id.menu_community -> {
+                    currentTab = "community"
+                    updateFabIcon()
+                    replaceFragment(CommunityFragment())
                     true
                 }
                 R.id.menu_group -> {
@@ -120,6 +141,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             "group" -> {
                 binding.fabSearchUser.setImageResource(R.drawable.ic_search)
+                binding.fabSearchUser.show()
+            }
+            "temporary_chat" -> {
+                binding.fabSearchUser.setImageResource(R.drawable.ic_add)
+                binding.fabSearchUser.show()
+            }
+            "community" -> {
+                binding.fabSearchUser.setImageResource(R.drawable.ic_add)
                 binding.fabSearchUser.show()
             }
             else -> {
@@ -171,10 +200,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_settings -> {
                 deselectBottomNavigation()
                 replaceFragment(SettingsFragment())
-            }
-            R.id.nav_community -> {
-                deselectBottomNavigation()
-                replaceFragment(CommunityFragment())
             }
             R.id.nav_deleted_chats -> {
                 val intent = Intent(this, DeletedChatsActivity::class.java)

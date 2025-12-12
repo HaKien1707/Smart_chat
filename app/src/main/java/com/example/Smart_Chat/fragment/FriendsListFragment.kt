@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.FriendsAdapter
+import com.example.Smart_Chat.adapters.FriendsListAdapter
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
 
@@ -19,7 +19,7 @@ class FriendsListFragment : Fragment() {
     private lateinit var friendsRecycler: RecyclerView
     private lateinit var emptyState: View
     private lateinit var emptyText: TextView
-    private lateinit var adapter: FriendsAdapter
+    private lateinit var adapter: FriendsListAdapter
     private val friendsList = mutableListOf<userModel>()
 
     override fun onCreateView(
@@ -40,7 +40,7 @@ class FriendsListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = FriendsAdapter(requireContext(), friendsList)
+        adapter = FriendsListAdapter(requireContext(), friendsList)
         friendsRecycler.layoutManager = LinearLayoutManager(requireContext())
         friendsRecycler.adapter = adapter
     }

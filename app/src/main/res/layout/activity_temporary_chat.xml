@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.GroupChatActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- Top Panel -->
     <RelativeLayout
         android:id="@+id/panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/lazuli"
-        android:padding="10dp">
+        android:padding="20dp">
 
         <ImageButton
             android:id="@+id/back_btn"
@@ -20,46 +18,61 @@
             android:layout_height="48dp"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:background="@drawable/ic_back"
-            android:contentDescription="@string/backBTN" />
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_back"
+            android:contentDescription="Back" />
 
         <include
             android:id="@+id/profile_image_container"
             layout="@layout/profile_image_circle"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_margin="10dp"
-            android:layout_toEndOf="@id/back_btn" />
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_toEndOf="@id/back_btn"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp" />
 
-        <TextView
-            android:id="@+id/panelName"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toEndOf="@id/profile_image_container"
-            android:layout_toStartOf="@id/group_settings_btn"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="10dp"
-            android:text="@string/menu_users"
             android:layout_centerVertical="true"
-            android:textColor="@color/black"
-            android:textSize="30sp"
-            android:textStyle="bold"
-            android:ellipsize="end"
-            android:maxLines="1" />
+            android:layout_marginStart="10dp"
+            android:orientation="vertical">
 
-        <ImageButton
-            android:id="@+id/group_settings_btn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_options"
+            <TextView
+                android:id="@+id/panelName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Temporary Chat"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/security_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔒 Encrypted"
+                android:textSize="12sp"
+                android:textColor="@color/dark_green"
+                android:visibility="visible" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/expiry_timer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:layout_margin="10dp"
             android:layout_centerVertical="true"
-            android:contentDescription="@string/menu_settings" />
+            android:text="05:00"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/red"
+            android:layout_marginEnd="10dp"/>
 
     </RelativeLayout>
 
+    <!-- Chat List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatList"
         android:layout_width="match_parent"
@@ -68,6 +81,7 @@
         android:layout_above="@id/bottomPanel"
         android:padding="10dp" />
 
+    <!-- Message Input -->
     <RelativeLayout
         android:id="@+id/bottomPanel"
         android:layout_width="match_parent"
@@ -119,8 +133,8 @@
             android:src="@drawable/ic_send"
             app:tint="@color/my_primary"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:layout_alignParentEnd="true"
-            android:contentDescription="@string/sendMsg" />
+            android:layout_alignParentEnd="true">
+        </ImageButton>
 
     </RelativeLayout>
 

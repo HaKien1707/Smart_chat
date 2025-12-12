@@ -6,9 +6,8 @@
     android:background="?attr/backgroundColor">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/community_recycler"
+        android:id="@+id/temp_chat_recycler"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="8dp" />
-
 </RelativeLayout>

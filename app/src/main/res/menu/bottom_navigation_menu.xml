@@ -6,7 +6,17 @@
         android:icon="@drawable/ic_chat"/>
 
     <item
+        android:id="@+id/menu_temporary_chat"
+        android:title="Temporary"
+        android:icon="@drawable/ic_timer"/>
+
+    <item
         android:title=""/>
+
+    <item
+        android:id="@+id/menu_community"
+        android:icon="@drawable/ic_community"
+        android:title="Community" />
 
     <item
         android:id="@+id/menu_group"

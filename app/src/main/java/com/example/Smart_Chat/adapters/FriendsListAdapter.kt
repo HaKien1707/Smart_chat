@@ -16,10 +16,10 @@ import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
 
-class FriendsAdapter(
+class FriendsListAdapter(
     private val context: Context,
     private val friendsList: MutableList<userModel>
-) : RecyclerView.Adapter<FriendsAdapter.FriendViewHolder>() {
+) : RecyclerView.Adapter<FriendsListAdapter.FriendViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendViewHolder {
         val view = LayoutInflater.from(parent.context)

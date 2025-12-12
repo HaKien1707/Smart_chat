@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.Smart_Chat.models.CommunityModel
 import com.example.Smart_Chat.models.FriendRequestModel
 import com.example.Smart_Chat.models.GroupJoinRequestModel
+import com.example.Smart_Chat.models.TemporaryChatModel
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.models.userModel
 import com.google.firebase.Timestamp
@@ -968,5 +969,162 @@ object FireBase_utils {
             .addOnFailureListener {
                 onResult(false)
             }
+    }
+
+// ========== TEMPORARY CHAT FUNCTIONS ==========
+
+    @JvmStatic
+    fun allTemporaryChatsCollection(): CollectionReference {
+        return FirebaseFirestore.getInstance().collection("temporaryChats")
+    }
+
+    @JvmStatic
+    fun getTemporaryChatReference(chatID: String): DocumentReference {
+        return allTemporaryChatsCollection().document(chatID)
+    }
+
+    @JvmStatic
+    fun getTemporaryChatMessagesReference(chatID: String): CollectionReference {
+        return getTemporaryChatReference(chatID).collection("messages")
+    }
+
+    @JvmStatic
+    fun createTemporaryChat(
+        friendID: String,
+        onSuccess: (String, String) -> Unit, // Returns chatID and encryptionKey
+        onFailure: (Exception) -> Unit
+    ) {
+        val currentUserID = currentUserID() ?: return
+        val chatID = allTemporaryChatsCollection().document().id
+
+        // Generate encryption key
+        val encryptionKey = EncryptionUtils.generateKey()
+
+        val tempChat = TemporaryChatModel(
+            chatID,
+            mutableListOf(currentUserID, friendID),
+            Timestamp.now(),
+            encryptionKey // NEW
+        )
+
+        getTemporaryChatReference(chatID).set(tempChat)
+            .addOnSuccessListener {
+                onSuccess(chatID, encryptionKey)
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+    @JvmStatic
+    fun markUserAsActiveInTempChat(chatID: String) {
+        val currentUserID = currentUserID() ?: return
+
+        getTemporaryChatReference(chatID)
+            .update("activeUsers", FieldValue.arrayUnion(currentUserID))
+            .addOnSuccessListener {
+                Log.d("Firebase_utils", "User marked as active in temp chat")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firebase_utils", "Failed to mark user as active", e)
+            }
+    }
+
+    @JvmStatic
+    fun markUserAsInactiveInTempChat(
+        chatID: String,
+        onBothLeft: () -> Unit = {}
+    ) {
+        val currentUserID = currentUserID() ?: return
+
+        getTemporaryChatReference(chatID)
+            .update("activeUsers", FieldValue.arrayRemove(currentUserID))
+            .addOnSuccessListener {
+                Log.d("Firebase_utils", "User marked as inactive")
+
+                // Check if both users have left
+                getTemporaryChatReference(chatID).get()
+                    .addOnSuccessListener { document ->
+                        val chat = document.toObject(TemporaryChatModel::class.java)
+                        if (chat?.activeUsers.isNullOrEmpty()) {
+                            // Both users have left, delete everything
+                            deleteTemporaryChat(chatID)
+                            onBothLeft()
+                        }
+                    }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firebase_utils", "Failed to mark user as inactive", e)
+            }
+    }
+
+    @JvmStatic
+    fun deleteTemporaryChat(chatID: String) {
+        // Delete all messages first
+        getTemporaryChatMessagesReference(chatID)
+            .get()
+            .addOnSuccessListener { messages ->
+                val batch = FirebaseFirestore.getInstance().batch()
+
+                messages.documents.forEach { msgDoc ->
+                    batch.delete(msgDoc.reference)
+                }
+
+                // Delete the chat document
+                batch.delete(getTemporaryChatReference(chatID))
+
+                batch.commit()
+                    .addOnSuccessListener {
+                        Log.d("Firebase_utils", "Temporary chat deleted successfully")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("Firebase_utils", "Failed to delete temporary chat", e)
+                    }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firebase_utils", "Failed to get messages for deletion", e)
+            }
+    }
+
+    @JvmStatic
+    fun deleteExpiredTemporaryChats() {
+        val now = Timestamp.now()
+
+        allTemporaryChatsCollection()
+            .whereLessThan("expiresAt", now)
+            .get()
+            .addOnSuccessListener { chats ->
+                if (chats.isEmpty) {
+                    return@addOnSuccessListener
+                }
+
+                val batch = FirebaseFirestore.getInstance().batch()
+
+                chats.forEach { chatDoc ->
+                    val chatID = chatDoc.id
+                    batch.delete(getTemporaryChatReference(chatID))
+                }
+
+                batch.commit()
+                    .addOnSuccessListener {
+                        Log.d("Firebase_utils", "Deleted ${chats.size()} expired chats")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("Firebase_utils", "Failed to delete expired chats", e)
+                    }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firebase_utils", "Failed to query expired chats", e)
+            }
+    }
+
+    @JvmStatic
+    fun getUserTemporaryChatsQuery(): Query {
+        val currentUserID = currentUserID() ?: return allTemporaryChatsCollection()
+            .whereArrayContains("userIDs", "")
+
+        return allTemporaryChatsCollection()
+            .whereArrayContains("userIDs", currentUserID)
+            .orderBy("lastMsgTimestamp", Query.Direction.DESCENDING)
     }
 }

@@ -32,7 +32,7 @@
 
         <include
             android:id="@+id/profile_image_container"
-            layout="@layout/profile_ic_view"
+            layout="@layout/profile_image_circle"
             android:layout_width="52dp"
             android:layout_height="52dp"
             android:layout_margin="10dp"

@@ -60,6 +60,7 @@
     <string name="searchBTN">Tìm kiếm</string>
     <string name="backBTN">Quay lại</string>
     <string name="saveBTN">Save</string>
+    <string name="sendBTN">Gửi</string>
 
     <string name="menu_chat">Trò chuyện</string>
     <string name="menu_group">Nhóm</string>

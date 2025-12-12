@@ -18,6 +18,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartChat">
         <activity
+            android:name=".activities.CreateTemporaryChatActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.TemporaryChatActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.UnbanUserActivity"
             android:exported="false" />
         <activity

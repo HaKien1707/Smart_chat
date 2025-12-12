@@ -60,6 +60,7 @@
     <string name="searchBTN">Search</string>
     <string name="backBTN">Back</string>
     <string name="saveBTN">Save</string>
+    <string name="sendBTN">Send</string>
 
     <string name="menu_chat">Chats</string>
     <string name="menu_group">Groups</string>
