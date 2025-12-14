@@ -122,4 +122,59 @@ object CloudinaryHelper {
             onError(e.message ?: "Upload failed")
         }
     }
+
+    fun uploadFile(
+        context: Context,
+        fileUri: Uri,
+        fileName: String,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        try {
+            initCloudinary(context)
+
+            Log.d("Cloudinary", "Starting file upload: $fileName")
+
+            MediaManager.get().upload(fileUri)
+                .option("folder", "chat_files/${FireBase_utils.currentUserID()}")
+                .option("resource_type", "auto") // Auto-detect file type
+                .option("public_id", System.currentTimeMillis().toString() + "_" + fileName)
+                .callback(object : UploadCallback {
+                    override fun onStart(requestId: String) {
+                        Log.d("Cloudinary", "File upload started: $requestId")
+                    }
+
+                    override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {
+                        if (totalBytes > 0) {
+                            val progress = (bytes * 100 / totalBytes).toInt()
+                            Log.d("Cloudinary", "File upload progress: $progress%")
+                        }
+                    }
+
+                    override fun onSuccess(requestId: String, resultData: Map<*, *>) {
+                        val url = resultData["secure_url"] as? String
+                        Log.d("Cloudinary", "File upload successful: $url")
+                        if (url != null) {
+                            onSuccess(url)
+                        } else {
+                            onError("Failed to get file URL")
+                        }
+                    }
+
+                    override fun onError(requestId: String, error: ErrorInfo) {
+                        Log.e("Cloudinary", "File upload failed: ${error.description}")
+                        onError(error.description ?: "File upload failed")
+                    }
+
+                    override fun onReschedule(requestId: String, error: ErrorInfo) {
+                        Log.w("Cloudinary", "File upload rescheduled: ${error.description}")
+                    }
+                })
+                .dispatch()
+
+        } catch (e: Exception) {
+            Log.e("Cloudinary", "File upload error", e)
+            onError(e.message ?: "File upload failed")
+        }
+    }
 }

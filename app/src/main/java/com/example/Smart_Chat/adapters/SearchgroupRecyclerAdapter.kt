@@ -9,8 +9,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.GroupChatActivity
-import com.example.Smart_Chat.activities.GroupJoinRequestActivity
+import com.example.Smart_Chat.activities.group_chat.GroupChatActivity
+import com.example.Smart_Chat.activities.group_chat.GroupJoinRequestActivity
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
@@ -58,7 +58,7 @@ class SearchGroupRecyclerAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupModelViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.search_group_item, parent, false)
+            .inflate(R.layout.item_search_group, parent, false)
         return GroupModelViewHolder(view)
     }
 

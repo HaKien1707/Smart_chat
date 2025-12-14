@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.CreateGroupActivity
+import com.example.Smart_Chat.activities.group_chat.CreateGroupActivity
 import com.example.Smart_Chat.adapters.GroupRecyclerAdapter
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.utils.FireBase_utils

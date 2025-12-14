@@ -21,6 +21,15 @@ class GroupMsgModel {
     var messageType: String? = "text"
 
     @JvmField
+    var fileUrl: String? = null
+
+    @JvmField
+    var fileName: String? = null
+
+    @JvmField
+    var fileSize: Long? = null
+
+    @JvmField
     var isDeleted: Boolean = false  // NEW: Track if message is deleted
 
     constructor()
@@ -52,6 +61,27 @@ class GroupMsgModel {
         this.msg = msg
         this.timestamp = timestamp
         this.imageUrl = imageUrl
+        this.messageType = messageType
+        this.isDeleted = false
+    }
+
+    constructor(
+        senderID: String?,
+        senderName: String?,
+        msg: String?,
+        timestamp: Timestamp?,
+        fileUrl: String?,
+        fileName: String?,
+        fileSize: Long?,
+        messageType: String?
+    ) {
+        this.senderID = senderID
+        this.senderName = senderName
+        this.msg = msg
+        this.timestamp = timestamp
+        this.fileUrl = fileUrl
+        this.fileName = fileName
+        this.fileSize = fileSize
         this.messageType = messageType
         this.isDeleted = false
     }

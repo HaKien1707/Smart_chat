@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.adapters.RecentChatRecyclerAdapter
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.SearchUserActivity
+import com.example.Smart_Chat.activities.user_chat.SearchUserActivity
 import com.example.Smart_Chat.models.chatRoomModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.FireBase_utils.allChatRoomsCollectionReference

@@ -13,8 +13,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.ForwardMessageActivity
-import com.example.Smart_Chat.activities.FullScreenImageActivity
+import com.example.Smart_Chat.activities.others.ForwardMessageActivity
+import com.example.Smart_Chat.activities.others.FullScreenImageActivity
+import com.example.Smart_Chat.activities.community.CommunityChatActivity
 import com.example.Smart_Chat.models.CommunityMsgModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
@@ -32,7 +33,7 @@ class CommunityMsgRecyclerAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommunityMsgViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.group_msg_row_item, parent, false)
+            .inflate(R.layout.item_group_msg_row, parent, false)
         return CommunityMsgViewHolder(view)
     }
 
@@ -187,8 +188,8 @@ class CommunityMsgRecyclerAdapter(
         intent.putExtra("messageType", model.messageType)
         intent.putExtra("isFromGroup", true)
 
-        if (context is com.example.Smart_Chat.activities.CommunityChatActivity) {
-            val communityID = (context as com.example.Smart_Chat.activities.CommunityChatActivity).getCommunityID()
+        if (context is CommunityChatActivity) {
+            val communityID = (context as CommunityChatActivity).getCommunityID()
             intent.putExtra("currentChatId", communityID)
         }
 

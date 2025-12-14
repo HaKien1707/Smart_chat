@@ -49,7 +49,7 @@ class BlockedUsersFragment : Fragment() {
         FireBase_utils.currentUserDetails().get()
             .addOnSuccessListener { document ->
                 val currentUser = document.toObject(userModel::class.java)
-                val blockedIds = currentUser?.blockedUsers ?: emptyList()
+                val blockedIds = currentUser?.blockedUsers?.filterNotNull() ?: emptyList()
 
                 if (blockedIds.isEmpty()) {
                     showEmptyState()

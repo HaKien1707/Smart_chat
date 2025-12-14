@@ -14,7 +14,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.chatActivity
+import com.example.Smart_Chat.activities.user_chat.chatActivity
 import com.example.Smart_Chat.models.chatRoomModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
@@ -63,7 +63,7 @@ class RecentChatRecyclerAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatRoomViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.recent_chat_recycler_item, parent, false)
+            .inflate(R.layout.item_recent_chat_recycler, parent, false)
         return ChatRoomViewHolder(view)
     }
 

@@ -11,7 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.TemporaryChatActivity
+import com.example.Smart_Chat.activities.temporary_chat.TemporaryChatActivity
 import com.example.Smart_Chat.models.TemporaryChatModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils

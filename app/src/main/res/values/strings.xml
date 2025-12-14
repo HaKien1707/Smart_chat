@@ -54,6 +54,8 @@
     <string name="unblock">Unblock</string>
     <string name="UsersBlockAppearHere">Users you block will appear here</string>
 
+    <string name="loginPhoneNumber">Login with phone number</string>
+
     <string name="searchUser">Search User</string>
     <string name="createGroup">Create Group</string>
 

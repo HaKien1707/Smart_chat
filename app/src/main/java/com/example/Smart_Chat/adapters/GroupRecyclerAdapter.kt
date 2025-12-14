@@ -10,7 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.GroupChatActivity
+import com.example.Smart_Chat.activities.group_chat.GroupChatActivity
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
@@ -75,7 +75,7 @@ class GroupRecyclerAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.group_item, parent, false)
+            .inflate(R.layout.item_group, parent, false)
         return GroupViewHolder(view)
     }
 

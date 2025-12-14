@@ -9,7 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.CommunityChatActivity
+import com.example.Smart_Chat.activities.community.CommunityChatActivity
 import com.example.Smart_Chat.models.CommunityModel
 import com.example.Smart_Chat.utils.androidUtils
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
@@ -22,7 +22,7 @@ class CommunityAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommunityViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.community_item, parent, false)
+            .inflate(R.layout.item_community, parent, false)
         return CommunityViewHolder(view)
     }
 

@@ -18,79 +18,85 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartChat">
         <activity
-            android:name=".activities.CreateTemporaryChatActivity"
+            android:name=".activities.login.SignUpActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.TemporaryChatActivity"
+            android:name=".activities.login.WelcomeActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.UnbanUserActivity"
+            android:name=".activities.temporary_chat.CreateTemporaryChatActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.BanUserActivity"
+            android:name=".activities.temporary_chat.TemporaryChatActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.CommunitySettingsActivity"
+            android:name=".activities.community.UnbanUserActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.CreateCommunityActivity"
+            android:name=".activities.community.BanUserActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.CommunityChatActivity"
+            android:name=".activities.community.CommunitySettingsActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.ForwardMessageActivity"
+            android:name=".activities.community.CreateCommunityActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.DeletedChatsActivity"
+            android:name=".activities.community.CommunityChatActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.GroupJoinRequestActivity"
+            android:name=".activities.others.ForwardMessageActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.SearchGroupActivity"
+            android:name=".activities.others.DeletedChatsActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.NotFriendsActivity"
+            android:name=".activities.group_chat.GroupJoinRequestActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.NotificationActivity"
+            android:name=".activities.group_chat.SearchGroupActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.FullScreenImageActivity"
+            android:name=".activities.user_chat.NotFriendsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.others.NotificationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.others.FullScreenImageActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".activities.GroupChatActivity"
+            android:name=".activities.group_chat.GroupChatActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.GroupChatSettingsActivity"
+            android:name=".activities.group_chat.GroupChatSettingsActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.AddMembersActivity"
+            android:name=".activities.group_chat.AddMembersActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.CreateGroupActivity"
+            android:name=".activities.group_chat.CreateGroupActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.chatActivity"
+            android:name=".activities.user_chat.chatActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.SearchUserActivity"
+            android:name=".activities.user_chat.SearchUserActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.UsernameSignInActivity"
+            android:name=".activities.login.UsernameSignInActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.otpActivity"
+            android:name=".activities.login.otpActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.LoginPhoneNumberActivity"
+            android:name=".activities.login.LoginPhoneNumberActivity"
             android:exported="false" />
         <activity
             android:name=".activities.MainActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.splashScreenActivity"
+            android:name=".activities.login.splashScreenActivity"
             android:exported="true"
             android:theme="@style/Theme.SmartChat">
             <intent-filter>

@@ -13,8 +13,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.ForwardMessageActivity
-import com.example.Smart_Chat.activities.FullScreenImageActivity
+import com.example.Smart_Chat.activities.others.ForwardMessageActivity
+import com.example.Smart_Chat.activities.others.FullScreenImageActivity
+import com.example.Smart_Chat.activities.group_chat.GroupChatActivity
 import com.example.Smart_Chat.models.GroupMsgModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
@@ -32,7 +33,7 @@ class GroupMsgRecyclerAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupMsgViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.group_msg_row_item, parent, false)
+            .inflate(R.layout.item_group_msg_row, parent, false)
         return GroupMsgViewHolder(view)
     }
 
@@ -215,8 +216,8 @@ class GroupMsgRecyclerAdapter(
         intent.putExtra("isFromGroup", true)
 
         // NEW: Pass current group ID to exclude it from forward list
-        if (context is com.example.Smart_Chat.activities.GroupChatActivity) {
-            val groupID = (context as com.example.Smart_Chat.activities.GroupChatActivity).getGroupID()
+        if (context is GroupChatActivity) {
+            val groupID = (context as GroupChatActivity).getGroupID()
             intent.putExtra("currentChatId", groupID)
         }
 

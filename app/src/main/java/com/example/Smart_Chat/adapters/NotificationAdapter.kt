@@ -1,7 +1,6 @@
 package com.example.Smart_Chat.adapters
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,7 +36,7 @@ class NotificationAdapter(
         return when (viewType) {
             VIEW_TYPE_FRIEND_REQUEST -> {
                 val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.friend_request_item, parent, false)
+                    .inflate(R.layout.item_friend_request, parent, false)
                 FriendRequestViewHolder(view)
             }
             VIEW_TYPE_GROUP_JOIN_REQUEST -> {

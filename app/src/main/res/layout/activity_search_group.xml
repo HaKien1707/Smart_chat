@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.Smart_Chat.activities.SearchGroupActivity">
+    tools:context="com.example.Smart_Chat.activities.group_chat.SearchGroupActivity">
 
     <RelativeLayout
         android:id="@+id/panel"

@@ -11,7 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.chatActivity
+import com.example.Smart_Chat.activities.user_chat.chatActivity
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
@@ -23,7 +23,7 @@ class FriendsListAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.friend_item, parent, false)
+            .inflate(R.layout.item_friend, parent, false)
         return FriendViewHolder(view)
     }
 

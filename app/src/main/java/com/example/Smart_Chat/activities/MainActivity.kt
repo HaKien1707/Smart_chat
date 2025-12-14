@@ -26,6 +26,13 @@ import com.google.android.material.navigation.NavigationView
 import com.google.firebase.messaging.FirebaseMessaging
 import androidx.core.view.size
 import androidx.core.view.get
+import com.example.Smart_Chat.activities.community.CreateCommunityActivity
+import com.example.Smart_Chat.activities.group_chat.SearchGroupActivity
+import com.example.Smart_Chat.activities.login.splashScreenActivity
+import com.example.Smart_Chat.activities.others.DeletedChatsActivity
+import com.example.Smart_Chat.activities.others.NotificationActivity
+import com.example.Smart_Chat.activities.temporary_chat.CreateTemporaryChatActivity
+import com.example.Smart_Chat.activities.user_chat.SearchUserActivity
 import com.example.Smart_Chat.fragment.CommunityFragment
 import com.example.Smart_Chat.fragment.SettingsFragment
 import com.example.Smart_Chat.fragment.TemporaryChatFragment

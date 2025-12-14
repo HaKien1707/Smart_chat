@@ -23,7 +23,7 @@ class GroupMemberAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MemberViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.group_member_item, parent, false)
+            .inflate(R.layout.item_group_member, parent, false)
         return MemberViewHolder(view)
     }
 

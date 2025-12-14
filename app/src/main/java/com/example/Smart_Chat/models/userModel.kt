@@ -4,37 +4,53 @@ import com.google.firebase.Timestamp
 
 class userModel {
     @JvmField
-    var phoneNumber: String? = null
+    var userID: String? = null
+
     @JvmField
     var username: String? = null
-    var createdTimestamp: Timestamp? = null
+
     @JvmField
-    var userID: String? = null
+    var phoneNumber: String? = null
+
     @JvmField
-    var fcmToken: String? = null
+    var password: String? = null
+
+    @JvmField
+    var email: String? = null
+
+    @JvmField
+    var nationality: String? = null
+
     @JvmField
     var profileImage: String? = null
 
-    // NEW: Blocked users list
     @JvmField
-    var blockedUsers: MutableList<String> = mutableListOf()
+    var fcmToken: String? = null
+
+    @JvmField
+    var blockedUsers: MutableList<String?>? = null
+
+    @JvmField
+    var createdAt: Timestamp? = null
 
     constructor()
 
     constructor(
-        phoneNumber: String?,
-        username: String?,
-        createdTimestamp: Timestamp?,
         userID: String?,
-        profileImage: String?,
-        fcm: String?
+        username: String?,
+        phoneNumber: String?,
+        password: String?,
+        email: String?,
+        nationality: String?,
+        createdAt: Timestamp?
     ) {
-        this.phoneNumber = phoneNumber
-        this.username = username
-        this.createdTimestamp = createdTimestamp
         this.userID = userID
-        this.profileImage = profileImage
-        this.fcmToken = fcm
+        this.username = username
+        this.phoneNumber = phoneNumber
+        this.password = password
+        this.email = email
+        this.nationality = nationality
+        this.createdAt = createdAt
         this.blockedUsers = mutableListOf()
     }
 }

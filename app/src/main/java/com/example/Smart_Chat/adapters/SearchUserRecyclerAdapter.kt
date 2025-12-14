@@ -3,7 +3,6 @@ package com.example.Smart_Chat.adapters
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.chatActivity
+import com.example.Smart_Chat.activities.user_chat.chatActivity
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
@@ -192,7 +191,7 @@ class SearchUserRecyclerAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserModelViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.search_user_item, parent, false)
+            .inflate(R.layout.item_search_user, parent, false)
         return UserModelViewHolder(view)
     }
 
