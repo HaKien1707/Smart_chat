@@ -1,5 +1,6 @@
 package com.example.Smart_Chat.activities.temporary_chat
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -25,6 +26,7 @@ import com.example.Smart_Chat.utils.CloudinaryHelper
 import com.example.Smart_Chat.utils.EncryptionUtils
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.LanguageManager
+import com.example.Smart_Chat.utils.MediaMessageHelper
 import com.example.Smart_Chat.utils.ThemeManager
 import com.example.Smart_Chat.utils.androidUtils
 import com.github.dhaval2404.imagepicker.ImagePicker
@@ -54,12 +56,24 @@ class TemporaryChatActivity : AppCompatActivity() {
     private val decryptedMessages = mutableListOf<DecryptedTempMessage>()
     private var messageListener: ListenerRegistration? = null
 
+    private lateinit var sendFileBtn: ImageButton
+
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == RESULT_OK) {
                 val uri = result.data?.data
                 if (uri != null) {
                     uploadAndSendImage(uri)
+                }
+            }
+        }
+
+    private val filePickerLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode == RESULT_OK) {
+                val uri = result.data?.data
+                if (uri != null) {
+                    uploadAndSendFile(uri)
                 }
             }
         }
@@ -90,6 +104,7 @@ class TemporaryChatActivity : AppCompatActivity() {
         chatBox = findViewById(R.id.chatBox)
         sendBtn = findViewById(R.id.sendBtn)
         sendImageBtn = findViewById(R.id.send_image_btn)
+        sendFileBtn = findViewById(R.id.send_file_btn)
         chatList = findViewById(R.id.chatList)
         val profileContainer = findViewById<View>(R.id.profile_image_container)
         profileImage = profileContainer.findViewById(R.id.profile_image)
@@ -100,11 +115,9 @@ class TemporaryChatActivity : AppCompatActivity() {
 
         panelName.text = "${user2nd?.username}"
 
-        // Show encryption indicator
         securityIndicator.text = "🔒 Encrypted • Expires in 5 min"
         securityIndicator.visibility = View.VISIBLE
 
-        // Load profile image
         val imageUrl = user2nd?.profileImage
         if (!imageUrl.isNullOrBlank()) {
             androidUtils.setProfileImageFromBase64(this, imageUrl, profileImage)
@@ -123,7 +136,155 @@ class TemporaryChatActivity : AppCompatActivity() {
             pickImage()
         }
 
+        sendFileBtn.setOnClickListener {
+            pickFile()
+        }
+
         loadChatDetails()
+    }
+
+    private fun pickImage() {
+        ImagePicker.with(this)
+            .compress(512)
+            .maxResultSize(1080, 1080)
+            .createIntent { intent -> imagePickerLauncher.launch(intent) }
+    }
+
+    private fun pickFile() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "*/*"
+            addCategory(Intent.CATEGORY_OPENABLE)
+            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
+                "application/pdf",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/vnd.ms-powerpoint",
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "text/*",
+                "application/zip",
+                "application/x-rar-compressed"
+            ))
+        }
+        filePickerLauncher.launch(intent)
+    }
+
+    private fun uploadAndSendImage(imageUri: Uri) {
+        sendImageBtn.isEnabled = false
+
+        MediaMessageHelper.uploadAndSendImage(
+            this,
+            imageUri,
+            FireBase_utils.getTemporaryChatReference(chatID),
+            FireBase_utils.getTemporaryChatMessagesReference(chatID),
+            FireBase_utils.currentUserID()!!,
+            null,
+            MediaMessageHelper.MessageType.PRIVATE_TEMP,
+            encryptionKey,
+            onSuccess = {
+                runOnUiThread {
+                    sendImageBtn.isEnabled = true
+                }
+            },
+            onError = {
+                runOnUiThread {
+                    sendImageBtn.isEnabled = true
+                }
+            }
+        )
+    }
+
+    private fun uploadAndSendFile(fileUri: Uri) {
+        sendFileBtn.isEnabled = false
+
+        MediaMessageHelper.uploadAndSendFile(
+            this,
+            fileUri,
+            FireBase_utils.getTemporaryChatReference(chatID),
+            FireBase_utils.getTemporaryChatMessagesReference(chatID),
+            FireBase_utils.currentUserID()!!,
+            null,
+            MediaMessageHelper.MessageType.PRIVATE_TEMP,
+            encryptionKey,
+            onSuccess = {
+                runOnUiThread {
+                    sendFileBtn.isEnabled = true
+                }
+            },
+            onError = {
+                runOnUiThread {
+                    sendFileBtn.isEnabled = true
+                }
+            }
+        )
+    }
+
+    private fun startListeningForMessages() {
+        messageListener = FireBase_utils.getTemporaryChatMessagesReference(chatID)
+            .orderBy("timestamp", Query.Direction.ASCENDING)
+            .addSnapshotListener { snapshots, error ->
+                if (error != null) {
+                    Log.e("TemporaryChatActivity", "Listen failed", error)
+                    return@addSnapshotListener
+                }
+
+                if (snapshots != null) {
+                    decryptedMessages.clear()
+
+                    for (doc in snapshots.documents) {
+                        try {
+                            val encryptedMsg = doc.toObject(TempChatMsgModel::class.java)
+
+                            if (encryptedMsg != null) {
+                                val decryptedText = EncryptionUtils.decrypt(
+                                    encryptedMsg.encryptedMsg ?: "",
+                                    encryptionKey
+                                )
+
+                                val decryptedMessage = DecryptedTempMessage(
+                                    senderID = encryptedMsg.senderID ?: "",
+                                    message = decryptedText,
+                                    timestamp = encryptedMsg.timestamp ?: Timestamp.now(),
+                                    messageType = encryptedMsg.messageType ?: "text",
+                                    imageUrl = encryptedMsg.encryptedImageUrl?.let {
+                                        try {
+                                            EncryptionUtils.decrypt(it, encryptionKey)
+                                        } catch (e: Exception) {
+                                            null
+                                        }
+                                    },
+                                    fileUrl = encryptedMsg.encryptedFileUrl?.let {
+                                        try {
+                                            EncryptionUtils.decrypt(it, encryptionKey)
+                                        } catch (e: Exception) {
+                                            null
+                                        }
+                                    },
+                                    fileName = encryptedMsg.encryptedFileName?.let {
+                                        try {
+                                            EncryptionUtils.decrypt(it, encryptionKey)
+                                        } catch (e: Exception) {
+                                            null
+                                        }
+                                    },
+                                    fileSize = encryptedMsg.fileSize
+                                )
+
+                                decryptedMessages.add(decryptedMessage)
+                            }
+                        } catch (e: Exception) {
+                            Log.e("TemporaryChatActivity", "Failed to decrypt message", e)
+                        }
+                    }
+
+                    adapter.notifyDataSetChanged()
+
+                    if (decryptedMessages.isNotEmpty()) {
+                        chatList.scrollToPosition(decryptedMessages.size - 1)
+                    }
+                }
+            }
     }
 
     private fun loadChatDetails() {
@@ -198,126 +359,6 @@ class TemporaryChatActivity : AppCompatActivity() {
 
         chatList.layoutManager = manager
         chatList.adapter = adapter
-    }
-
-    private fun startListeningForMessages() {
-        messageListener = FireBase_utils.getTemporaryChatMessagesReference(chatID)
-            .orderBy("timestamp", Query.Direction.ASCENDING)
-            .addSnapshotListener { snapshots, error ->
-                if (error != null) {
-                    Log.e("TemporaryChatActivity", "Listen failed", error)
-                    return@addSnapshotListener
-                }
-
-                if (snapshots != null) {
-                    // Clear and rebuild decrypted messages list
-                    decryptedMessages.clear()
-
-                    for (doc in snapshots.documents) {
-                        try {
-                            val encryptedMsg = doc.toObject(TempChatMsgModel::class.java)
-
-                            if (encryptedMsg != null) {
-                                // Decrypt the message
-                                val decryptedText = EncryptionUtils.decrypt(
-                                    encryptedMsg.encryptedMsg ?: "",
-                                    encryptionKey
-                                )
-
-                                val decryptedMessage = DecryptedTempMessage(
-                                    senderID = encryptedMsg.senderID ?: "",
-                                    message = decryptedText,
-                                    timestamp = encryptedMsg.timestamp ?: Timestamp.now(),
-                                    messageType = encryptedMsg.messageType ?: "text",
-                                    imageUrl = encryptedMsg.encryptedImageUrl?.let {
-                                        try {
-                                            EncryptionUtils.decrypt(it, encryptionKey)
-                                        } catch (e: Exception) {
-                                            null
-                                        }
-                                    }
-                                )
-
-                                decryptedMessages.add(decryptedMessage)
-                            }
-                        } catch (e: Exception) {
-                            Log.e("TemporaryChatActivity", "Failed to decrypt message", e)
-                        }
-                    }
-
-                    // Notify adapter
-                    adapter.notifyDataSetChanged()
-
-                    // Scroll to bottom
-                    if (decryptedMessages.isNotEmpty()) {
-                        chatList.scrollToPosition(decryptedMessages.size - 1)
-                    }
-                }
-            }
-    }
-
-    private fun pickImage() {
-        ImagePicker.with(this)
-            .compress(512)
-            .maxResultSize(1080, 1080)
-            .createIntent { intent -> imagePickerLauncher.launch(intent) }
-    }
-
-    private fun uploadAndSendImage(imageUri: Uri) {
-        sendImageBtn.isEnabled = false
-        Toast.makeText(this, "Uploading image...", Toast.LENGTH_SHORT).show()
-
-        CloudinaryHelper.uploadImage(
-            this,
-            imageUri,
-            onSuccess = { imageUrl ->
-                runOnUiThread {
-                    sendEncryptedImageMessage(imageUrl)
-                    sendImageBtn.isEnabled = true
-                    Toast.makeText(this, "Image sent!", Toast.LENGTH_SHORT).show()
-                }
-            },
-            onError = { error ->
-                runOnUiThread {
-                    sendImageBtn.isEnabled = true
-                    Toast.makeText(this, "Upload failed: $error", Toast.LENGTH_LONG).show()
-                }
-            }
-        )
-    }
-
-    private fun sendEncryptedImageMessage(imageUrl: String) {
-        try {
-            // Encrypt image URL
-            val encryptedImageUrl = EncryptionUtils.encrypt(imageUrl, encryptionKey)
-            val encryptedPhotoText = EncryptionUtils.encrypt("📷 Photo", encryptionKey)
-
-            FireBase_utils.getTemporaryChatReference(chatID)
-                .update(
-                    mapOf(
-                        "lastMsg" to "📷 Photo",
-                        "lastMsgSenderID" to FireBase_utils.currentUserID(),
-                        "lastMsgTimestamp" to Timestamp.now()
-                    )
-                )
-
-            val msgModel = TempChatMsgModel(
-                FireBase_utils.currentUserID(),
-                encryptedPhotoText,
-                Timestamp.now(),
-                encryptedImageUrl,
-                "image"
-            )
-
-            FireBase_utils.getTemporaryChatMessagesReference(chatID)
-                .add(msgModel)
-                .addOnFailureListener { e ->
-                    Log.e("TemporaryChatActivity", "Failed to send image", e)
-                }
-        } catch (e: Exception) {
-            Log.e("TemporaryChatActivity", "Encryption failed", e)
-            Toast.makeText(this, "Failed to encrypt image", Toast.LENGTH_SHORT).show()
-        }
     }
 
     private fun sendEncryptedMsg(plainText: String) {

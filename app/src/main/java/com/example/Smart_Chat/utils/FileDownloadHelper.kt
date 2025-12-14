@@ -1,9 +1,11 @@
 package com.example.Smart_Chat.utils
 
 import android.app.AlertDialog
+import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Environment
 import android.widget.Toast
 
 object FileDownloadHelper {
@@ -12,8 +14,7 @@ object FileDownloadHelper {
         context: Context,
         fileName: String,
         fileSize: Long,
-        fileUrl: String,
-        onDownload: () -> Unit = {}
+        fileUrl: String
     ) {
         val formattedSize = formatFileSize(fileSize)
 
@@ -22,16 +23,37 @@ object FileDownloadHelper {
             .setMessage("$fileName\nSize: $formattedSize\n\nDo you want to download this file?")
             .setPositiveButton("Download") { dialog, _ ->
                 dialog.dismiss()
-                openFile(context, fileUrl, fileName)
-                onDownload()
+                downloadFile(context, fileUrl, fileName)
             }
-            .setNegativeButton("Cancel") { dialog, _ ->
+            .setNegativeButton("Open in Browser") { dialog, _ ->
                 dialog.dismiss()
+                openInBrowser(context, fileUrl)
             }
+            .setNeutralButton("Cancel", null)
             .show()
     }
 
-    private fun openFile(context: Context, fileUrl: String, fileName: String) {
+    private fun downloadFile(context: Context, fileUrl: String, fileName: String) {
+        try {
+            val request = DownloadManager.Request(Uri.parse(fileUrl)).apply {
+                setTitle(fileName)
+                setDescription("Downloading file...")
+                setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+                setAllowedOverMetered(true)
+                setAllowedOverRoaming(true)
+            }
+
+            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            downloadManager.enqueue(request)
+
+            Toast.makeText(context, "Downloading $fileName...", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(context, "Download failed: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun openInBrowser(context: Context, fileUrl: String) {
         try {
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse(fileUrl)
@@ -39,11 +61,7 @@ object FileDownloadHelper {
             }
             context.startActivity(intent)
         } catch (e: Exception) {
-            Toast.makeText(
-                context,
-                "No app found to open this file",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(context, "Could not open file", Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -78,7 +78,7 @@
             android:name=".activities.group_chat.CreateGroupActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.user_chat.chatActivity"
+            android:name=".activities.user_chat.ChatActivity"
             android:exported="false" />
         <activity
             android:name=".activities.user_chat.SearchUserActivity"

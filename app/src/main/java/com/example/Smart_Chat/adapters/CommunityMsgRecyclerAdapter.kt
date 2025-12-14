@@ -18,6 +18,7 @@ import com.example.Smart_Chat.activities.others.FullScreenImageActivity
 import com.example.Smart_Chat.activities.community.CommunityChatActivity
 import com.example.Smart_Chat.models.CommunityMsgModel
 import com.example.Smart_Chat.models.userModel
+import com.example.Smart_Chat.utils.FileDownloadHelper
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.FireBase_utils.currentUserID
 import com.example.Smart_Chat.utils.androidUtils
@@ -38,11 +39,10 @@ class CommunityMsgRecyclerAdapter(
     }
 
     override fun onBindViewHolder(holder: CommunityMsgViewHolder, position: Int, model: CommunityMsgModel) {
-
         val isMe = model.senderID == currentUserID()
 
         if (isMe) {
-            // My message → show on right (receiver side)
+            // My message
             holder.sender.visibility = View.GONE
             holder.receiver.visibility = View.VISIBLE
 
@@ -56,44 +56,79 @@ class CommunityMsgRecyclerAdapter(
                 holder.receiverMsg.setTypeface(null, android.graphics.Typeface.ITALIC)
                 holder.receiverMessageContainer.setBackgroundResource(0)
             } else {
-                if (model.messageType == "image" && !model.imageUrl.isNullOrEmpty()) {
-                    holder.receiverImage.visibility = View.VISIBLE
-                    holder.receiverMsg.visibility = View.GONE
-                    holder.receiverMessageContainer.setBackgroundResource(0)
-                    holder.receiverMessageContainer.setPadding(0, 0, 0, 0)
+                when (model.messageType) {
+                    "file" -> {
+                        holder.receiverMsg.visibility = View.VISIBLE
+                        holder.receiverImage.visibility = View.GONE
 
-                    Glide.with(context)
-                        .load(model.imageUrl)
-                        .placeholder(R.drawable.ic_image_loading)
-                        .error(R.drawable.ic_image_error)
-                        .into(holder.receiverImage)
+                        val fileName = model.fileName ?: "File"
+                        val fileSize = formatFileSize(model.fileSize ?: 0)
+                        holder.receiverMsg.text = "📎 $fileName\n$fileSize"
+                        holder.receiverMsg.setTextColor(context.getColor(R.color.white))
+                        holder.receiverMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
 
-                    holder.receiverImage.setOnClickListener {
-                        val intent = Intent(context, FullScreenImageActivity::class.java)
-                        intent.putExtra("imageUrl", model.imageUrl)
-                        context.startActivity(intent)
+                        holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
+                        holder.receiverMessageContainer.backgroundTintList =
+                            context.getColorStateList(R.color.violet)
+                        val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
+                        holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
+
+                        holder.receiverMsg.setOnClickListener {
+                            FileDownloadHelper.showDownloadDialog(
+                                context,
+                                model.fileName ?: "File",
+                                model.fileSize ?: 0,
+                                model.fileUrl ?: ""
+                            )
+                        }
+
+                        holder.receiver.setOnLongClickListener {
+                            showMessageOptions(holder.receiver, position, model)
+                            true
+                        }
                     }
+                    "image" -> {
+                        if (!model.imageUrl.isNullOrEmpty()) {
+                            holder.receiverImage.visibility = View.VISIBLE
+                            holder.receiverMsg.visibility = View.GONE
+                            holder.receiverMessageContainer.setBackgroundResource(0)
+                            holder.receiverMessageContainer.setPadding(0, 0, 0, 0)
 
-                    holder.receiverImage.setOnLongClickListener {
-                        showMessageOptions(holder.receiverImage, position, model)
-                        true
+                            Glide.with(context)
+                                .load(model.imageUrl)
+                                .placeholder(R.drawable.ic_image_loading)
+                                .error(R.drawable.ic_image_error)
+                                .into(holder.receiverImage)
+
+                            holder.receiverImage.setOnClickListener {
+                                val intent = Intent(context, FullScreenImageActivity::class.java)
+                                intent.putExtra("imageUrl", model.imageUrl)
+                                context.startActivity(intent)
+                            }
+
+                            holder.receiverImage.setOnLongClickListener {
+                                showMessageOptions(holder.receiverImage, position, model)
+                                true
+                            }
+                        }
                     }
-                } else {
-                    holder.receiverImage.visibility = View.GONE
-                    holder.receiverMsg.visibility = View.VISIBLE
-                    holder.receiverMsg.text = model.msg
-                    holder.receiverMsg.setTextColor(context.getColor(R.color.white))
-                    holder.receiverMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
+                    else -> {
+                        holder.receiverImage.visibility = View.GONE
+                        holder.receiverMsg.visibility = View.VISIBLE
+                        holder.receiverMsg.text = model.msg
+                        holder.receiverMsg.setTextColor(context.getColor(R.color.white))
+                        holder.receiverMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
 
-                    holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
-                    holder.receiverMessageContainer.backgroundTintList =
-                        context.getColorStateList(R.color.violet)
-                    val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
-                    holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
+                        holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
+                        holder.receiverMessageContainer.backgroundTintList =
+                            context.getColorStateList(R.color.violet)
+                        val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
+                        holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
 
-                    holder.receiver.setOnLongClickListener {
-                        showMessageOptions(holder.receiver, position, model)
-                        true
+                        holder.receiver.setOnLongClickListener {
+                            showMessageOptions(holder.receiver, position, model)
+                            true
+                        }
                     }
                 }
             }
@@ -103,7 +138,7 @@ class CommunityMsgRecyclerAdapter(
             holder.senderImage.visibility = View.GONE
 
         } else {
-            // Other user's message → show on left (sender side)
+            // Other user's message
             holder.sender.visibility = View.VISIBLE
             holder.receiver.visibility = View.GONE
 
@@ -119,35 +154,65 @@ class CommunityMsgRecyclerAdapter(
                 holder.senderMsg.setTypeface(null, android.graphics.Typeface.ITALIC)
                 holder.senderMessageContainer.setBackgroundResource(0)
             } else {
-                if (model.messageType == "image" && !model.imageUrl.isNullOrEmpty()) {
-                    holder.senderImage.visibility = View.VISIBLE
-                    holder.senderMsg.visibility = View.GONE
-                    holder.senderMessageContainer.setBackgroundResource(0)
-                    holder.senderMessageContainer.setPadding(0, 0, 0, 0)
+                when (model.messageType) {
+                    "file" -> {
+                        holder.senderMsg.visibility = View.VISIBLE
+                        holder.senderImage.visibility = View.GONE
 
-                    Glide.with(context)
-                        .load(model.imageUrl)
-                        .placeholder(R.drawable.ic_image_loading)
-                        .error(R.drawable.ic_image_error)
-                        .into(holder.senderImage)
+                        val fileName = model.fileName ?: "File"
+                        val fileSize = formatFileSize(model.fileSize ?: 0)
+                        holder.senderMsg.text = "📎 $fileName\n$fileSize"
+                        holder.senderMsg.setTextColor(context.getColor(R.color.black))
+                        holder.senderMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
 
-                    holder.senderImage.setOnClickListener {
-                        val intent = Intent(context, FullScreenImageActivity::class.java)
-                        intent.putExtra("imageUrl", model.imageUrl)
-                        context.startActivity(intent)
+                        holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+                        holder.senderMessageContainer.backgroundTintList =
+                            context.getColorStateList(R.color.lime)
+                        val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
+                        holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
+
+                        holder.senderMsg.setOnClickListener {
+                            FileDownloadHelper.showDownloadDialog(
+                                context,
+                                model.fileName ?: "File",
+                                model.fileSize ?: 0,
+                                model.fileUrl ?: ""
+                            )
+                        }
                     }
-                } else {
-                    holder.senderImage.visibility = View.GONE
-                    holder.senderMsg.visibility = View.VISIBLE
-                    holder.senderMsg.text = model.msg
-                    holder.senderMsg.setTextColor(context.getColor(R.color.black))
-                    holder.senderMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
+                    "image" -> {
+                        if (!model.imageUrl.isNullOrEmpty()) {
+                            holder.senderImage.visibility = View.VISIBLE
+                            holder.senderMsg.visibility = View.GONE
+                            holder.senderMessageContainer.setBackgroundResource(0)
+                            holder.senderMessageContainer.setPadding(0, 0, 0, 0)
 
-                    holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
-                    holder.senderMessageContainer.backgroundTintList =
-                        context.getColorStateList(R.color.lime)
-                    val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
-                    holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
+                            Glide.with(context)
+                                .load(model.imageUrl)
+                                .placeholder(R.drawable.ic_image_loading)
+                                .error(R.drawable.ic_image_error)
+                                .into(holder.senderImage)
+
+                            holder.senderImage.setOnClickListener {
+                                val intent = Intent(context, FullScreenImageActivity::class.java)
+                                intent.putExtra("imageUrl", model.imageUrl)
+                                context.startActivity(intent)
+                            }
+                        }
+                    }
+                    else -> {
+                        holder.senderImage.visibility = View.GONE
+                        holder.senderMsg.visibility = View.VISIBLE
+                        holder.senderMsg.text = model.msg
+                        holder.senderMsg.setTextColor(context.getColor(R.color.black))
+                        holder.senderMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
+
+                        holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+                        holder.senderMessageContainer.backgroundTintList =
+                            context.getColorStateList(R.color.lime)
+                        val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
+                        holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
+                    }
                 }
             }
 
@@ -189,7 +254,7 @@ class CommunityMsgRecyclerAdapter(
         intent.putExtra("isFromGroup", true)
 
         if (context is CommunityChatActivity) {
-            val communityID = (context as CommunityChatActivity).getCommunityID()
+            val communityID = context.getCommunityID()
             intent.putExtra("currentChatId", communityID)
         }
 
@@ -237,6 +302,14 @@ class CommunityMsgRecyclerAdapter(
                 Log.e("CommunityMsgAdapter", "Failed to load profile image", e)
                 holder.senderProfileImage.setImageResource(R.drawable.ic_profile)
             }
+    }
+
+    private fun formatFileSize(size: Long): String {
+        return when {
+            size < 1024 -> "$size B"
+            size < 1024 * 1024 -> "${size / 1024} KB"
+            else -> String.format("%.2f MB", size / (1024.0 * 1024.0))
+        }
     }
 
     private fun formatTimestamp(date: Date?): String {

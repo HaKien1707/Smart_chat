@@ -18,6 +18,15 @@ class CommunityMsgModel {
     var imageUrl: String? = null
 
     @JvmField
+    var fileUrl: String? = null // NEW
+
+    @JvmField
+    var fileName: String? = null // NEW
+
+    @JvmField
+    var fileSize: Long? = null // NEW
+
+    @JvmField
     var messageType: String? = "text"
 
     @JvmField
@@ -52,6 +61,28 @@ class CommunityMsgModel {
         this.msg = msg
         this.timestamp = timestamp
         this.imageUrl = imageUrl
+        this.messageType = messageType
+        this.isDeleted = false
+    }
+
+    // NEW: File constructor
+    constructor(
+        senderID: String?,
+        senderName: String?,
+        msg: String?,
+        timestamp: Timestamp?,
+        fileUrl: String?,
+        fileName: String?,
+        fileSize: Long?,
+        messageType: String?
+    ) {
+        this.senderID = senderID
+        this.senderName = senderName
+        this.msg = msg
+        this.timestamp = timestamp
+        this.fileUrl = fileUrl
+        this.fileName = fileName
+        this.fileSize = fileSize
         this.messageType = messageType
         this.isDeleted = false
     }

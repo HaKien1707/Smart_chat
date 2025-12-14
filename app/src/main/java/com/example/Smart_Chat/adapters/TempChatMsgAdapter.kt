@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.others.FullScreenImageActivity
 import com.example.Smart_Chat.models.DecryptedTempMessage
+import com.example.Smart_Chat.utils.FileDownloadHelper
 import com.example.Smart_Chat.utils.FireBase_utils
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,34 +40,62 @@ class TempChatMsgAdapter(
 
             holder.receiverTimestamp.text = formatTimestamp(message.timestamp.toDate())
 
-            if (message.messageType == "image" && !message.imageUrl.isNullOrEmpty()) {
-                holder.receiverImage.visibility = View.VISIBLE
-                holder.receiverMsg.visibility = View.GONE
+            when (message.messageType) {
+                "file" -> {
+                    holder.receiverMsg.visibility = View.VISIBLE
+                    holder.receiverImage.visibility = View.GONE
 
-                holder.receiverMessageContainer.setBackgroundResource(0)
-                holder.receiverMessageContainer.setPadding(0, 0, 0, 0)
+                    val fileName = message.fileName ?: "File"
+                    val fileSize = formatFileSize(message.fileSize ?: 0)
+                    holder.receiverMsg.text = "📎 $fileName\n$fileSize"
 
-                Glide.with(context)
-                    .load(message.imageUrl)
-                    .placeholder(R.drawable.ic_image_loading)
-                    .error(R.drawable.ic_image_error)
-                    .into(holder.receiverImage)
+                    holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
+                    holder.receiverMessageContainer.backgroundTintList =
+                        context.getColorStateList(R.color.violet)
+                    val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
+                    holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
 
-                holder.receiverImage.setOnClickListener {
-                    val intent = Intent(context, FullScreenImageActivity::class.java)
-                    intent.putExtra("imageUrl", message.imageUrl)
-                    context.startActivity(intent)
+                    holder.receiverMsg.setOnClickListener {
+                        FileDownloadHelper.showDownloadDialog(
+                            context,
+                            message.fileName ?: "File",
+                            message.fileSize ?: 0,
+                            message.fileUrl ?: ""
+                        )
+                    }
                 }
-            } else {
-                holder.receiverImage.visibility = View.GONE
-                holder.receiverMsg.visibility = View.VISIBLE
-                holder.receiverMsg.text = message.message
+                "image" -> {
+                    if (!message.imageUrl.isNullOrEmpty()) {
+                        holder.receiverImage.visibility = View.VISIBLE
+                        holder.receiverMsg.visibility = View.GONE
 
-                holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
-                holder.receiverMessageContainer.backgroundTintList =
-                    context.getColorStateList(R.color.violet)
-                val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
-                holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
+                        holder.receiverMessageContainer.setBackgroundResource(0)
+                        holder.receiverMessageContainer.setPadding(0, 0, 0, 0)
+
+                        Glide.with(context)
+                            .load(message.imageUrl)
+                            .placeholder(R.drawable.ic_image_loading)
+                            .error(R.drawable.ic_image_error)
+                            .into(holder.receiverImage)
+
+                        holder.receiverImage.setOnClickListener {
+                            val intent = Intent(context, FullScreenImageActivity::class.java)
+                            intent.putExtra("imageUrl", message.imageUrl)
+                            context.startActivity(intent)
+                        }
+                    }
+                }
+                else -> {
+                    holder.receiverImage.visibility = View.GONE
+                    holder.receiverMsg.visibility = View.VISIBLE
+                    holder.receiverMsg.text = message.message
+
+                    holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
+                    holder.receiverMessageContainer.backgroundTintList =
+                        context.getColorStateList(R.color.violet)
+                    val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
+                    holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
+                }
             }
 
             // Hide read status for temporary chats
@@ -79,39 +108,75 @@ class TempChatMsgAdapter(
 
             holder.senderTimestamp.text = formatTimestamp(message.timestamp.toDate())
 
-            if (message.messageType == "image" && !message.imageUrl.isNullOrEmpty()) {
-                holder.senderImage.visibility = View.VISIBLE
-                holder.senderMsg.visibility = View.GONE
+            when (message.messageType) {
+                "file" -> {
+                    holder.senderMsg.visibility = View.VISIBLE
+                    holder.senderImage.visibility = View.GONE
 
-                holder.senderMessageContainer.setBackgroundResource(0)
-                holder.senderMessageContainer.setPadding(0, 0, 0, 0)
+                    val fileName = message.fileName ?: "File"
+                    val fileSize = formatFileSize(message.fileSize ?: 0)
+                    holder.senderMsg.text = "📎 $fileName\n$fileSize"
 
-                Glide.with(context)
-                    .load(message.imageUrl)
-                    .placeholder(R.drawable.ic_image_loading)
-                    .error(R.drawable.ic_image_error)
-                    .into(holder.senderImage)
+                    holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+                    holder.senderMessageContainer.backgroundTintList =
+                        context.getColorStateList(R.color.lime)
+                    val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
+                    holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
 
-                holder.senderImage.setOnClickListener {
-                    val intent = Intent(context, FullScreenImageActivity::class.java)
-                    intent.putExtra("imageUrl", message.imageUrl)
-                    context.startActivity(intent)
+                    holder.senderMsg.setOnClickListener {
+                        FileDownloadHelper.showDownloadDialog(
+                            context,
+                            message.fileName ?: "File",
+                            message.fileSize ?: 0,
+                            message.fileUrl ?: ""
+                        )
+                    }
                 }
-            } else {
-                holder.senderImage.visibility = View.GONE
-                holder.senderMsg.visibility = View.VISIBLE
-                holder.senderMsg.text = message.message
+                "image" -> {
+                    if (!message.imageUrl.isNullOrEmpty()) {
+                        holder.senderImage.visibility = View.VISIBLE
+                        holder.senderMsg.visibility = View.GONE
 
-                holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
-                holder.senderMessageContainer.backgroundTintList =
-                    context.getColorStateList(R.color.lime)
-                val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
-                holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
+                        holder.senderMessageContainer.setBackgroundResource(0)
+                        holder.senderMessageContainer.setPadding(0, 0, 0, 0)
+
+                        Glide.with(context)
+                            .load(message.imageUrl)
+                            .placeholder(R.drawable.ic_image_loading)
+                            .error(R.drawable.ic_image_error)
+                            .into(holder.senderImage)
+
+                        holder.senderImage.setOnClickListener {
+                            val intent = Intent(context, FullScreenImageActivity::class.java)
+                            intent.putExtra("imageUrl", message.imageUrl)
+                            context.startActivity(intent)
+                        }
+                    }
+                }
+                else -> {
+                    holder.senderImage.visibility = View.GONE
+                    holder.senderMsg.visibility = View.VISIBLE
+                    holder.senderMsg.text = message.message
+
+                    holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+                    holder.senderMessageContainer.backgroundTintList =
+                        context.getColorStateList(R.color.lime)
+                    val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
+                    holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
+                }
             }
         }
     }
 
     override fun getItemCount(): Int = messages.size
+
+    private fun formatFileSize(size: Long): String {
+        return when {
+            size < 1024 -> "$size B"
+            size < 1024 * 1024 -> "${size / 1024} KB"
+            else -> String.format("%.2f MB", size / (1024.0 * 1024.0))
+        }
+    }
 
     private fun formatTimestamp(date: Date?): String {
         if (date == null) return ""

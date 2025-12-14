@@ -27,6 +27,7 @@ import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.CloudinaryHelper
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.LanguageManager
+import com.example.Smart_Chat.utils.MediaMessageHelper
 import com.example.Smart_Chat.utils.ThemeManager
 import com.example.Smart_Chat.utils.androidUtils
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
@@ -56,6 +57,14 @@ class CommunityChatActivity : AppCompatActivity() {
         loadCommunityDetails()
     }
 
+    private lateinit var communityID: String
+    private var communityName: String? = null
+    private var community: CommunityModel? = null
+    private lateinit var adapter: CommunityMsgRecyclerAdapter
+    private var currentUserName: String? = null
+
+    private lateinit var sendFileBtn: ImageButton
+
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == RESULT_OK) {
@@ -66,11 +75,15 @@ class CommunityChatActivity : AppCompatActivity() {
             }
         }
 
-    private lateinit var communityID: String
-    private var communityName: String? = null
-    private var community: CommunityModel? = null
-    private lateinit var adapter: CommunityMsgRecyclerAdapter
-    private var currentUserName: String? = null
+    private val filePickerLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode == RESULT_OK) {
+                val uri = result.data?.data
+                if (uri != null) {
+                    uploadAndSendFile(uri)
+                }
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         ThemeManager.applySavedTheme(this)
@@ -99,6 +112,7 @@ class CommunityChatActivity : AppCompatActivity() {
         chatBox = findViewById(R.id.chatBox)
         sendBtn = findViewById(R.id.sendBtn)
         sendImageBtn = findViewById(R.id.send_image_btn)
+        sendFileBtn = findViewById(R.id.send_file_btn)
         chatList = findViewById(R.id.chatList)
         announcementCard = findViewById(R.id.announcement_card)
         announcementText = findViewById(R.id.announcement_text)
@@ -116,7 +130,6 @@ class CommunityChatActivity : AppCompatActivity() {
             settingsLauncher.launch(intent)
         }
 
-        // Announcement click to expand/collapse
         announcementCard.setOnClickListener {
             toggleAnnouncementExpansion()
         }
@@ -141,7 +154,88 @@ class CommunityChatActivity : AppCompatActivity() {
             pickImage()
         }
 
+        sendFileBtn.setOnClickListener {
+            pickFile()
+        }
+
         setupChatRecycler()
+    }
+
+    private fun pickImage() {
+        ImagePicker.with(this)
+            .compress(1024)
+            .maxResultSize(1080, 1080)
+            .createIntent { intent -> imagePickerLauncher.launch(intent) }
+    }
+
+    private fun pickFile() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "*/*"
+            addCategory(Intent.CATEGORY_OPENABLE)
+            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
+                "application/pdf",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/vnd.ms-powerpoint",
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "text/*",
+                "application/zip",
+                "application/x-rar-compressed"
+            ))
+        }
+        filePickerLauncher.launch(intent)
+    }
+
+    private fun uploadAndSendImage(imageUri: Uri) {
+        sendImageBtn.isEnabled = false
+
+        MediaMessageHelper.uploadAndSendImage(
+            this,
+            imageUri,
+            FireBase_utils.getCommunityReference(communityID),
+            FireBase_utils.getCommunityMessagesReference(communityID),
+            FireBase_utils.currentUserID()!!,
+            currentUserName,
+            MediaMessageHelper.MessageType.COMMUNITY,
+            null,
+            onSuccess = {
+                runOnUiThread {
+                    sendImageBtn.isEnabled = true
+                }
+            },
+            onError = {
+                runOnUiThread {
+                    sendImageBtn.isEnabled = true
+                }
+            }
+        )
+    }
+
+    private fun uploadAndSendFile(fileUri: Uri) {
+        sendFileBtn.isEnabled = false
+
+        MediaMessageHelper.uploadAndSendFile(
+            this,
+            fileUri,
+            FireBase_utils.getCommunityReference(communityID),
+            FireBase_utils.getCommunityMessagesReference(communityID),
+            FireBase_utils.currentUserID()!!,
+            currentUserName,
+            MediaMessageHelper.MessageType.COMMUNITY,
+            null,
+            onSuccess = {
+                runOnUiThread {
+                    sendFileBtn.isEnabled = true
+                }
+            },
+            onError = {
+                runOnUiThread {
+                    sendFileBtn.isEnabled = true
+                }
+            }
+        )
     }
 
     private fun toggleAnnouncementExpansion() {
@@ -260,72 +354,6 @@ class CommunityChatActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    private fun pickImage() {
-        ImagePicker.with(this)
-            .compress(1024)
-            .maxResultSize(1080, 1080)
-            .createIntent { intent -> imagePickerLauncher.launch(intent) }
-    }
-
-    private fun uploadAndSendImage(imageUri: Uri) {
-        sendImageBtn.isEnabled = false
-        Toast.makeText(this, "Uploading image...", Toast.LENGTH_SHORT).show()
-
-        CloudinaryHelper.uploadImage(
-            this,
-            imageUri,
-            onSuccess = { imageUrl ->
-                runOnUiThread {
-                    sendImageMessage(imageUrl)
-                    sendImageBtn.isEnabled = true
-                    Toast.makeText(this, "Image sent!", Toast.LENGTH_SHORT).show()
-                }
-            },
-            onError = { error ->
-                runOnUiThread {
-                    sendImageBtn.isEnabled = true
-                    Toast.makeText(this, "Upload failed: $error", Toast.LENGTH_LONG).show()
-                    Log.e("CommunityChatActivity", "Image upload failed: $error")
-                }
-            }
-        )
-    }
-
-    private fun sendImageMessage(imageUrl: String) {
-        if (imageUrl.isEmpty()) {
-            Log.e("CommunityChatActivity", "Cannot send empty image URL")
-            return
-        }
-
-        FireBase_utils.getCommunityReference(communityID)
-            .update(
-                mapOf(
-                    "lastMsg" to "📷 Photo",
-                    "lastMsgSenderID" to FireBase_utils.currentUserID(),
-                    "lastMsgTimestamp" to Timestamp.now()
-                )
-            )
-
-        val msgModel = CommunityMsgModel(
-            FireBase_utils.currentUserID(),
-            currentUserName ?: "Unknown",
-            "📷 Photo",
-            Timestamp.now(),
-            imageUrl,
-            "image"
-        )
-
-        FireBase_utils.getCommunityMessagesReference(communityID)
-            .add(msgModel)
-            .addOnSuccessListener {
-                Log.d("CommunityChatActivity", "Image message sent successfully")
-            }
-            .addOnFailureListener { e ->
-                Log.e("CommunityChatActivity", "Failed to send image message", e)
-                Toast.makeText(this, "Failed to send image", Toast.LENGTH_SHORT).show()
-            }
     }
 
     private fun getCurrentUserName() {

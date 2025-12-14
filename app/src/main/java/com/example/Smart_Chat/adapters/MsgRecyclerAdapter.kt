@@ -15,8 +15,9 @@ import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.others.ForwardMessageActivity
 import com.example.Smart_Chat.activities.others.FullScreenImageActivity
-import com.example.Smart_Chat.activities.user_chat.chatActivity
+import com.example.Smart_Chat.activities.user_chat.ChatActivity
 import com.example.Smart_Chat.models.MsgModel
+import com.example.Smart_Chat.utils.FileDownloadHelper
 import com.example.Smart_Chat.utils.FireBase_utils.currentUserID
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
@@ -41,24 +42,17 @@ class MsgRecyclerAdapter(
             holder.sender.visibility = View.GONE
             holder.receiver.visibility = View.VISIBLE
 
-            // Format and show timestamp
             holder.receiverTimestamp.text = formatTimestamp(model.timestamp?.toDate())
 
-            // Check if deleted
             if (model.isDeleted) {
                 holder.receiverMsg.visibility = View.VISIBLE
                 holder.receiverImage.visibility = View.GONE
                 holder.receiverMsg.text = "🚫 This message was deleted"
                 holder.receiverMsg.setTextColor(context.getColor(R.color.gray))
                 holder.receiverMsg.setTypeface(null, android.graphics.Typeface.ITALIC)
-
-                // Remove bubble background for deleted messages
                 holder.receiverMessageContainer.setBackgroundResource(0)
-
-                // Hide read status for deleted messages
                 holder.readStatusIcon.visibility = View.GONE
             } else {
-                // Update read status icon
                 holder.readStatusIcon.visibility = View.VISIBLE
                 if (model.isRead) {
                     holder.readStatusIcon.setImageResource(R.drawable.ic_message_read)
@@ -72,37 +66,28 @@ class MsgRecyclerAdapter(
                         holder.receiverMsg.visibility = View.VISIBLE
                         holder.receiverImage.visibility = View.GONE
 
-                        // Format file info
                         val fileName = model.fileName ?: "File"
                         val fileSize = formatFileSize(model.fileSize ?: 0)
                         holder.receiverMsg.text = "📎 $fileName\n$fileSize"
                         holder.receiverMsg.setTextColor(context.getColor(R.color.white))
                         holder.receiverMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
 
-                        // Restore background and padding for file messages
                         holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
                         holder.receiverMessageContainer.backgroundTintList =
                             context.getColorStateList(R.color.violet)
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
 
-                        // Make it clickable to open/download
+                        // Click to show download dialog
                         holder.receiverMsg.setOnClickListener {
-                            val intent = Intent(Intent.ACTION_VIEW)
-                            intent.data = android.net.Uri.parse(model.fileUrl)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            try {
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
-                                android.widget.Toast.makeText(
-                                    context,
-                                    "No app found to open this file",
-                                    android.widget.Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                            FileDownloadHelper.showDownloadDialog(
+                                context,
+                                model.fileName ?: "File",
+                                model.fileSize ?: 0,
+                                model.fileUrl ?: ""
+                            )
                         }
 
-                        // Long press options
                         holder.receiver.setOnLongClickListener {
                             showMessageOptions(holder.receiver, position, model, isGroup = false)
                             true
@@ -110,11 +95,9 @@ class MsgRecyclerAdapter(
                     }
                     "image" -> {
                         if (!model.imageUrl.isNullOrEmpty()) {
-                            // Show image - REMOVE BUBBLE BACKGROUND
                             holder.receiverImage.visibility = View.VISIBLE
                             holder.receiverMsg.visibility = View.GONE
 
-                            // Make container transparent for images
                             holder.receiverMessageContainer.setBackgroundResource(0)
                             holder.receiverMessageContainer.setPadding(0, 0, 0, 0)
 
@@ -124,14 +107,12 @@ class MsgRecyclerAdapter(
                                 .error(R.drawable.ic_image_error)
                                 .into(holder.receiverImage)
 
-                            // Click to open full screen
                             holder.receiverImage.setOnClickListener {
                                 val intent = Intent(context, FullScreenImageActivity::class.java)
                                 intent.putExtra("imageUrl", model.imageUrl)
                                 context.startActivity(intent)
                             }
 
-                            // Long press to show options
                             holder.receiverImage.setOnLongClickListener {
                                 showMessageOptions(holder.receiverImage, position, model, isGroup = false)
                                 true
@@ -139,21 +120,19 @@ class MsgRecyclerAdapter(
                         }
                     }
                     else -> {
-                        // Show text - KEEP BUBBLE BACKGROUND
+                        // Text message
                         holder.receiverImage.visibility = View.GONE
                         holder.receiverMsg.visibility = View.VISIBLE
                         holder.receiverMsg.text = model.msg
                         holder.receiverMsg.setTextColor(context.getColor(R.color.white))
                         holder.receiverMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
 
-                        // Restore background and padding for text messages
                         holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
                         holder.receiverMessageContainer.backgroundTintList =
                             context.getColorStateList(R.color.violet)
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
 
-                        // Add long click listener for text message options
                         holder.receiver.setOnLongClickListener {
                             showMessageOptions(holder.receiver, position, model, isGroup = false)
                             true
@@ -166,17 +145,14 @@ class MsgRecyclerAdapter(
             holder.sender.visibility = View.VISIBLE
             holder.receiver.visibility = View.GONE
 
-            // Format and show timestamp
             holder.senderTimestamp.text = formatTimestamp(model.timestamp?.toDate())
 
-            // Check if deleted
             if (model.isDeleted) {
                 holder.senderMsg.visibility = View.VISIBLE
                 holder.senderImage.visibility = View.GONE
                 holder.senderMsg.text = "🚫 This message was deleted"
                 holder.senderMsg.setTextColor(context.getColor(R.color.gray))
                 holder.senderMsg.setTypeface(null, android.graphics.Typeface.ITALIC)
-
                 holder.senderMessageContainer.setBackgroundResource(0)
             } else {
                 when (model.messageType) {
@@ -185,43 +161,33 @@ class MsgRecyclerAdapter(
                         holder.senderMsg.visibility = View.VISIBLE
                         holder.senderImage.visibility = View.GONE
 
-                        // Format file info
                         val fileName = model.fileName ?: "File"
                         val fileSize = formatFileSize(model.fileSize ?: 0)
                         holder.senderMsg.text = "📎 $fileName\n$fileSize"
                         holder.senderMsg.setTextColor(context.getColor(R.color.black))
                         holder.senderMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
 
-                        // Restore background and padding for file messages
                         holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
                         holder.senderMessageContainer.backgroundTintList =
                             context.getColorStateList(R.color.lime)
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
 
-                        // Make it clickable to open/download
+                        // Click to show download dialog
                         holder.senderMsg.setOnClickListener {
-                            val intent = Intent(Intent.ACTION_VIEW)
-                            intent.data = android.net.Uri.parse(model.fileUrl)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            try {
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
-                                android.widget.Toast.makeText(
-                                    context,
-                                    "No app found to open this file",
-                                    android.widget.Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                            FileDownloadHelper.showDownloadDialog(
+                                context,
+                                model.fileName ?: "File",
+                                model.fileSize ?: 0,
+                                model.fileUrl ?: ""
+                            )
                         }
                     }
                     "image" -> {
                         if (!model.imageUrl.isNullOrEmpty()) {
-                            // Show image - REMOVE BUBBLE BACKGROUND
                             holder.senderImage.visibility = View.VISIBLE
                             holder.senderMsg.visibility = View.GONE
 
-                            // Make container transparent for images
                             holder.senderMessageContainer.setBackgroundResource(0)
                             holder.senderMessageContainer.setPadding(0, 0, 0, 0)
 
@@ -231,7 +197,6 @@ class MsgRecyclerAdapter(
                                 .error(R.drawable.ic_image_error)
                                 .into(holder.senderImage)
 
-                            // Click to open full screen
                             holder.senderImage.setOnClickListener {
                                 val intent = Intent(context, FullScreenImageActivity::class.java)
                                 intent.putExtra("imageUrl", model.imageUrl)
@@ -240,14 +205,13 @@ class MsgRecyclerAdapter(
                         }
                     }
                     else -> {
-                        // Show text - KEEP BUBBLE BACKGROUND
+                        // Text message
                         holder.senderImage.visibility = View.GONE
                         holder.senderMsg.visibility = View.VISIBLE
                         holder.senderMsg.text = model.msg
                         holder.senderMsg.setTextColor(context.getColor(R.color.black))
                         holder.senderMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
 
-                        // Restore background and padding for text messages
                         holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
                         holder.senderMessageContainer.backgroundTintList =
                             context.getColorStateList(R.color.lime)
@@ -256,20 +220,10 @@ class MsgRecyclerAdapter(
                     }
                 }
 
-                // Mark message as read if it's from the other user and not already read
                 if (!model.isRead) {
                     markMessageAsRead(position)
                 }
             }
-        }
-    }
-
-    // ✅ Add this helper function to the adapter
-    private fun formatFileSize(size: Long): String {
-        return when {
-            size < 1024 -> "$size B"
-            size < 1024 * 1024 -> "${size / 1024} KB"
-            else -> String.format("%.2f MB", size / (1024.0 * 1024.0))
         }
     }
 
@@ -305,9 +259,7 @@ class MsgRecyclerAdapter(
         intent.putExtra("messageType", model.messageType)
         intent.putExtra("isFromGroup", isGroup)
 
-        // We need to get the chatRoomID from the activity
-        if (context is chatActivity) {
-            // Get chatRoomID from chatActivity
+        if (context is ChatActivity) {
             val chatRoomID = context.getChatRoomID()
             intent.putExtra("currentChatId", chatRoomID)
         }
@@ -349,6 +301,14 @@ class MsgRecyclerAdapter(
         }
     }
 
+    private fun formatFileSize(size: Long): String {
+        return when {
+            size < 1024 -> "$size B"
+            size < 1024 * 1024 -> "${size / 1024} KB"
+            else -> String.format("%.2f MB", size / (1024.0 * 1024.0))
+        }
+    }
+
     private fun formatTimestamp(date: Date?): String {
         if (date == null) return ""
 
@@ -356,21 +316,17 @@ class MsgRecyclerAdapter(
         val messageTime = Calendar.getInstance().apply { time = date }
 
         return when {
-            // Today - show time only
             now.get(Calendar.DAY_OF_YEAR) == messageTime.get(Calendar.DAY_OF_YEAR) &&
                     now.get(Calendar.YEAR) == messageTime.get(Calendar.YEAR) -> {
                 SimpleDateFormat("h:mm a", Locale.getDefault()).format(date)
             }
-            // Yesterday
             now.get(Calendar.DAY_OF_YEAR) - messageTime.get(Calendar.DAY_OF_YEAR) == 1 &&
                     now.get(Calendar.YEAR) == messageTime.get(Calendar.YEAR) -> {
                 "Yesterday ${SimpleDateFormat("h:mm a", Locale.getDefault()).format(date)}"
             }
-            // This year - show date without year
             now.get(Calendar.YEAR) == messageTime.get(Calendar.YEAR) -> {
                 SimpleDateFormat("MMM d, h:mm a", Locale.getDefault()).format(date)
             }
-            // Different year - show full date
             else -> {
                 SimpleDateFormat("MMM d, yyyy h:mm a", Locale.getDefault()).format(date)
             }

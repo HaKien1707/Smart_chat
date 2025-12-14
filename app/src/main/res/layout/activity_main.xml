@@ -48,16 +48,37 @@
                     android:layout_centerInParent="true"
                     android:layout_marginTop="10dp" />
 
-                <ImageButton
-                    android:id="@+id/notification_btn"
+                <FrameLayout
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
-                    android:background="@drawable/ic_notifications"
-                    android:backgroundTint="@color/black"
-                    android:layout_marginEnd="10dp"
-                    android:contentDescription="@string/notification" />
+                    android:layout_marginEnd="10dp">
+
+                    <ImageButton
+                        android:id="@+id/notification_btn"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/ic_notifications"
+                        android:backgroundTint="@color/black"
+                        android:contentDescription="@string/notification" />
+
+                    <TextView
+                        android:id="@+id/notification_badge"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="end|top"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/notification_badge_bg"
+                        android:gravity="center"
+                        android:text="0"
+                        android:textColor="@color/white"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"/>
+
+                </FrameLayout>
 
             </RelativeLayout>
 

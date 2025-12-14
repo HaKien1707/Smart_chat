@@ -12,7 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.user_chat.chatActivity
+import com.example.Smart_Chat.activities.user_chat.ChatActivity
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
@@ -81,7 +81,7 @@ class SearchUserRecyclerAdapter(
                                 holder.blockBtn.visibility = View.VISIBLE
 
                                 holder.itemView.setOnClickListener {
-                                    val intent = Intent(activity, chatActivity::class.java)
+                                    val intent = Intent(activity, ChatActivity::class.java)
                                     androidUtils.passUserModelAsIntent(intent, model)
                                     activity.startActivity(intent)
                                 }
@@ -93,7 +93,7 @@ class SearchUserRecyclerAdapter(
                                 holder.blockBtn.visibility = View.VISIBLE
 
                                 holder.itemView.setOnClickListener {
-                                    val intent = Intent(activity, chatActivity::class.java)
+                                    val intent = Intent(activity, ChatActivity::class.java)
                                     androidUtils.passUserModelAsIntent(intent, model)
                                     activity.startActivity(intent)
                                 }

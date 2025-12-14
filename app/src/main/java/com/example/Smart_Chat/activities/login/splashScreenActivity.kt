@@ -7,11 +7,10 @@ import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.MainActivity
-import com.example.Smart_Chat.activities.user_chat.chatActivity
+import com.example.Smart_Chat.activities.user_chat.ChatActivity
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
-import com.google.api.client.util.GenericData
 
 class splashScreenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +31,7 @@ class splashScreenActivity : AppCompatActivity() {
                             }
                             startActivity(mainIntent)
 
-                            val chatIntent = Intent(this, chatActivity::class.java).apply {
+                            val chatIntent = Intent(this, ChatActivity::class.java).apply {
                                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
                             }
                             androidUtils.passUserModelAsIntent(chatIntent, model)

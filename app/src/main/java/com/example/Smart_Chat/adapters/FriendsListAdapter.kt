@@ -11,7 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.user_chat.chatActivity
+import com.example.Smart_Chat.activities.user_chat.ChatActivity
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
@@ -41,7 +41,7 @@ class FriendsListAdapter(
 
         // Click card to open chat
         holder.itemView.setOnClickListener {
-            val intent = Intent(context, chatActivity::class.java)
+            val intent = Intent(context, ChatActivity::class.java)
             androidUtils.passUserModelAsIntent(intent, friend)
             context.startActivity(intent)
         }

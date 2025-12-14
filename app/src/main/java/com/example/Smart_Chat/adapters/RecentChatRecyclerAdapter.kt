@@ -14,7 +14,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.user_chat.chatActivity
+import com.example.Smart_Chat.activities.user_chat.ChatActivity
 import com.example.Smart_Chat.models.chatRoomModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
@@ -131,7 +131,7 @@ class RecentChatRecyclerAdapter(
                     // Click to open chat (only for active chats)
                     if (!isDeletedView) {
                         holder.itemView.setOnClickListener {
-                            val intent = Intent(context, chatActivity::class.java)
+                            val intent = Intent(context, ChatActivity::class.java)
                             androidUtils.passUserModelAsIntent(intent, otherUser)
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                             context.startActivity(intent)

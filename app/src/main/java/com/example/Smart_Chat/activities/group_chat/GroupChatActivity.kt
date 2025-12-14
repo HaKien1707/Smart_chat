@@ -24,6 +24,7 @@ import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.CloudinaryHelper
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.LanguageManager
+import com.example.Smart_Chat.utils.MediaMessageHelper
 import com.example.Smart_Chat.utils.ThemeManager
 import com.example.Smart_Chat.utils.androidUtils
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
@@ -56,6 +57,14 @@ class GroupChatActivity : AppCompatActivity() {
         loadGroupDetails()
     }
 
+    private lateinit var groupID: String
+    private var groupName: String? = null
+    private var group: groupModel? = null
+    private lateinit var adapter: GroupMsgRecyclerAdapter
+    private var currentUserName: String? = null
+
+    private lateinit var sendFileBtn: ImageButton
+
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == RESULT_OK) {
@@ -66,24 +75,25 @@ class GroupChatActivity : AppCompatActivity() {
             }
         }
 
-    private lateinit var groupID: String
-    private var groupName: String? = null
-    private var group: groupModel? = null
-    private lateinit var adapter: GroupMsgRecyclerAdapter
-    private var currentUserName: String? = null
+    private val filePickerLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode == RESULT_OK) {
+                val uri = result.data?.data
+                if (uri != null) {
+                    uploadAndSendFile(uri)
+                }
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Apply theme and language
         ThemeManager.applySavedTheme(this)
         LanguageManager.applySavedLanguage(this)
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_group_chat)
 
-        // Initialize Cloudinary
         CloudinaryHelper.initCloudinary(this)
 
-        // Get group data from intent
         groupID = intent.getStringExtra("groupID") ?: ""
         groupName = intent.getStringExtra("groupName")
 
@@ -100,6 +110,7 @@ class GroupChatActivity : AppCompatActivity() {
         chatBox = findViewById(R.id.chatBox)
         sendBtn = findViewById(R.id.sendBtn)
         sendImageBtn = findViewById(R.id.send_image_btn)
+        sendFileBtn = findViewById(R.id.send_file_btn)
         chatList = findViewById(R.id.chatList)
         val profileContainer = findViewById<View>(R.id.profile_image_container)
         groupImage = profileContainer.findViewById(R.id.profile_image)
@@ -115,16 +126,10 @@ class GroupChatActivity : AppCompatActivity() {
             settingsLauncher.launch(intent)
         }
 
-        // Set group name
         panelName.text = groupName
 
-        // Load current user's name
         getCurrentUserName()
-
-        // Load group details
         loadGroupDetails()
-
-        // Listen for group changes (member removal)
         listenForGroupChanges()
 
         sendBtn.setOnClickListener {
@@ -138,6 +143,10 @@ class GroupChatActivity : AppCompatActivity() {
             pickImage()
         }
 
+        sendFileBtn.setOnClickListener {
+            pickFile()
+        }
+
         setupChatRecycler()
     }
 
@@ -148,73 +157,76 @@ class GroupChatActivity : AppCompatActivity() {
             .createIntent { intent -> imagePickerLauncher.launch(intent) }
     }
 
+    private fun pickFile() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "*/*"
+            addCategory(Intent.CATEGORY_OPENABLE)
+            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
+                "application/pdf",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/vnd.ms-powerpoint",
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "text/*",
+                "application/zip",
+                "application/x-rar-compressed"
+            ))
+        }
+        filePickerLauncher.launch(intent)
+    }
+
     private fun uploadAndSendImage(imageUri: Uri) {
-        // Disable button to prevent multiple clicks
         sendImageBtn.isEnabled = false
 
-        // Show progress indicator
-        Toast.makeText(this, "Uploading image...", Toast.LENGTH_SHORT).show()
-
-        CloudinaryHelper.uploadImage(
+        MediaMessageHelper.uploadAndSendImage(
             this,
             imageUri,
-            onSuccess = { imageUrl ->
+            FireBase_utils.getGroupReference(groupID),
+            FireBase_utils.getGroupMessagesReference(groupID),
+            FireBase_utils.currentUserID()!!,
+            currentUserName,
+            MediaMessageHelper.MessageType.GROUP,
+            null,
+            onSuccess = {
                 runOnUiThread {
-                    sendImageMessage(imageUrl)
                     sendImageBtn.isEnabled = true
-                    Toast.makeText(this, "Image sent!", Toast.LENGTH_SHORT).show()
+                    sendNotificationToMembers("📷 Photo")
                 }
             },
-            onError = { error ->
+            onError = {
                 runOnUiThread {
                     sendImageBtn.isEnabled = true
-                    Toast.makeText(this, "Upload failed: $error", Toast.LENGTH_LONG).show()
-                    Log.e("GroupChatActivity", "Image upload failed: $error")
                 }
             }
         )
     }
 
-    private fun sendImageMessage(imageUrl: String) {
-        if (imageUrl.isEmpty()) {
-            Log.e("GroupChatActivity", "Cannot send empty image URL")
-            return
-        }
+    private fun uploadAndSendFile(fileUri: Uri) {
+        sendFileBtn.isEnabled = false
 
-        // Update last message info in group
-        FireBase_utils.getGroupReference(groupID)
-            .update(
-                mapOf(
-                    "lastMsg" to "📷 Photo",
-                    "lastMsgSenderID" to FireBase_utils.currentUserID(),
-                    "lastMsgTimestamp" to Timestamp.now()
-                )
-            )
-            .addOnFailureListener { e ->
-                Log.e("GroupChatActivity", "Failed to update group", e)
+        MediaMessageHelper.uploadAndSendFile(
+            this,
+            fileUri,
+            FireBase_utils.getGroupReference(groupID),
+            FireBase_utils.getGroupMessagesReference(groupID),
+            FireBase_utils.currentUserID()!!,
+            currentUserName,
+            MediaMessageHelper.MessageType.GROUP,
+            null,
+            onSuccess = {
+                runOnUiThread {
+                    sendFileBtn.isEnabled = true
+                    sendNotificationToMembers("📎 File")
+                }
+            },
+            onError = {
+                runOnUiThread {
+                    sendFileBtn.isEnabled = true
+                }
             }
-
-        // Create image message
-        val msgModel = GroupMsgModel(
-            FireBase_utils.currentUserID(),
-            currentUserName ?: "Unknown",
-            "📷 Photo",
-            Timestamp.now(),
-            imageUrl,
-            "image"
         )
-
-        // Send message
-        FireBase_utils.getGroupMessagesReference(groupID)
-            .add(msgModel)
-            .addOnSuccessListener {
-                Log.d("GroupChatActivity", "Image message sent successfully")
-                sendNotificationToMembers("📷 Photo")
-            }
-            .addOnFailureListener { e ->
-                Log.e("GroupChatActivity", "Failed to send image message", e)
-                Toast.makeText(this, "Failed to send image", Toast.LENGTH_SHORT).show()
-            }
     }
 
     private fun getCurrentUserName() {

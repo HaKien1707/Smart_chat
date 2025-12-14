@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
@@ -40,9 +41,9 @@ import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-
     private lateinit var binding: ActivityMainBinding
     private var currentTab = "chat" // Track current tab
+    private lateinit var notificationBadge: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Apply saved theme and language BEFORE super.onCreate()
@@ -72,6 +73,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Set up Navigation Drawer
         setupNavigationDrawer()
 
+        notificationBadge = findViewById(R.id.notification_badge)
+
         // Set up menu button to open drawer
         binding.menuBtn.setOnClickListener {
             binding.drawerLayout.openDrawer(GravityCompat.START)
@@ -82,6 +85,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val intent = Intent(this, NotificationActivity::class.java)
             startActivity(intent)
         }
+
+        // Load notification count
+        loadNotificationCount()
 
         // Set up FAB - DYNAMIC BASED ON TAB
         binding.fabSearchUser.setOnClickListener {
@@ -307,5 +313,64 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             Log.d("FCM", "Notification channel created")
         }
+    }
+
+    private fun loadNotificationCount() {
+        var totalCount = 0
+        var friendRequestsLoaded = false
+        var groupRequestsLoaded = false
+
+        // Count pending friend requests
+        FireBase_utils.getPendingFriendRequests(
+            onSuccess = { requests ->
+                totalCount += requests.size
+                friendRequestsLoaded = true
+                if (friendRequestsLoaded && groupRequestsLoaded) {
+                    updateNotificationBadge(totalCount)
+                }
+            },
+            onFailure = { e ->
+                Log.e("MainActivity", "Failed to load friend requests", e)
+                friendRequestsLoaded = true
+                if (friendRequestsLoaded && groupRequestsLoaded) {
+                    updateNotificationBadge(totalCount)
+                }
+            }
+        )
+
+        // Count pending group join requests (if user is admin)
+        FireBase_utils.getAllPendingGroupJoinRequestsForAdmin(
+            onSuccess = { requests ->
+                totalCount += requests.size
+                groupRequestsLoaded = true
+                if (friendRequestsLoaded && groupRequestsLoaded) {
+                    updateNotificationBadge(totalCount)
+                }
+            },
+            onFailure = { e ->
+                Log.e("MainActivity", "Failed to load group requests", e)
+                groupRequestsLoaded = true
+                if (friendRequestsLoaded && groupRequestsLoaded) {
+                    updateNotificationBadge(totalCount)
+                }
+            }
+        )
+    }
+
+    private fun updateNotificationBadge(count: Int) {
+        runOnUiThread {  // Ensure UI update on main thread
+            if (count > 0) {
+                notificationBadge.text = if (count > 99) "99+" else count.toString()
+                notificationBadge.visibility = View.VISIBLE
+            } else {
+                notificationBadge.visibility = View.GONE
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh notification count when returning to MainActivity
+        loadNotificationCount()
     }
 }

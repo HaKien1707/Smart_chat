@@ -91,12 +91,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text"
-                android:layout_toStartOf="@id/send_image_btn"
+                android:layout_toStartOf="@id/send_file_btn"
                 android:padding="15dp"
                 android:background="@android:color/transparent"
                 android:textColor="?attr/editTextColor"
                 android:textColorHint="?android:textColorSecondary"
                 android:hint="@string/writeMSG" />
+
+            <!-- Send File Button  -->
+            <ImageButton
+                android:id="@+id/send_file_btn"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_attach_file"
+                android:layout_toStartOf="@id/send_image_btn"
+                android:layout_centerVertical="true"
+                android:contentDescription="Send File" />
 
             <ImageButton
                 android:id="@+id/send_image_btn"
