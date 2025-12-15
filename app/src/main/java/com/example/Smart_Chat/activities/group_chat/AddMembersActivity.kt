@@ -136,14 +136,25 @@ class AddMembersActivity : AppCompatActivity() {
         addBtn.isEnabled = false
         addBtn.text = getString(R.string.adding)
 
-        // Get current members and add new ones
         val updatedMembers = group?.memberIDs?.toMutableList() ?: mutableListOf()
         updatedMembers.addAll(selectedMembers)
 
-        // Update in Firestore
         FireBase_utils.getGroupReference(groupID!!)
             .update("memberIDs", updatedMembers)
             .addOnSuccessListener {
+                // Send notification to each added member
+                selectedMembers.forEach { memberID ->
+                    FireBase_utils.createNotification(
+                        type = "ADDED_TO_GROUP",
+                        recipientID = memberID,
+                        senderID = FireBase_utils.currentUserID() ?: "",
+                        senderName = "Admin",
+                        groupID = groupID,
+                        groupName = group?.groupName,
+                        message = "You have been added to ${group?.groupName}"
+                    )
+                }
+
                 Toast.makeText(
                     this,
                     "Added ${selectedMembers.size} member${if (selectedMembers.size > 1) "s" else ""}",

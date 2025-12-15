@@ -139,8 +139,21 @@
                 android:id="@+id/members_recycler"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="30dp"
+                android:layout_marginBottom="10dp"
                 android:nestedScrollingEnabled="false" />
+
+            <!-- Blocked Members Button -->
+            <Button
+                android:id="@+id/blocked_list_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Blocked List"
+                android:background="@drawable/round_corner_button"
+                android:backgroundTint="@color/orange"
+                android:textColor="@color/white"
+                android:layout_marginBottom="30dp"
+                android:padding="15dp"
+                android:visibility="gone" />
 
             <!-- Danger Zone -->
             <View
@@ -148,7 +161,6 @@
                 android:layout_height="1dp"
                 android:background="@android:color/darker_gray"
                 android:layout_marginVertical="20dp" />
-
 
             <Button
                 android:id="@+id/leave_group_btn"

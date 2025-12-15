@@ -118,6 +118,21 @@ class UnbanUserActivity : AppCompatActivity() {
             communityID!!,
             user.userID ?: "",
             onSuccess = {
+                // Send notification
+                FireBase_utils.getCommunityReference(communityID!!).get()
+                    .addOnSuccessListener { doc ->
+                        val community = doc.toObject(CommunityModel::class.java)
+                        FireBase_utils.createNotification(
+                            type = "UNBANNED_FROM_COMMUNITY",
+                            recipientID = user.userID ?: "",
+                            senderID = FireBase_utils.currentUserID() ?: "",
+                            senderName = "Admin",
+                            communityID = communityID,
+                            communityName = community?.communityName,
+                            message = "You have been unbanned from ${community?.communityName}"
+                        )
+                    }
+
                 Toast.makeText(this, "${user.username} has been unbanned", Toast.LENGTH_SHORT).show()
                 userList.remove(user)
                 adapter.notifyDataSetChanged()

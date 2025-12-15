@@ -48,6 +48,7 @@ android {
 
     kotlin {compilerOptions {
         jvmTarget.set(JvmTarget.JVM_11)
+        freeCompilerArgs.add("-Xnested-type-aliases")
     }
 
 

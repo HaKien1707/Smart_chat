@@ -25,7 +25,7 @@
 
         <include
             android:id="@+id/profile_image_container"
-            layout="@layout/profile_image_circle"
+            layout="@layout/profile_image_holder"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_toEndOf="@id/back_btn"

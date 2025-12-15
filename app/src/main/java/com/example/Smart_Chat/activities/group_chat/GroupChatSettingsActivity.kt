@@ -24,12 +24,15 @@ import com.example.Smart_Chat.adapters.GroupMemberAdapter
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
+import com.example.Smart_Chat.utils.FireBase_utils.createNotification
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
 import com.example.Smart_Chat.utils.androidUtils
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.firestore.FirebaseFirestore
 import java.io.ByteArrayOutputStream
+
+// TODO("Revamp friend list to a button")
 
 class GroupChatSettingsActivity : AppCompatActivity() {
 
@@ -86,6 +89,8 @@ class GroupChatSettingsActivity : AppCompatActivity() {
         }
     }
 
+    private lateinit var blockedListBtn: Button
+
     private fun initViews() {
         backBtn = findViewById(R.id.back_btn)
         groupImage = findViewById(R.id.group_image)
@@ -93,6 +98,7 @@ class GroupChatSettingsActivity : AppCompatActivity() {
         saveNameBtn = findViewById(R.id.save_name_btn)
         addMemberBtn = findViewById(R.id.add_member_btn)
         membersRecycler = findViewById(R.id.members_recycler)
+        blockedListBtn = findViewById(R.id.blocked_list_btn)  // NEW
         leaveGroupBtn = findViewById(R.id.leave_group_btn)
         deleteGroupBtn = findViewById(R.id.delete_group_btn)
 
@@ -101,7 +107,6 @@ class GroupChatSettingsActivity : AppCompatActivity() {
 
     private fun setupClickListeners() {
         backBtn.setOnClickListener { finish() }
-
         groupImage.setOnClickListener {
             if (isAdmin) {
                 ImagePicker.with(this)
@@ -129,13 +134,17 @@ class GroupChatSettingsActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        blockedListBtn.setOnClickListener {
+            val intent = Intent(this, BlockedMembersActivity::class.java)
+            intent.putExtra("groupID", groupID)
+            startActivity(intent)
+        }
+
         leaveGroupBtn.setOnClickListener {
-            // No need to check - button only visible for members
             showLeaveGroupDialog()
         }
 
         deleteGroupBtn.setOnClickListener {
-            Log.d("GroupSettings", "Delete button clicked")
             showDeleteGroupDialog()
         }
     }
@@ -151,7 +160,6 @@ class GroupChatSettingsActivity : AppCompatActivity() {
                     return@addOnSuccessListener
                 }
 
-                // Check if current user is admin
                 isAdmin = group?.adminIDs?.contains(FireBase_utils.currentUserID()) == true
 
                 // Load group image
@@ -163,33 +171,54 @@ class GroupChatSettingsActivity : AppCompatActivity() {
                     )
                 }
 
-                // Set group name
                 groupNameInput.setText(group?.groupName)
 
-                // Enable/disable controls based on admin status
                 if (isAdmin) {
-                    // Admin: Show add/delete, hide leave
                     addMemberBtn.visibility = View.VISIBLE
+                    blockedListBtn.visibility = View.VISIBLE  // NEW: Show for admins
                     deleteGroupBtn.visibility = View.VISIBLE
                     leaveGroupBtn.visibility = View.GONE
                     groupImage.isClickable = true
                     saveNameBtn.visibility = View.VISIBLE
                 } else {
-                    // Member: Hide add/delete, show leave
                     addMemberBtn.visibility = View.GONE
+                    blockedListBtn.visibility = View.GONE  // NEW: Hide for members
                     deleteGroupBtn.visibility = View.GONE
                     leaveGroupBtn.visibility = View.VISIBLE
                     groupImage.isClickable = false
                     saveNameBtn.visibility = View.GONE
                 }
 
-                // Load members
                 loadMembers()
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Failed to load group", Toast.LENGTH_SHORT).show()
                 finish()
             }
+    }
+
+    // Update blockMember function to use the new Firebase function
+    private fun blockMember(userID: String) {
+        val member = memberAdapter.members.find { it.first.userID == userID }?.first
+
+        AlertDialog.Builder(this)
+            .setTitle("Block Member")
+            .setMessage("Block ${member?.username}? They will be removed from the group and won't be able to rejoin.")
+            .setPositiveButton("Block & Remove") { _, _ ->
+                FireBase_utils.blockUserFromGroup(
+                    groupID!!,
+                    userID,
+                    onSuccess = {
+                        Toast.makeText(this, "Member blocked and removed", Toast.LENGTH_SHORT).show()
+                        loadGroupDetails()
+                    },
+                    onFailure = { e ->
+                        Toast.makeText(this, "Failed to block: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun loadMembers() {
@@ -229,30 +258,6 @@ class GroupChatSettingsActivity : AppCompatActivity() {
             }
         )
         membersRecycler.adapter = memberAdapter
-    }
-
-    // Add this function
-    private fun blockMember(userID: String) {
-        val member = memberAdapter.members.find { it.first.userID == userID }?.first
-
-        AlertDialog.Builder(this)
-            .setTitle("Block Member")
-            .setMessage("Block ${member?.username}? They will be removed from the group and won't be able to rejoin.")
-            .setPositiveButton("Block & Remove") { _, _ ->
-                FireBase_utils.blockUserFromGroup(
-                    groupID!!,
-                    userID,
-                    onSuccess = {
-                        Toast.makeText(this, "Member blocked and removed", Toast.LENGTH_SHORT).show()
-                        loadGroupDetails() // Reload members
-                    },
-                    onFailure = { e ->
-                        Toast.makeText(this, "Failed to block: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-                )
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
     }
 
     private fun updateGroupName() {
@@ -312,6 +317,15 @@ class GroupChatSettingsActivity : AppCompatActivity() {
                     .update("memberIDs", updatedMembers)
                     .addOnSuccessListener {
                         Toast.makeText(this, "Member removed", Toast.LENGTH_SHORT).show()
+                        createNotification(
+                            type = "REMOVED_FROM_GROUP",
+                            recipientID = userID ?: "",
+                            senderID = FireBase_utils.currentUserID() ?: "",
+                            senderName = "Admin",
+                            groupID = groupID,
+                            groupName = group?.groupName,
+                            message = "You have been removed from ${group?.groupName}"
+                        )
                         loadGroupDetails() // Reload
                     }
                     .addOnFailureListener {

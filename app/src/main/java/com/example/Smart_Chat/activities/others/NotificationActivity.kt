@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.NotificationAdapter
 import com.example.Smart_Chat.models.NotificationItemModel
+import com.example.Smart_Chat.models.NotificationModel
 import com.example.Smart_Chat.models.NotificationType
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
@@ -27,16 +28,15 @@ class NotificationActivity : AppCompatActivity() {
     private lateinit var adapter: NotificationAdapter
     private val notificationList = mutableListOf<NotificationItemModel>()
 
+    private var isFirstLoad = true
+
     override fun onResume() {
         super.onResume()
-        // Only reload if we're resuming from another activity
         if (!isFirstLoad) {
             loadAllNotifications()
         }
         isFirstLoad = false
     }
-
-    private var isFirstLoad = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         ThemeManager.applySavedTheme(this)
@@ -62,15 +62,42 @@ class NotificationActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = NotificationAdapter(this, notificationList)
+        adapter = NotificationAdapter(this, notificationList) {
+            // Callback when notification is removed
+            if (notificationList.isEmpty()) {
+                showEmptyState()
+            }
+        }
         requestRecycler.layoutManager = LinearLayoutManager(this)
         requestRecycler.adapter = adapter
     }
 
     private fun loadAllNotifications() {
         notificationList.clear()
-        var friendRequestsLoaded = false
-        var groupRequestsLoaded = false
+        var completedTasks = 0
+        val totalTasks = 3
+
+        fun checkComplete() {
+            completedTasks++
+            if (completedTasks == totalTasks) {
+                // Sort by timestamp (newest first)
+                notificationList.sortByDescending {
+                    when (it.type) {
+                        NotificationType.FRIEND_REQUEST -> it.friendRequest?.timestamp
+                        NotificationType.GROUP_JOIN_REQUEST -> it.groupJoinRequest?.timestamp
+                        else -> it.notification?.timestamp
+                    }
+                }
+
+                adapter.notifyDataSetChanged()
+
+                if (notificationList.isEmpty()) {
+                    showEmptyState()
+                } else {
+                    hideEmptyState()
+                }
+            }
+        }
 
         // Load friend requests
         FireBase_utils.getPendingFriendRequests(
@@ -78,8 +105,7 @@ class NotificationActivity : AppCompatActivity() {
                 var loadedCount = 0
 
                 if (requests.isEmpty()) {
-                    friendRequestsLoaded = true
-                    checkIfAllLoaded(friendRequestsLoaded, groupRequestsLoaded)
+                    checkComplete()
                     return@getPendingFriendRequests
                 }
 
@@ -101,27 +127,30 @@ class NotificationActivity : AppCompatActivity() {
 
                             loadedCount++
                             if (loadedCount == requests.size) {
-                                friendRequestsLoaded = true
-                                checkIfAllLoaded(friendRequestsLoaded, groupRequestsLoaded)
+                                checkComplete()
+                            }
+                        }
+                        .addOnFailureListener {
+                            loadedCount++
+                            if (loadedCount == requests.size) {
+                                checkComplete()
                             }
                         }
                 }
             },
             onFailure = { e ->
                 Log.e("NotificationActivity", "Failed to load friend requests", e)
-                friendRequestsLoaded = true
-                checkIfAllLoaded(friendRequestsLoaded, groupRequestsLoaded)
+                checkComplete()
             }
         )
 
-        // Load group join requests (if user is admin of any groups)
+        // Load group join requests
         FireBase_utils.getAllPendingGroupJoinRequestsForAdmin(
             onSuccess = { requests ->
                 var loadedCount = 0
 
                 if (requests.isEmpty()) {
-                    groupRequestsLoaded = true
-                    checkIfAllLoaded(friendRequestsLoaded, groupRequestsLoaded)
+                    checkComplete()
                     return@getAllPendingGroupJoinRequestsForAdmin
                 }
 
@@ -143,27 +172,122 @@ class NotificationActivity : AppCompatActivity() {
 
                             loadedCount++
                             if (loadedCount == requests.size) {
-                                groupRequestsLoaded = true
-                                checkIfAllLoaded(friendRequestsLoaded, groupRequestsLoaded)
+                                checkComplete()
+                            }
+                        }
+                        .addOnFailureListener {
+                            loadedCount++
+                            if (loadedCount == requests.size) {
+                                checkComplete()
                             }
                         }
                 }
             },
             onFailure = { e ->
                 Log.e("NotificationActivity", "Failed to load group requests", e)
-                groupRequestsLoaded = true
-                checkIfAllLoaded(friendRequestsLoaded, groupRequestsLoaded)
+                checkComplete()
+            }
+        )
+
+        // Load other notifications (SAFE - handles if collection doesn't exist)
+        FireBase_utils.getUserNotifications(
+            FireBase_utils.currentUserID() ?: "",
+            onSuccess = { notifications ->
+                var loadedCount = 0
+
+                if (notifications.isEmpty()) {
+                    checkComplete()
+                    return@getUserNotifications
+                }
+
+                notifications.forEach { notif ->
+                    // Map notification type string to enum
+                    val type = try {
+                        NotificationType.valueOf(notif.type ?: "")
+                    } catch (e: Exception) {
+                        Log.e("NotificationActivity", "Unknown notification type: ${notif.type}")
+                        null
+                    }
+
+                    if (type != null) {
+                        // Load sender user info if available
+                        if (!notif.senderID.isNullOrEmpty()) {
+                            FireBase_utils.allUsersCollection()
+                                .document(notif.senderID ?: "")
+                                .get()
+                                .addOnSuccessListener { userDoc ->
+                                    val user = userDoc.toObject(userModel::class.java)
+                                    notificationList.add(
+                                        NotificationItemModel(
+                                            type = type,
+                                            user = user,
+                                            notification = notif
+                                        )
+                                    )
+
+                                    loadedCount++
+                                    if (loadedCount == notifications.size) {
+                                        checkComplete()
+                                    }
+                                }
+                                .addOnFailureListener {
+                                    loadedCount++
+                                    if (loadedCount == notifications.size) {
+                                        checkComplete()
+                                    }
+                                }
+                        } else {
+                            // No sender, just add notification
+                            notificationList.add(
+                                NotificationItemModel(
+                                    type = type,
+                                    user = null,
+                                    notification = notif
+                                )
+                            )
+
+                            loadedCount++
+                            if (loadedCount == notifications.size) {
+                                checkComplete()
+                            }
+                        }
+                    } else {
+                        loadedCount++
+                        if (loadedCount == notifications.size) {
+                            checkComplete()
+                        }
+                    }
+                }
+            },
+            onFailure = { e ->
+                // Don't show error - notifications collection might not exist yet
+                Log.w("NotificationActivity", "Info notifications not available: ${e.message}")
+                checkComplete()
             }
         )
     }
 
-    private fun checkIfAllLoaded(friendsLoaded: Boolean, groupsLoaded: Boolean) {
-        if (friendsLoaded && groupsLoaded) {
+    private fun mapStringToNotificationType(type: String): NotificationType {
+        return when (type) {
+            "FRIEND_REQUEST_ACCEPTED" -> NotificationType.FRIEND_REQUEST_ACCEPTED
+            "GROUP_JOIN_REQUEST_ACCEPTED" -> NotificationType.GROUP_JOIN_REQUEST_ACCEPTED
+            "ADDED_TO_GROUP" -> NotificationType.ADDED_TO_GROUP
+            "REMOVED_FROM_GROUP" -> NotificationType.REMOVED_FROM_GROUP
+            "BANNED_FROM_COMMUNITY" -> NotificationType.BANNED_FROM_COMMUNITY
+            "UNBANNED_FROM_COMMUNITY" -> NotificationType.UNBANNED_FROM_COMMUNITY
+            "BLOCKED_BY_USER" -> NotificationType.BLOCKED_BY_USER
+            else -> NotificationType.FRIEND_REQUEST  // Default
+        }
+    }
+
+    private fun checkIfAllLoaded(friendsLoaded: Boolean, groupsLoaded: Boolean, infoLoaded: Boolean) {
+        if (friendsLoaded && groupsLoaded && infoLoaded) {
             // Sort by timestamp (newest first)
             notificationList.sortByDescending {
                 when (it.type) {
                     NotificationType.FRIEND_REQUEST -> it.friendRequest?.timestamp
                     NotificationType.GROUP_JOIN_REQUEST -> it.groupJoinRequest?.timestamp
+                    else -> it.notification?.timestamp
                 }
             }
 

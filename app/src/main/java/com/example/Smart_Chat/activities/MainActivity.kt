@@ -39,14 +39,20 @@ import com.example.Smart_Chat.fragment.SettingsFragment
 import com.example.Smart_Chat.fragment.TemporaryChatFragment
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.Query
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
-    private var currentTab = "chat" // Track current tab
+    private var currentTab = "chat"
     private lateinit var notificationBadge: TextView
 
+    // Real-time listeners
+    private var friendRequestListener: ListenerRegistration? = null
+    private var groupRequestListener: ListenerRegistration? = null
+    private var notificationListener: ListenerRegistration? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Apply saved theme and language BEFORE super.onCreate()
         ThemeManager.applySavedTheme(this)
         LanguageManager.applySavedLanguage(this)
 
@@ -56,7 +62,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         createNotificationChannel()
 
-        // Handle back press
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -67,29 +72,23 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         })
 
-        // Load default fragment
         replaceFragment(ChatFragment())
-
-        // Set up Navigation Drawer
         setupNavigationDrawer()
 
         notificationBadge = findViewById(R.id.notification_badge)
 
-        // Set up menu button to open drawer
         binding.menuBtn.setOnClickListener {
             binding.drawerLayout.openDrawer(GravityCompat.START)
         }
 
-        // Set up notification button
         binding.notificationBtn.setOnClickListener {
             val intent = Intent(this, NotificationActivity::class.java)
             startActivity(intent)
         }
 
-        // Load notification count
-        loadNotificationCount()
+        // Start real-time notification counting
+        startNotificationListeners()
 
-        // Set up FAB - DYNAMIC BASED ON TAB
         binding.fabSearchUser.setOnClickListener {
             when (currentTab) {
                 "chat" -> {
@@ -111,7 +110,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
 
-        // Set up bottom navigation
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.menu_chat -> {
@@ -144,6 +142,114 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         getFCMtoken()
         loadUserDataIntoDrawer()
+    }
+
+    private fun startNotificationListeners() {
+        val currentUserID = FireBase_utils.currentUserID() ?: return
+
+        var friendRequestCount = 0
+        var groupRequestCount = 0
+        var infoNotificationCount = 0
+
+        fun updateBadge() {
+            val total = friendRequestCount + groupRequestCount + infoNotificationCount
+            runOnUiThread {
+                updateNotificationBadge(total)
+            }
+        }
+
+        // Listen to friend requests
+        friendRequestListener = FireBase_utils.getFriendRequestsCollection()
+            .whereEqualTo("receiverID", currentUserID)
+            .whereEqualTo("status", "pending")
+            .addSnapshotListener { snapshots, error ->
+                if (error != null) {
+                    Log.e("MainActivity", "Friend request listener error", error)
+                    return@addSnapshotListener
+                }
+
+                friendRequestCount = snapshots?.size() ?: 0
+                Log.d("MainActivity", "Friend requests: $friendRequestCount")
+                updateBadge()
+            }
+
+        // Listen to group join requests (for groups where user is admin)
+        FireBase_utils.getGroupsCollection()
+            .whereArrayContains("adminIDs", currentUserID)
+            .get()
+            .addOnSuccessListener { groupDocs ->
+                val adminGroupIDs = groupDocs.mapNotNull { it.id }
+
+                if (adminGroupIDs.isEmpty()) {
+                    groupRequestCount = 0
+                    updateBadge()
+                    return@addOnSuccessListener
+                }
+
+                // Listen to all group join requests for groups where user is admin
+                groupRequestListener = FireBase_utils.getGroupJoinRequestsCollection()
+                    .whereIn("groupID", adminGroupIDs)
+                    .whereEqualTo("status", "pending")
+                    .addSnapshotListener { snapshots, error ->
+                        if (error != null) {
+                            Log.e("MainActivity", "Group request listener error", error)
+                            return@addSnapshotListener
+                        }
+
+                        groupRequestCount = snapshots?.size() ?: 0
+                        Log.d("MainActivity", "Group requests: $groupRequestCount")
+                        updateBadge()
+                    }
+            }
+            .addOnFailureListener { e ->
+                Log.e("MainActivity", "Failed to load admin groups", e)
+            }
+
+        // Listen to info notifications
+        notificationListener = FireBase_utils.notificationsCollection()
+            .whereEqualTo("recipientID", currentUserID)
+            .whereEqualTo("isRead", false)
+            .addSnapshotListener { snapshots, error ->
+                if (error != null) {
+                    Log.e("MainActivity", "Notification listener error", error)
+                    return@addSnapshotListener
+                }
+
+                infoNotificationCount = snapshots?.size() ?: 0
+                Log.d("MainActivity", "Info notifications: $infoNotificationCount")
+                updateBadge()
+            }
+    }
+
+    private var lastBadgeCount = 0
+
+    private fun updateNotificationBadge(count: Int) {
+        Log.d("MainActivity", "Total notification count: $count")
+
+        if (count > 0) {
+            notificationBadge.text = if (count > 99) "99+" else count.toString()
+            notificationBadge.visibility = View.VISIBLE
+
+            // Animate if count increased
+            if (count > lastBadgeCount) {
+                notificationBadge.animate()
+                    .scaleX(1.3f)
+                    .scaleY(1.3f)
+                    .setDuration(200)
+                    .withEndAction {
+                        notificationBadge.animate()
+                            .scaleX(1f)
+                            .scaleY(1f)
+                            .setDuration(200)
+                            .start()
+                    }
+                    .start()
+            }
+        } else {
+            notificationBadge.visibility = View.GONE
+        }
+
+        lastBadgeCount = count
     }
 
     private fun updateFabIcon() {
@@ -227,20 +333,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
-    // Helper function to deselect bottom navigation
     private fun deselectBottomNavigation() {
-        // Temporarily disable group checkable behavior
         binding.bottomNavigation.menu.setGroupCheckable(0, true, false)
 
-        // Uncheck all items
         for (i in 0 until binding.bottomNavigation.menu.size) {
             binding.bottomNavigation.menu[i].isChecked = false
         }
 
-        // Re-enable group checkable behavior
         binding.bottomNavigation.menu.setGroupCheckable(0, true, true)
 
-        // Hide FAB and reset tab
         binding.fabSearchUser.hide()
         currentTab = "none"
     }
@@ -315,62 +416,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun loadNotificationCount() {
-        var totalCount = 0
-        var friendRequestsLoaded = false
-        var groupRequestsLoaded = false
-
-        // Count pending friend requests
-        FireBase_utils.getPendingFriendRequests(
-            onSuccess = { requests ->
-                totalCount += requests.size
-                friendRequestsLoaded = true
-                if (friendRequestsLoaded && groupRequestsLoaded) {
-                    updateNotificationBadge(totalCount)
-                }
-            },
-            onFailure = { e ->
-                Log.e("MainActivity", "Failed to load friend requests", e)
-                friendRequestsLoaded = true
-                if (friendRequestsLoaded && groupRequestsLoaded) {
-                    updateNotificationBadge(totalCount)
-                }
-            }
-        )
-
-        // Count pending group join requests (if user is admin)
-        FireBase_utils.getAllPendingGroupJoinRequestsForAdmin(
-            onSuccess = { requests ->
-                totalCount += requests.size
-                groupRequestsLoaded = true
-                if (friendRequestsLoaded && groupRequestsLoaded) {
-                    updateNotificationBadge(totalCount)
-                }
-            },
-            onFailure = { e ->
-                Log.e("MainActivity", "Failed to load group requests", e)
-                groupRequestsLoaded = true
-                if (friendRequestsLoaded && groupRequestsLoaded) {
-                    updateNotificationBadge(totalCount)
-                }
-            }
-        )
-    }
-
-    private fun updateNotificationBadge(count: Int) {
-        runOnUiThread {  // Ensure UI update on main thread
-            if (count > 0) {
-                notificationBadge.text = if (count > 99) "99+" else count.toString()
-                notificationBadge.visibility = View.VISIBLE
-            } else {
-                notificationBadge.visibility = View.GONE
-            }
-        }
+    override fun onDestroy() {
+        super.onDestroy()
+        // Remove listeners to prevent memory leaks
+        friendRequestListener?.remove()
+        groupRequestListener?.remove()
+        notificationListener?.remove()
     }
 
     override fun onResume() {
         super.onResume()
-        // Refresh notification count when returning to MainActivity
-        loadNotificationCount()
+        // Listeners are always active, no need to reload
     }
 }

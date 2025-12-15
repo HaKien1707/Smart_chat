@@ -16,7 +16,7 @@
         android:background="?attr/selectableItemBackground">
 
         <!-- Group Image -->
-        <include layout="@layout/profile_image_circle"
+        <include layout="@layout/profile_image_holder"
             android:id="@+id/group_image_container"
             android:layout_margin="8dp"
             android:layout_height="52dp"

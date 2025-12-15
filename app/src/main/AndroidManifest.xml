@@ -18,6 +18,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartChat">
         <activity
+            android:name=".activities.group_chat.BlockedMembersActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.login.SignUpActivity"
             android:exported="false" />
         <activity
