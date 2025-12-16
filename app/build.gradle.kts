@@ -51,7 +51,6 @@ android {
         freeCompilerArgs.add("-Xnested-type-aliases")
     }
 
-
     buildFeatures {
         viewBinding = true
     }
@@ -70,8 +69,10 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.firebase.messaging)
     testImplementation(libs.junit)
+    implementation(libs.preference)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
     implementation("com.hbb20:ccp:2.7.3")
 
     // FirebaseUI for Firebase Realtime Database
@@ -108,6 +109,9 @@ dependencies {
     implementation("androidx.navigation:navigation-ui:2.7.7")
 
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
+
+    // Video Call
+    implementation("io.getstream:stream-webrtc-android:1.3.10")
 }
 }
 dependencies {
@@ -115,5 +119,4 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
-    implementation(libs.preference)
 }

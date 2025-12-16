@@ -39,8 +39,8 @@ import com.example.Smart_Chat.fragment.SettingsFragment
 import com.example.Smart_Chat.fragment.TemporaryChatFragment
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.firebase.FirebaseVideoCalls
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
@@ -51,6 +51,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var friendRequestListener: ListenerRegistration? = null
     private var groupRequestListener: ListenerRegistration? = null
     private var notificationListener: ListenerRegistration? = null
+
+    private var incomingCallListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         ThemeManager.applySavedTheme(this)
@@ -140,8 +142,38 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
 
+        startListeningForIncomingCalls()
+
         getFCMtoken()
         loadUserDataIntoDrawer()
+    }
+
+    private fun startListeningForIncomingCalls() {
+        try {
+            incomingCallListener = FirebaseVideoCalls.listenForIncomingCalls { call ->
+                // Show incoming call screen
+                showIncomingCall(call)
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Failed to listen for calls", e)
+        }
+    }
+
+    private fun showIncomingCall(call: com.example.Smart_Chat.models.VideoCallModel) {
+        // Get caller info
+        FireBase_utils.allUsersCollection().document(call.callerId ?: "").get()
+            .addOnSuccessListener { doc ->
+                val caller = doc.toObject(com.example.Smart_Chat.models.userModel::class.java)
+
+                val intent = Intent(this, com.example.Smart_Chat.activities.video_call.IncomingCallActivity::class.java)
+                intent.putExtra("callId", call.callId)
+                intent.putExtra("callerId", call.callerId)
+                intent.putExtra("callerName", caller?.username)
+                intent.putExtra("callerImage", caller?.profileImage)
+                intent.putExtra("callType", call.type)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(intent)
+            }
     }
 
     private fun startNotificationListeners() {
@@ -418,10 +450,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onDestroy() {
         super.onDestroy()
-        // Remove listeners to prevent memory leaks
         friendRequestListener?.remove()
         groupRequestListener?.remove()
         notificationListener?.remove()
+        incomingCallListener?.remove()
     }
 
     override fun onResume() {
