@@ -93,4 +93,34 @@ object androidUtils {
             null
         }
     }
+
+    @JvmStatic
+    fun getFileInfo(context: Context, uri: Uri): FileInfo {
+        var fileName = "unknown"
+        var fileSize = 0L
+
+        context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                val sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE)
+
+                if (nameIndex != -1) {
+                    fileName = cursor.getString(nameIndex)
+                }
+                if (sizeIndex != -1) {
+                    fileSize = cursor.getLong(sizeIndex)
+                }
+            }
+        }
+
+        return FileInfo(fileName, fileSize)
+    }
+
+    /**
+     * Data class to hold file information
+     */
+    data class FileInfo(
+        val name: String,
+        val size: Long
+    )
 }

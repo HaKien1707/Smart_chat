@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -16,9 +17,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.TempChatMsgAdapter
 import com.example.Smart_Chat.models.DecryptedTempMessage
+import com.example.Smart_Chat.models.ReplyMessageData
 import com.example.Smart_Chat.models.TempChatMsgModel
 import com.example.Smart_Chat.models.TemporaryChatModel
 import com.example.Smart_Chat.models.userModel
@@ -57,6 +60,16 @@ class TemporaryChatActivity : AppCompatActivity() {
     private var messageListener: ListenerRegistration? = null
 
     private lateinit var sendFileBtn: ImageButton
+
+    // NEW: Reply preview views
+    private lateinit var replyPreviewContainer: View
+    private lateinit var replyText: TextView
+    private lateinit var replyImage: ImageView
+    private lateinit var replySenderName: TextView
+    private lateinit var replyTextContainer: LinearLayout
+    private lateinit var cancelReplyBtn: ImageButton
+
+    private var currentReplyData: ReplyMessageData? = null
 
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -108,6 +121,18 @@ class TemporaryChatActivity : AppCompatActivity() {
         chatList = findViewById(R.id.chatList)
         val profileContainer = findViewById<View>(R.id.profile_image_container)
         profileImage = profileContainer.findViewById(R.id.profile_image)
+
+        // NEW: Reply preview views
+        replyPreviewContainer = findViewById(R.id.reply_preview)
+        replyText = replyPreviewContainer.findViewById(R.id.reply_text)
+        replyImage = replyPreviewContainer.findViewById(R.id.reply_image)
+        replySenderName = replyPreviewContainer.findViewById(R.id.reply_sender_name)
+        replyTextContainer = replyPreviewContainer.findViewById(R.id.reply_text_container)
+        cancelReplyBtn = replyPreviewContainer.findViewById(R.id.cancel_reply_btn)
+
+        cancelReplyBtn.setOnClickListener {
+            cancelReply()
+        }
 
         backBTN.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
@@ -220,6 +245,82 @@ class TemporaryChatActivity : AppCompatActivity() {
         )
     }
 
+    // NEW: Set reply message from adapter
+    fun setReplyMessage(replyData: ReplyMessageData) {
+        currentReplyData = replyData
+        showReplyPreview(replyData)
+    }
+
+    // NEW: Show reply preview
+    private fun showReplyPreview(replyData: ReplyMessageData) {
+        replyPreviewContainer.visibility = View.VISIBLE
+
+        // Hide sender name for 1-on-1 temp chat
+        replySenderName.visibility = View.GONE
+
+        when (replyData.type) {
+            "text" -> {
+                replyTextContainer.visibility = View.VISIBLE
+                replyImage.visibility = View.GONE
+                replyText.text = replyData.text
+            }
+            "image" -> {
+                replyTextContainer.visibility = View.GONE
+                replyImage.visibility = View.VISIBLE
+                Glide.with(this)
+                    .load(replyData.imageUrl)
+                    .placeholder(R.drawable.ic_image_loading)
+                    .into(replyImage)
+            }
+            "file" -> {
+                replyTextContainer.visibility = View.VISIBLE
+                replyImage.visibility = View.GONE
+                val fileName = replyData.fileName ?: "File"
+                val fileSize = formatFileSize(replyData.fileSize ?: 0)
+                replyText.text = "📎 $fileName\n$fileSize"
+            }
+        }
+    }
+
+    // NEW: Cancel reply
+    private fun cancelReply() {
+        currentReplyData = null
+        replyPreviewContainer.visibility = View.GONE
+    }
+
+    // NEW: Scroll to specific position
+    fun scrollToPosition(position: Int) {
+        chatList.smoothScrollToPosition(position)
+
+        chatList.postDelayed({
+            if (position >= 0 && position < decryptedMessages.size) {
+                chatList.postDelayed({
+                    val viewHolder = chatList.findViewHolderForAdapterPosition(position)
+                    viewHolder?.itemView?.let { view ->
+                        view.animate()
+                            .alpha(0.3f)
+                            .setDuration(200)
+                            .withEndAction {
+                                view.animate()
+                                    .alpha(1f)
+                                    .setDuration(200)
+                                    .start()
+                            }
+                            .start()
+                    }
+                }, 100)
+            }
+        }, 300)
+    }
+
+    private fun formatFileSize(size: Long): String {
+        return when {
+            size < 1024 -> "$size B"
+            size < 1024 * 1024 -> "${size / 1024} KB"
+            else -> String.format("%.2f MB", size / (1024.0 * 1024.0))
+        }
+    }
+
     private fun startListeningForMessages() {
         messageListener = FireBase_utils.getTemporaryChatMessagesReference(chatID)
             .orderBy("timestamp", Query.Direction.ASCENDING)
@@ -244,9 +345,8 @@ class TemporaryChatActivity : AppCompatActivity() {
 
                                 val decryptedMessage = DecryptedTempMessage(
                                     senderID = encryptedMsg.senderID ?: "",
-                                    message = decryptedText,
+                                    msg = decryptedText,  // CORRECT parameter name
                                     timestamp = encryptedMsg.timestamp ?: Timestamp.now(),
-                                    messageType = encryptedMsg.messageType ?: "text",
                                     imageUrl = encryptedMsg.encryptedImageUrl?.let {
                                         try {
                                             EncryptionUtils.decrypt(it, encryptionKey)
@@ -254,6 +354,8 @@ class TemporaryChatActivity : AppCompatActivity() {
                                             null
                                         }
                                     },
+                                    messageType = encryptedMsg.messageType ?: "text",
+                                    isDeleted = false,  // Temp messages don't support deletion
                                     fileUrl = encryptedMsg.encryptedFileUrl?.let {
                                         try {
                                             EncryptionUtils.decrypt(it, encryptionKey)
@@ -268,7 +370,31 @@ class TemporaryChatActivity : AppCompatActivity() {
                                             null
                                         }
                                     },
-                                    fileSize = encryptedMsg.fileSize
+                                    fileSize = encryptedMsg.fileSize,
+                                    replyToMessageId = encryptedMsg.replyToMessageId,
+                                    replyToText = encryptedMsg.encryptedReplyToText?.let {
+                                        try {
+                                            EncryptionUtils.decrypt(it, encryptionKey)
+                                        } catch (e: Exception) {
+                                            null
+                                        }
+                                    },
+                                    replyToType = encryptedMsg.replyToType,
+                                    replyToImageUrl = encryptedMsg.encryptedReplyToImageUrl?.let {
+                                        try {
+                                            EncryptionUtils.decrypt(it, encryptionKey)
+                                        } catch (e: Exception) {
+                                            null
+                                        }
+                                    },
+                                    replyToFileName = encryptedMsg.encryptedReplyToFileName?.let {
+                                        try {
+                                            EncryptionUtils.decrypt(it, encryptionKey)
+                                        } catch (e: Exception) {
+                                            null
+                                        }
+                                    },
+                                    replyToFileSize = encryptedMsg.replyToFileSize
                                 )
 
                                 decryptedMessages.add(decryptedMessage)
@@ -363,7 +489,6 @@ class TemporaryChatActivity : AppCompatActivity() {
 
     private fun sendEncryptedMsg(plainText: String) {
         try {
-            // Encrypt the message
             val encryptedText = EncryptionUtils.encrypt(plainText, encryptionKey)
 
             FireBase_utils.getTemporaryChatReference(chatID)
@@ -375,16 +500,43 @@ class TemporaryChatActivity : AppCompatActivity() {
                     )
                 )
 
-            val msgModel = TempChatMsgModel(
-                FireBase_utils.currentUserID(),
-                encryptedText,
-                Timestamp.now()
-            )
+            val msgModel = if (currentReplyData != null) {
+                // Encrypt reply data
+                val encryptedReplyText = currentReplyData!!.text?.let {
+                    EncryptionUtils.encrypt(it, encryptionKey)
+                }
+                val encryptedReplyImageUrl = currentReplyData!!.imageUrl?.let {
+                    EncryptionUtils.encrypt(it, encryptionKey)
+                }
+                val encryptedReplyFileName = currentReplyData!!.fileName?.let {
+                    EncryptionUtils.encrypt(it, encryptionKey)
+                }
+
+                TempChatMsgModel(
+                    FireBase_utils.currentUserID(),
+                    encryptedText,
+                    Timestamp.now(),
+                    messageType = "text",
+                    replyToMessageId = currentReplyData!!.messageId,
+                    encryptedReplyToText = encryptedReplyText,
+                    replyToType = currentReplyData!!.type,
+                    encryptedReplyToImageUrl = encryptedReplyImageUrl,
+                    encryptedReplyToFileName = encryptedReplyFileName,
+                    replyToFileSize = currentReplyData!!.fileSize
+                )
+            } else {
+                TempChatMsgModel(
+                    FireBase_utils.currentUserID(),
+                    encryptedText,
+                    Timestamp.now()
+                )
+            }
 
             FireBase_utils.getTemporaryChatMessagesReference(chatID)
                 .add(msgModel)
                 .addOnSuccessListener {
                     chatBox.setText("")
+                    cancelReply() // NEW: Clear reply state
                 }
                 .addOnFailureListener { e ->
                     Log.e("TemporaryChatActivity", "Failed to send message", e)

@@ -120,8 +120,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/announcement_card"
-        android:layout_above="@id/chatBoxPanel"
+        android:layout_above="@id/reply_preview"
         android:padding="10dp" />
+
+    <include
+        android:id="@+id/reply_preview"
+        layout="@layout/layout_reply_preview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/chatBoxPanel"/>
 
     <!-- Chat Input Panel -->
     <RelativeLayout

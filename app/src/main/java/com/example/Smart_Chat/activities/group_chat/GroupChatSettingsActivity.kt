@@ -41,7 +41,7 @@ class GroupChatSettingsActivity : AppCompatActivity() {
     private lateinit var groupNameInput: EditText
     private lateinit var saveNameBtn: Button
     private lateinit var addMemberBtn: Button
-    private lateinit var membersRecycler: RecyclerView
+    private lateinit var viewMembersBtn: Button
     private lateinit var leaveGroupBtn: Button
     private lateinit var deleteGroupBtn: Button
 
@@ -97,12 +97,10 @@ class GroupChatSettingsActivity : AppCompatActivity() {
         groupNameInput = findViewById(R.id.group_name_input)
         saveNameBtn = findViewById(R.id.save_name_btn)
         addMemberBtn = findViewById(R.id.add_member_btn)
-        membersRecycler = findViewById(R.id.members_recycler)
+        viewMembersBtn = findViewById(R.id.view_members_btn)
         blockedListBtn = findViewById(R.id.blocked_list_btn)  // NEW
         leaveGroupBtn = findViewById(R.id.leave_group_btn)
         deleteGroupBtn = findViewById(R.id.delete_group_btn)
-
-        membersRecycler.layoutManager = LinearLayoutManager(this)
     }
 
     private fun setupClickListeners() {
@@ -130,6 +128,12 @@ class GroupChatSettingsActivity : AppCompatActivity() {
         addMemberBtn.setOnClickListener {
             // No need to check isAdmin - button only visible for admins
             val intent = Intent(this, AddMembersActivity::class.java)
+            intent.putExtra("groupID", groupID)
+            startActivity(intent)
+        }
+
+        viewMembersBtn.setOnClickListener {
+            val intent = Intent(this, GroupMembersActivity::class.java)
             intent.putExtra("groupID", groupID)
             startActivity(intent)
         }
@@ -233,31 +237,10 @@ class GroupChatSettingsActivity : AppCompatActivity() {
                         if (user != null) {
                             val isMemberAdmin = group?.adminIDs?.contains(memberID) == true
                             members.add(Pair(user, isMemberAdmin))
-
-                            // Update adapter when all loaded
-                            if (members.size == memberIDs.size) {
-                                setupMembersAdapter(members)
-                            }
                         }
                     }
             }
         }
-    }
-
-    private fun setupMembersAdapter(members: List<Pair<userModel, Boolean>>) {
-        memberAdapter = GroupMemberAdapter(
-            members,
-            this,
-            isAdmin,
-            FireBase_utils.currentUserID(),
-            onRemoveMember = { userID ->
-                removeMember(userID)
-            },
-            onBlockMember = { userID -> // NEW: Block callback
-                blockMember(userID)
-            }
-        )
-        membersRecycler.adapter = memberAdapter
     }
 
     private fun updateGroupName() {

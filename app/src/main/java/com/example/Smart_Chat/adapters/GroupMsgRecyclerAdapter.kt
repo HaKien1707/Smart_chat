@@ -17,10 +17,12 @@ import com.example.Smart_Chat.activities.others.ForwardMessageActivity
 import com.example.Smart_Chat.activities.others.FullScreenImageActivity
 import com.example.Smart_Chat.activities.group_chat.GroupChatActivity
 import com.example.Smart_Chat.models.GroupMsgModel
+import com.example.Smart_Chat.models.ReplyMessageData
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FileDownloadHelper
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.FireBase_utils.currentUserID
+import com.example.Smart_Chat.utils.MessageOptionsHelper
 import com.example.Smart_Chat.utils.androidUtils
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
@@ -48,6 +50,19 @@ class GroupMsgRecyclerAdapter(
 
             holder.receiverTimestamp.text = formatTimestamp(model.timestamp?.toDate())
 
+            // NEW: Show replied message if exists
+            if (!model.replyToMessageId.isNullOrEmpty()) {
+                showRepliedMessage(
+                    holder.receiverRepliedContainer,
+                    holder.receiverRepliedText,
+                    holder.receiverRepliedImage,
+                    holder.receiverRepliedSenderName,
+                    model
+                )
+            } else {
+                holder.receiverRepliedContainer.visibility = View.GONE
+            }
+
             if (model.isDeleted) {
                 holder.receiverMsg.visibility = View.VISIBLE
                 holder.receiverImage.visibility = View.GONE
@@ -73,18 +88,24 @@ class GroupMsgRecyclerAdapter(
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
 
-                        holder.receiverMsg.setOnClickListener {
-                            FileDownloadHelper.showDownloadDialog(
-                                context,
-                                model.fileName ?: "File",
-                                model.fileSize ?: 0,
-                                model.fileUrl ?: ""
-                            )
-                        }
+                        holder.receiverMsg.setOnClickListener(null)
+                        holder.receiverMsg.setOnLongClickListener(null)
 
-                        holder.receiver.setOnLongClickListener {
-                            showMessageOptions(holder.receiver, position, model)
-                            true
+                        if (!model.isDeleted) {
+                            // ✅ Enable download only if NOT deleted
+                            holder.receiverMsg.setOnClickListener {
+                                FileDownloadHelper.showDownloadDialog(
+                                    context,
+                                    model.fileName ?: "File",
+                                    model.fileSize ?: 0,
+                                    model.fileUrl ?: ""
+                                )
+                            }
+
+                            holder.receiverMsg.setOnLongClickListener {
+                                showMessageOptions(holder.receiverMsg, position, model)
+                                true
+                            }
                         }
                     }
                     "image" -> {
@@ -125,7 +146,7 @@ class GroupMsgRecyclerAdapter(
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
 
-                        holder.receiver.setOnLongClickListener {
+                        holder.receiverMsg.setOnLongClickListener {
                             showMessageOptions(holder.receiver, position, model)
                             true
                         }
@@ -145,6 +166,19 @@ class GroupMsgRecyclerAdapter(
             holder.senderName.text = model.senderName ?: "Unknown"
             loadSenderProfileImage(holder, model.senderID)
             holder.senderTimestamp.text = formatTimestamp(model.timestamp?.toDate())
+
+            // NEW: Show replied message if exists
+            if (!model.replyToMessageId.isNullOrEmpty()) {
+                showRepliedMessage(
+                    holder.senderRepliedContainer,
+                    holder.senderRepliedText,
+                    holder.senderRepliedImage,
+                    holder.senderRepliedSenderName,
+                    model
+                )
+            } else {
+                holder.senderRepliedContainer.visibility = View.GONE
+            }
 
             if (model.isDeleted) {
                 holder.senderMsg.visibility = View.VISIBLE
@@ -171,13 +205,23 @@ class GroupMsgRecyclerAdapter(
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
 
-                        holder.senderMsg.setOnClickListener {
-                            FileDownloadHelper.showDownloadDialog(
-                                context,
-                                model.fileName ?: "File",
-                                model.fileSize ?: 0,
-                                model.fileUrl ?: ""
-                            )
+                        holder.senderMsg.setOnClickListener(null)
+                        holder.senderMsg.setOnLongClickListener(null)
+
+                        if (!model.isDeleted) {
+                            holder.senderMsg.setOnClickListener {
+                                FileDownloadHelper.showDownloadDialog(
+                                    context,
+                                    model.fileName ?: "File",
+                                    model.fileSize ?: 0,
+                                    model.fileUrl ?: ""
+                                )
+                            }
+
+                            holder.senderMsg.setOnLongClickListener {
+                                showMessageOptions(holder.senderMsg, position, model)
+                                true
+                            }
                         }
                     }
                     "image" -> {
@@ -198,6 +242,10 @@ class GroupMsgRecyclerAdapter(
                                 intent.putExtra("imageUrl", model.imageUrl)
                                 context.startActivity(intent)
                             }
+                            holder.senderImage.setOnLongClickListener {
+                                showMessageOptions(holder.sender, position, model)
+                                true
+                            }
                         }
                     }
                     else -> {
@@ -212,6 +260,10 @@ class GroupMsgRecyclerAdapter(
                             context.getColorStateList(R.color.lime)
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
+                        holder.senderMsg.setOnLongClickListener {
+                            showMessageOptions(holder.sender, position, model)
+                            true
+                        }
                     }
                 }
             }
@@ -222,28 +274,99 @@ class GroupMsgRecyclerAdapter(
     }
 
     private fun showMessageOptions(view: View, position: Int, model: GroupMsgModel) {
-        val popupView = LayoutInflater.from(context).inflate(R.layout.popup_message_options, null)
-        val popupWindow = android.widget.PopupWindow(
-            popupView,
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            true
+        val messageData = ReplyMessageData(
+            messageId = snapshots.getSnapshot(position).id,
+            text = model.msg,
+            type = model.messageType ?: "text",
+            imageUrl = model.imageUrl,
+            fileName = model.fileName,
+            fileSize = model.fileSize,
+            senderName = model.senderName
         )
 
-        val optionForward = popupView.findViewById<TextView>(R.id.option_forward)
-        val optionDelete = popupView.findViewById<TextView>(R.id.option_delete)
+        MessageOptionsHelper.showMessageOptions(
+            context = context,
+            view = view,
+            canDelete = model.senderID == currentUserID(),
+            messageData = messageData,
+            onReply = { replyData ->
+                if (context is GroupChatActivity) {
+                    context.setReplyMessage(replyData)
+                }
+            },
+            onForward = {
+                openForwardActivity(model)
+            },
+            onDelete = {
+                deleteMessage(position)
+            }
+        )
+    }
 
-        optionForward.setOnClickListener {
-            popupWindow.dismiss()
-            openForwardActivity(model)
+    // NEW: Show replied message preview
+    private fun showRepliedMessage(
+        container: View,
+        textView: TextView,
+        imageView: ImageView,
+        senderNameView: TextView,
+        model: GroupMsgModel
+    ) {
+        container.visibility = View.VISIBLE
+
+        // Show sender name for group messages
+        if (!model.replyToSenderName.isNullOrEmpty()) {
+            senderNameView.visibility = View.VISIBLE
+            senderNameView.text = model.replyToSenderName
+        } else {
+            senderNameView.visibility = View.GONE
         }
 
-        optionDelete.setOnClickListener {
-            popupWindow.dismiss()
-            deleteMessage(position)
+        when (model.replyToType) {
+            "text" -> {
+                textView.visibility = View.VISIBLE
+                imageView.visibility = View.GONE
+                textView.text = model.replyToText
+            }
+            "image" -> {
+                textView.visibility = View.GONE
+                imageView.visibility = View.VISIBLE
+                Glide.with(context)
+                    .load(model.replyToImageUrl)
+                    .placeholder(R.drawable.ic_image_loading)
+                    .into(imageView)
+            }
+            "file" -> {
+                textView.visibility = View.VISIBLE
+                imageView.visibility = View.GONE
+                val fileName = model.replyToFileName ?: "File"
+                val fileSize = formatFileSize(model.replyToFileSize ?: 0)
+                textView.text = "📎 $fileName\n$fileSize"
+            }
         }
 
-        popupWindow.showAsDropDown(view, 0, -view.height)
+        // Click to scroll to original message
+        container.setOnClickListener {
+            scrollToMessage(model.replyToMessageId)
+        }
+    }
+
+    // NEW: Scroll to the replied message
+    private fun scrollToMessage(messageId: String?) {
+        if (messageId == null) return
+
+        for (i in 0 until itemCount) {
+            try {
+                val snapshot = snapshots.getSnapshot(i)
+                if (snapshot.id == messageId) {
+                    if (context is GroupChatActivity) {
+                        context.scrollToPosition(i)
+                    }
+                    break
+                }
+            } catch (e: Exception) {
+                Log.e("MSG_SCROLL", "Error finding message", e)
+            }
+        }
     }
 
     private fun openForwardActivity(model: GroupMsgModel) {
@@ -349,5 +472,14 @@ class GroupMsgRecyclerAdapter(
         val receiverImage: ImageView = itemView.findViewById(R.id.receiverImage)
         val senderTimestamp: TextView = itemView.findViewById(R.id.senderTimestamp)
         val receiverTimestamp: TextView = itemView.findViewById(R.id.receiverTimestamp)
+        val senderRepliedContainer: View = itemView.findViewById(R.id.sender_replied_message)
+        val senderRepliedText: TextView = senderRepliedContainer.findViewById(R.id.replied_text)
+        val senderRepliedImage: ImageView = senderRepliedContainer.findViewById(R.id.replied_image)
+        val senderRepliedSenderName: TextView = senderRepliedContainer.findViewById(R.id.replied_sender_name)
+
+        val receiverRepliedContainer: View = itemView.findViewById(R.id.receiver_replied_message)
+        val receiverRepliedText: TextView = receiverRepliedContainer.findViewById(R.id.replied_text)
+        val receiverRepliedImage: ImageView = receiverRepliedContainer.findViewById(R.id.replied_image)
+        val receiverRepliedSenderName: TextView = receiverRepliedContainer.findViewById(R.id.replied_sender_name)
     }
 }

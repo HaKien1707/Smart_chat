@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -19,10 +20,12 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
+import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.CommunityMsgRecyclerAdapter
 import com.example.Smart_Chat.models.CommunityModel
 import com.example.Smart_Chat.models.CommunityMsgModel
+import com.example.Smart_Chat.models.ReplyMessageData
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.CloudinaryHelper
 import com.example.Smart_Chat.utils.FireBase_utils
@@ -50,6 +53,16 @@ class CommunityChatActivity : AppCompatActivity() {
     private lateinit var announcementActionBtn: ImageButton
 
     private var isAnnouncementExpanded = false
+
+    // NEW: Reply preview views
+    private lateinit var replyPreviewContainer: View
+    private lateinit var replyText: TextView
+    private lateinit var replyImage: ImageView
+    private lateinit var replySenderName: TextView
+    private lateinit var replyTextContainer: LinearLayout
+    private lateinit var cancelReplyBtn: ImageButton
+
+    private var currentReplyData: ReplyMessageData? = null
 
     private val settingsLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -119,6 +132,18 @@ class CommunityChatActivity : AppCompatActivity() {
         announcementActionBtn = findViewById(R.id.announcement_action_btn)
         val profileContainer = findViewById<View>(R.id.profile_image_container)
         communityImage = profileContainer.findViewById(R.id.profile_image)
+
+        // NEW: Reply preview views
+        replyPreviewContainer = findViewById(R.id.reply_preview)
+        replyText = replyPreviewContainer.findViewById(R.id.reply_text)
+        replyImage = replyPreviewContainer.findViewById(R.id.reply_image)
+        replySenderName = replyPreviewContainer.findViewById(R.id.reply_sender_name)
+        replyTextContainer = replyPreviewContainer.findViewById(R.id.reply_text_container)
+        cancelReplyBtn = replyPreviewContainer.findViewById(R.id.cancel_reply_btn)
+
+        cancelReplyBtn.setOnClickListener {
+            cancelReply()
+        }
 
         backBTN.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
@@ -236,6 +261,83 @@ class CommunityChatActivity : AppCompatActivity() {
                 }
             }
         )
+    }
+
+    // NEW: Set reply message from adapter
+    fun setReplyMessage(replyData: ReplyMessageData) {
+        currentReplyData = replyData
+        showReplyPreview(replyData)
+    }
+
+    // NEW: Show reply preview
+    private fun showReplyPreview(replyData: ReplyMessageData) {
+        replyPreviewContainer.visibility = View.VISIBLE
+
+        // Show sender name for community chat
+        if (!replyData.senderName.isNullOrEmpty()) {
+            replySenderName.visibility = View.VISIBLE
+            replySenderName.text = replyData.senderName
+        } else {
+            replySenderName.visibility = View.GONE
+        }
+
+        when (replyData.type) {
+            "text" -> {
+                replyTextContainer.visibility = View.VISIBLE
+                replyImage.visibility = View.GONE
+                replyText.text = replyData.text
+            }
+            "image" -> {
+                replyTextContainer.visibility = View.GONE
+                replyImage.visibility = View.VISIBLE
+                Glide.with(this)
+                    .load(replyData.imageUrl)
+                    .placeholder(R.drawable.ic_image_loading)
+                    .into(replyImage)
+            }
+            "file" -> {
+                replyTextContainer.visibility = View.VISIBLE
+                replyImage.visibility = View.GONE
+                val fileName = replyData.fileName ?: "File"
+                val fileSize = formatFileSize(replyData.fileSize ?: 0)
+                replyText.text = "📎 $fileName\n$fileSize"
+            }
+        }
+    }
+
+    // NEW: Cancel reply
+    private fun cancelReply() {
+        currentReplyData = null
+        replyPreviewContainer.visibility = View.GONE
+    }
+
+    // NEW: Scroll to specific position
+    fun scrollToPosition(position: Int) {
+        chatList.smoothScrollToPosition(position)
+
+        chatList.postDelayed({
+            val viewHolder = chatList.findViewHolderForAdapterPosition(position)
+            viewHolder?.itemView?.let { view ->
+                view.animate()
+                    .alpha(0.3f)
+                    .setDuration(200)
+                    .withEndAction {
+                        view.animate()
+                            .alpha(1f)
+                            .setDuration(200)
+                            .start()
+                    }
+                    .start()
+            }
+        }, 300)
+    }
+
+    private fun formatFileSize(size: Long): String {
+        return when {
+            size < 1024 -> "$size B"
+            size < 1024 * 1024 -> "${size / 1024} KB"
+            else -> String.format("%.2f MB", size / (1024.0 * 1024.0))
+        }
     }
 
     private fun toggleAnnouncementExpansion() {
@@ -404,17 +506,35 @@ class CommunityChatActivity : AppCompatActivity() {
                 )
             )
 
-        val msgModel = CommunityMsgModel(
-            FireBase_utils.currentUserID(),
-            currentUserName ?: "Unknown",
-            msg,
-            Timestamp.now()
-        )
+        val msgModel = if (currentReplyData != null) {
+            CommunityMsgModel(
+                FireBase_utils.currentUserID(),
+                currentUserName ?: "Unknown",
+                msg,
+                Timestamp.now(),
+                messageType = "text",
+                replyToMessageId = currentReplyData!!.messageId,
+                replyToText = currentReplyData!!.text,
+                replyToType = currentReplyData!!.type,
+                replyToImageUrl = currentReplyData!!.imageUrl,
+                replyToFileName = currentReplyData!!.fileName,
+                replyToFileSize = currentReplyData!!.fileSize,
+                replyToSenderName = currentReplyData!!.senderName
+            )
+        } else {
+            CommunityMsgModel(
+                FireBase_utils.currentUserID(),
+                currentUserName ?: "Unknown",
+                msg,
+                Timestamp.now()
+            )
+        }
 
         FireBase_utils.getCommunityMessagesReference(communityID)
             .add(msgModel)
             .addOnSuccessListener {
                 chatBox.setText("")
+                cancelReply() // NEW: Clear reply state
             }
             .addOnFailureListener { e ->
                 Log.e("CommunityChatActivity", "Failed to send message", e)

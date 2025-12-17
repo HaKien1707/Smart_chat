@@ -16,7 +16,7 @@
         android:padding="10dp">
 
         <TextView
-            android:id="@+id/panelName"
+            android:id="@+id/user_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
@@ -36,7 +36,7 @@
             android:layout_width="52dp"
             android:layout_height="52dp"
             android:layout_margin="10dp"
-            android:layout_toStartOf="@id/panelName">
+            android:layout_toStartOf="@id/user_name">
 
         </include>
 
@@ -58,10 +58,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/panel"
-        android:layout_above="@id/bottomPanel"
+        android:layout_above="@id/reply_preview"
         android:padding="10dp">
 
     </androidx.recyclerview.widget.RecyclerView>
+
+    <include
+        android:id="@+id/reply_preview"
+        layout="@layout/layout_reply_preview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/bottomPanel"/>
 
     <RelativeLayout
         android:id="@+id/bottomPanel"

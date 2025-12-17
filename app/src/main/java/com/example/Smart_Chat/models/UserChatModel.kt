@@ -2,7 +2,7 @@ package com.example.Smart_Chat.models
 
 import com.google.firebase.Timestamp
 
-class chatRoomModel {
+class UserChatModel {
     @JvmField
     var chatRoomID: String? = null
 

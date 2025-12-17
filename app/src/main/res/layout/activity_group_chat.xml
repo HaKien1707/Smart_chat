@@ -65,8 +65,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/panel"
-        android:layout_above="@id/bottomPanel"
+        android:layout_above="@id/reply_preview"
         android:padding="10dp" />
+
+    <include
+        android:id="@+id/reply_preview"
+        layout="@layout/layout_reply_preview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/bottomPanel"/>
 
     <RelativeLayout
         android:id="@+id/bottomPanel"

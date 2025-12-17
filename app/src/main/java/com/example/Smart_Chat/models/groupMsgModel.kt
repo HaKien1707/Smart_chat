@@ -32,6 +32,28 @@ class GroupMsgModel {
     @JvmField
     var isDeleted: Boolean = false  // NEW: Track if message is deleted
 
+    // NEW: Reply fields
+    @JvmField
+    var replyToMessageId: String? = null
+
+    @JvmField
+    var replyToText: String? = null
+
+    @JvmField
+    var replyToType: String? = null
+
+    @JvmField
+    var replyToImageUrl: String? = null
+
+    @JvmField
+    var replyToFileName: String? = null
+
+    @JvmField
+    var replyToFileSize: Long? = null
+
+    @JvmField
+    var replyToSenderName: String? = null
+
     constructor()
 
     constructor(
@@ -84,5 +106,41 @@ class GroupMsgModel {
         this.fileSize = fileSize
         this.messageType = messageType
         this.isDeleted = false
+    }
+
+    constructor(
+        senderID: String?,
+        senderName: String?,
+        msg: String?,
+        timestamp: Timestamp?,
+        imageUrl: String? = null,
+        messageType: String? = "text",
+        fileUrl: String? = null,
+        fileName: String? = null,
+        fileSize: Long? = null,
+        replyToMessageId: String? = null,
+        replyToText: String? = null,
+        replyToType: String? = null,
+        replyToImageUrl: String? = null,
+        replyToFileName: String? = null,
+        replyToFileSize: Long? = null,
+        replyToSenderName: String? = null
+    ) {
+        this.senderID = senderID
+        this.senderName = senderName
+        this.msg = msg
+        this.timestamp = timestamp
+        this.imageUrl = imageUrl
+        this.messageType = messageType
+        this.fileUrl = fileUrl
+        this.fileName = fileName
+        this.fileSize = fileSize
+        this.replyToMessageId = replyToMessageId
+        this.replyToText = replyToText
+        this.replyToType = replyToType
+        this.replyToImageUrl = replyToImageUrl
+        this.replyToFileName = replyToFileName
+        this.replyToFileSize = replyToFileSize
+        this.replyToSenderName = replyToSenderName
     }
 }

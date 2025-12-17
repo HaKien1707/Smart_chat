@@ -1,54 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/backgroundColor">
+    android:orientation="vertical">
+
+    <!-- NEW: View Blocked Users Button -->
+    <Button
+        android:id="@+id/view_blocked_users_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Blocked Users"
+        android:background="@drawable/round_corner_button"
+        android:backgroundTint="@color/orange"
+        android:textColor="@color/white"
+        android:layout_margin="16dp"
+        android:padding="12dp" />
 
     <!-- Friends List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/friends_recycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/backgroundColor"
-        android:padding="8dp"
-        android:clipToPadding="false" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp" />
 
     <!-- Empty State -->
     <LinearLayout
         android:id="@+id/empty_state"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center"
         android:visibility="gone">
 
         <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@drawable/ic_no_friends"
-            android:contentDescription="@string/noFriend"
-            android:alpha="0.5"
-            app:tint="?android:textColorSecondary" />
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_profile"
+            android:alpha="0.3"
+            android:contentDescription="No friends" />
 
         <TextView
             android:id="@+id/empty_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/noFriend"
+            android:text="No friends yet"
             android:textSize="18sp"
-            android:textColor="?android:textColorSecondary"
+            android:textColor="@android:color/darker_gray"
             android:layout_marginTop="16dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/searchFriend"
-            android:textSize="14sp"
-            android:textColor="?android:textColorSecondary"
-            android:layout_marginTop="8dp" />
-
     </LinearLayout>
 
-</RelativeLayout>
+</LinearLayout>

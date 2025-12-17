@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.RecentChatRecyclerAdapter
-import com.example.Smart_Chat.models.chatRoomModel
+import com.example.Smart_Chat.models.UserChatModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
@@ -39,8 +39,8 @@ class DeletedChatsActivity : AppCompatActivity() {
     private fun setupRecycler() {
         val query = FireBase_utils.getDeletedChatRoomsQuery()
 
-        val options = FirestoreRecyclerOptions.Builder<chatRoomModel>()
-            .setQuery(query, chatRoomModel::class.java)
+        val options = FirestoreRecyclerOptions.Builder<UserChatModel>()
+            .setQuery(query, UserChatModel::class.java)
             .setLifecycleOwner(this)
             .build()
 

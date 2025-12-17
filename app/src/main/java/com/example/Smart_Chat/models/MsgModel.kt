@@ -30,10 +30,26 @@ class MsgModel {
     var isRead: Boolean = false
 
     @JvmField
-    var readTimestamp: Timestamp? = null
+    var isDeleted: Boolean = false  // Track if message is deleted
+
+    // NEW: Reply fields
+    @JvmField
+    var replyToMessageId: String? = null
 
     @JvmField
-    var isDeleted: Boolean = false  // Track if message is deleted
+    var replyToText: String? = null
+
+    @JvmField
+    var replyToType: String? = null // "text", "image", "file"
+
+    @JvmField
+    var replyToImageUrl: String? = null
+
+    @JvmField
+    var replyToFileName: String? = null
+
+    @JvmField
+    var replyToFileSize: Long? = null
 
     constructor()
 
@@ -62,7 +78,7 @@ class MsgModel {
         this.isDeleted = false
     }
 
-    // NEW: Constructor for file messages
+    // Constructor for file messages
     constructor(
         senderID: String?,
         msg: String?,
@@ -81,5 +97,37 @@ class MsgModel {
         this.messageType = messageType
         this.isRead = false
         this.isDeleted = false
+    }
+
+    constructor(
+        senderID: String?,
+        msg: String?,
+        timestamp: Timestamp?,
+        imageUrl: String? = null,
+        messageType: String? = "text",
+        fileUrl: String? = null,
+        fileName: String? = null,
+        fileSize: Long? = null,
+        replyToMessageId: String? = null,
+        replyToText: String? = null,
+        replyToType: String? = null,
+        replyToImageUrl: String? = null,
+        replyToFileName: String? = null,
+        replyToFileSize: Long? = null
+    ) {
+        this.senderID = senderID
+        this.msg = msg
+        this.timestamp = timestamp
+        this.imageUrl = imageUrl
+        this.messageType = messageType
+        this.fileUrl = fileUrl
+        this.fileName = fileName
+        this.fileSize = fileSize
+        this.replyToMessageId = replyToMessageId
+        this.replyToText = replyToText
+        this.replyToType = replyToType
+        this.replyToImageUrl = replyToImageUrl
+        this.replyToFileName = replyToFileName
+        this.replyToFileSize = replyToFileSize
     }
 }

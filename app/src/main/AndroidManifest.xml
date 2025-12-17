@@ -25,6 +25,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartChat">
         <activity
+            android:name=".activities.group_chat.GroupMembersActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.video_call.IncomingCallActivity"
             android:exported="false" />
         <activity

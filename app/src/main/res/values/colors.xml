@@ -19,6 +19,8 @@
     <color name="black_overlay">#66000000</color>
     <color name="green">#008000</color>
     <color name="orange">#FF7F00</color>
+    <color name="light_gray">#d3d3d3</color>
+
     <color name="announcement_bg">#FFF3E0</color>
 
     <!-- Light Theme Colors -->

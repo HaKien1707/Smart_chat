@@ -1,6 +1,5 @@
 package com.example.Smart_Chat.fragment
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,13 +9,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.adapters.RecentChatRecyclerAdapter
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.activities.user_chat.SearchUserActivity
-import com.example.Smart_Chat.models.chatRoomModel
+import com.example.Smart_Chat.models.UserChatModel
 import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.FireBase_utils.allChatRoomsCollectionReference
-import com.example.Smart_Chat.utils.FireBase_utils.currentUserID
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.Query
 
 class ChatFragment : Fragment() {
@@ -45,8 +40,8 @@ class ChatFragment : Fragment() {
             .whereArrayContains("userID", currentUserID)
             .orderBy("lastMsgTimestamp", Query.Direction.DESCENDING)
 
-        val options = FirestoreRecyclerOptions.Builder<chatRoomModel>()
-            .setQuery(query, chatRoomModel::class.java)
+        val options = FirestoreRecyclerOptions.Builder<UserChatModel>()
+            .setQuery(query, UserChatModel::class.java)
             .setLifecycleOwner(viewLifecycleOwner)  // Important: use viewLifecycleOwner for fragments
             .build()
 

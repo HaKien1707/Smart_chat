@@ -111,7 +111,7 @@ class ForwardMessageActivity : AppCompatActivity() {
             .get()
             .addOnSuccessListener { chatDocs ->
                 chatDocs.forEach { doc ->
-                    val chatRoom = doc.toObject(chatRoomModel::class.java)
+                    val chatRoom = doc.toObject(UserChatModel::class.java)
 
                     // Skip if soft-deleted
                     if (chatRoom.deletedBy.contains(currentUserID)) {

@@ -15,7 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.user_chat.ChatActivity
-import com.example.Smart_Chat.models.chatRoomModel
+import com.example.Smart_Chat.models.UserChatModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
@@ -23,13 +23,13 @@ import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 
 class RecentChatRecyclerAdapter(
-    options: FirestoreRecyclerOptions<chatRoomModel>,
+    options: FirestoreRecyclerOptions<UserChatModel>,
     private val context: Context,
     private val isDeletedView: Boolean = false
-) : FirestoreRecyclerAdapter<chatRoomModel, RecentChatRecyclerAdapter.ChatRoomViewHolder>(options) {
+) : FirestoreRecyclerAdapter<UserChatModel, RecentChatRecyclerAdapter.ChatRoomViewHolder>(options) {
 
     // Filter items based on deleted status
-    private val filteredItems = mutableListOf<chatRoomModel>()
+    private val filteredItems = mutableListOf<UserChatModel>()
     private val currentUserID = FireBase_utils.currentUserID()
 
     override fun onDataChanged() {
@@ -41,7 +41,7 @@ class RecentChatRecyclerAdapter(
         filteredItems.clear()
 
         for (i in 0 until snapshots.size) {
-            val model = snapshots.getSnapshot(i).toObject(chatRoomModel::class.java)
+            val model = snapshots.getSnapshot(i).toObject(UserChatModel::class.java)
             if (model != null) {
                 val isDeletedByCurrentUser = model.deletedBy.contains(currentUserID)
 
@@ -67,7 +67,7 @@ class RecentChatRecyclerAdapter(
         return ChatRoomViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: ChatRoomViewHolder, position: Int, model: chatRoomModel) {
+    override fun onBindViewHolder(holder: ChatRoomViewHolder, position: Int, model: UserChatModel) {
         // This won't be called - we override the other onBindViewHolder below
     }
 
@@ -166,7 +166,7 @@ class RecentChatRecyclerAdapter(
             }
     }
 
-    private fun showDeleteChatDialog(chatRoom: chatRoomModel, position: Int) {
+    private fun showDeleteChatDialog(chatRoom: UserChatModel, position: Int) {
         AlertDialog.Builder(context)
             .setTitle("Delete Chat")
             .setMessage("This chat will be moved to Deleted Chats. You can recover it later or delete it permanently.")
@@ -177,7 +177,7 @@ class RecentChatRecyclerAdapter(
             .show()
     }
 
-    private fun showRecoverDialog(chatRoom: chatRoomModel, position: Int) {
+    private fun showRecoverDialog(chatRoom: UserChatModel, position: Int) {
         AlertDialog.Builder(context)
             .setTitle("Recover Chat")
             .setMessage("What would you like to do?")
@@ -191,7 +191,7 @@ class RecentChatRecyclerAdapter(
             .show()
     }
 
-    private fun showPermanentDeleteDialog(chatRoom: chatRoomModel, position: Int) {
+    private fun showPermanentDeleteDialog(chatRoom: UserChatModel, position: Int) {
         AlertDialog.Builder(context)
             .setTitle("Delete Permanently")
             .setMessage("Are you sure? This will permanently delete all messages. This cannot be undone.")
@@ -202,7 +202,7 @@ class RecentChatRecyclerAdapter(
             .show()
     }
 
-    private fun softDeleteChat(chatRoom: chatRoomModel, position: Int) {
+    private fun softDeleteChat(chatRoom: UserChatModel, position: Int) {
         Log.d("ADAPTER_DELETE", "Deleting chat at position $position: ${chatRoom.chatRoomID}")
 
         FireBase_utils.softDeleteChatRoom(
@@ -233,7 +233,7 @@ class RecentChatRecyclerAdapter(
         )
     }
 
-    private fun recoverChat(chatRoom: chatRoomModel, position: Int) {
+    private fun recoverChat(chatRoom: UserChatModel, position: Int) {
         Log.d("ADAPTER_RECOVER", "Recovering chat at position $position: ${chatRoom.chatRoomID}")
 
         FireBase_utils.recoverChatRoom(
@@ -264,7 +264,7 @@ class RecentChatRecyclerAdapter(
         )
     }
 
-    private fun permanentlyDeleteChat(chatRoom: chatRoomModel, position: Int) {
+    private fun permanentlyDeleteChat(chatRoom: UserChatModel, position: Int) {
         Log.d("ADAPTER_PERM_DELETE", "Permanently deleting chat at position $position: ${chatRoom.chatRoomID}")
 
         FireBase_utils.permanentlyDeleteChatRoom(

@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -16,9 +17,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
+import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.GroupMsgRecyclerAdapter
 import com.example.Smart_Chat.models.GroupMsgModel
+import com.example.Smart_Chat.models.ReplyMessageData
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.CloudinaryHelper
@@ -49,6 +52,15 @@ class GroupChatActivity : AppCompatActivity() {
     private lateinit var sendImageBtn: ImageButton
     private lateinit var chatList: RecyclerView
     private lateinit var groupImage: ImageView
+
+    private lateinit var replyPreviewContainer: View
+    private lateinit var replyText: TextView
+    private lateinit var replyImage: ImageView
+    private lateinit var replySenderName: TextView
+    private lateinit var replyTextContainer: LinearLayout
+    private lateinit var cancelReplyBtn: ImageButton
+
+    private var currentReplyData: ReplyMessageData? = null
 
     private val settingsLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -114,6 +126,18 @@ class GroupChatActivity : AppCompatActivity() {
         chatList = findViewById(R.id.chatList)
         val profileContainer = findViewById<View>(R.id.profile_image_container)
         groupImage = profileContainer.findViewById(R.id.profile_image)
+
+        // NEW: Reply preview views
+        replyPreviewContainer = findViewById(R.id.reply_preview)
+        replyText = replyPreviewContainer.findViewById(R.id.reply_text)
+        replyImage = replyPreviewContainer.findViewById(R.id.reply_image)
+        replySenderName = replyPreviewContainer.findViewById(R.id.reply_sender_name)
+        replyTextContainer = replyPreviewContainer.findViewById(R.id.reply_text_container)
+        cancelReplyBtn = replyPreviewContainer.findViewById(R.id.cancel_reply_btn)
+
+        cancelReplyBtn.setOnClickListener {
+            cancelReply()
+        }
 
         // Set click listeners
         backBTN.setOnClickListener {
@@ -265,6 +289,83 @@ class GroupChatActivity : AppCompatActivity() {
             }
     }
 
+    // NEW: Set reply message from adapter
+    fun setReplyMessage(replyData: ReplyMessageData) {
+        currentReplyData = replyData
+        showReplyPreview(replyData)
+    }
+
+    // NEW: Show reply preview
+    private fun showReplyPreview(replyData: ReplyMessageData) {
+        replyPreviewContainer.visibility = View.VISIBLE
+
+        // Show sender name for group chat
+        if (!replyData.senderName.isNullOrEmpty()) {
+            replySenderName.visibility = View.VISIBLE
+            replySenderName.text = replyData.senderName
+        } else {
+            replySenderName.visibility = View.GONE
+        }
+
+        when (replyData.type) {
+            "text" -> {
+                replyTextContainer.visibility = View.VISIBLE
+                replyImage.visibility = View.GONE
+                replyText.text = replyData.text
+            }
+            "image" -> {
+                replyTextContainer.visibility = View.GONE
+                replyImage.visibility = View.VISIBLE
+                Glide.with(this)
+                    .load(replyData.imageUrl)
+                    .placeholder(R.drawable.ic_image_loading)
+                    .into(replyImage)
+            }
+            "file" -> {
+                replyTextContainer.visibility = View.VISIBLE
+                replyImage.visibility = View.GONE
+                val fileName = replyData.fileName ?: "File"
+                val fileSize = formatFileSize(replyData.fileSize ?: 0)
+                replyText.text = "📎 $fileName\n$fileSize"
+            }
+        }
+    }
+
+    // NEW: Cancel reply
+    private fun cancelReply() {
+        currentReplyData = null
+        replyPreviewContainer.visibility = View.GONE
+    }
+
+    // NEW: Scroll to specific position
+    fun scrollToPosition(position: Int) {
+        chatList.smoothScrollToPosition(position)
+
+        chatList.postDelayed({
+            val viewHolder = chatList.findViewHolderForAdapterPosition(position)
+            viewHolder?.itemView?.let { view ->
+                view.animate()
+                    .alpha(0.3f)
+                    .setDuration(200)
+                    .withEndAction {
+                        view.animate()
+                            .alpha(1f)
+                            .setDuration(200)
+                            .start()
+                    }
+                    .start()
+            }
+        }, 300)
+    }
+
+    private fun formatFileSize(size: Long): String {
+        return when {
+            size < 1024 -> "$size B"
+            size < 1024 * 1024 -> "${size / 1024} KB"
+            else -> String.format("%.2f MB", size / (1024.0 * 1024.0))
+        }
+    }
+
     private fun listenForGroupChanges() {
         // Listen to group document changes in real-time
         FireBase_utils.getGroupReference(groupID)
@@ -301,7 +402,6 @@ class GroupChatActivity : AppCompatActivity() {
     }
 
     private fun sendMsgToGroup(msg: String) {
-        // Update last message info in group
         FireBase_utils.getGroupReference(groupID)
             .update(
                 mapOf(
@@ -310,22 +410,36 @@ class GroupChatActivity : AppCompatActivity() {
                     "lastMsgTimestamp" to Timestamp.now()
                 )
             )
-            .addOnFailureListener { e ->
-                Log.e("GroupChatActivity", "Failed to update group", e)
-            }
 
-        // Add actual message to messages subcollection
-        val msgModel = GroupMsgModel(
-            FireBase_utils.currentUserID(),
-            currentUserName ?: "Unknown",
-            msg,
-            Timestamp.now()
-        )
+        val msgModel = if (currentReplyData != null) {
+            GroupMsgModel(
+                FireBase_utils.currentUserID(),
+                currentUserName ?: "Unknown",
+                msg,
+                Timestamp.now(),
+                messageType = "text",
+                replyToMessageId = currentReplyData!!.messageId,
+                replyToText = currentReplyData!!.text,
+                replyToType = currentReplyData!!.type,
+                replyToImageUrl = currentReplyData!!.imageUrl,
+                replyToFileName = currentReplyData!!.fileName,
+                replyToFileSize = currentReplyData!!.fileSize,
+                replyToSenderName = currentReplyData!!.senderName
+            )
+        } else {
+            GroupMsgModel(
+                FireBase_utils.currentUserID(),
+                currentUserName ?: "Unknown",
+                msg,
+                Timestamp.now()
+            )
+        }
 
         FireBase_utils.getGroupMessagesReference(groupID)
             .add(msgModel)
             .addOnSuccessListener {
                 chatBox.setText("")
+                cancelReply() // NEW: Clear reply state
                 sendNotificationToMembers(msg)
             }
             .addOnFailureListener { e ->

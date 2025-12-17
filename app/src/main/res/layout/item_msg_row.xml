@@ -1,129 +1,151 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:padding="6dp">
 
     <!-- Sender bubble (from others) - LEFT SIDE -->
     <LinearLayout
         android:id="@+id/sender"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:orientation="horizontal"
+        android:gravity="start"
+        android:padding="8dp"
+        android:visibility="gone">
 
-        <!-- Container for message (text or image) -->
-        <FrameLayout
-            android:id="@+id/senderMessageContainer"
+        <!-- Optional avatar (can add later) -->
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/input_box"
-            android:backgroundTint="@color/lime"
-            android:padding="10dp"
-            android:layout_margin="5dp">
+            android:orientation="vertical"
+            android:layout_marginStart="8dp">
 
-            <!-- Message Text -->
-            <TextView
-                android:id="@+id/senderMsg"
+            <!-- Replied message -->
+            <include
+                android:id="@+id/sender_replied_message"
+                layout="@layout/layout_replied_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <!-- Message bubble -->
+            <FrameLayout
+                android:id="@+id/senderMessageContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:maxWidth="250dp"
-                android:visibility="gone" />
+                android:background="@drawable/input_box"
+                android:backgroundTint="@color/lime"
+                android:padding="10dp"
+                android:layout_margin="5dp">
 
-            <!-- Image for sender -->
-            <ImageView
-                android:id="@+id/senderImage"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:scaleType="centerCrop"
-                android:visibility="gone"
-                android:contentDescription="Sent image" />
-        </FrameLayout>
+                <TextView
+                    android:id="@+id/senderMsg"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxWidth="250dp"
+                    android:textSize="18sp"
+                    android:textColor="@color/black"
+                    android:visibility="gone"/>
 
-        <!-- Timestamp below message -->
-        <TextView
-            android:id="@+id/senderTimestamp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="11sp"
-            android:textColor="#808080"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="2dp"
-            android:text="10:30 AM" />
+                <ImageView
+                    android:id="@+id/senderImage"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone"/>
+            </FrameLayout>
+
+            <!-- Timestamp -->
+            <TextView
+                android:id="@+id/senderTimestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:layout_marginStart="10dp"
+                android:text="10:30 AM"/>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Receiver bubble (your messages) - RIGHT SIDE -->
     <LinearLayout
         android:id="@+id/receiver"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:padding="8dp"
+        android:visibility="gone">
 
-        <!-- Container for message (text or image) -->
-        <FrameLayout
-            android:id="@+id/receiverMessageContainer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/input_box"
-            android:backgroundTint="@color/violet"
-            android:padding="10dp"
-            android:layout_margin="5dp">
-
-            <!-- Your messages text -->
-            <TextView
-                android:id="@+id/receiverMsg"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:maxWidth="250dp"
-                android:visibility="gone" />
-
-            <!-- Image for receiver -->
-            <ImageView
-                android:id="@+id/receiverImage"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:scaleType="centerCrop"
-                android:visibility="gone"
-                android:contentDescription="Received image" />
-        </FrameLayout>
-
-        <!-- Timestamp and Read Status -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_gravity="end"
-            android:layout_marginEnd="10dp"
-            android:layout_marginTop="2dp">
+            android:orientation="vertical"
+            android:layout_marginEnd="8dp">
 
-            <TextView
-                android:id="@+id/receiverTimestamp"
+            <!-- Replied message -->
+            <include
+                android:id="@+id/receiver_replied_message"
+                layout="@layout/layout_replied_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <!-- Message bubble -->
+            <FrameLayout
+                android:id="@+id/receiverMessageContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="11sp"
-                android:textColor="#808080"
-                android:text="10:30 AM"
-                android:layout_marginEnd="4dp" />
+                android:background="@drawable/input_box"
+                android:backgroundTint="@color/violet"
+                android:padding="10dp"
+                android:layout_margin="5dp">
 
-            <!-- Read Status Icon -->
-            <ImageView
-                android:id="@+id/readStatusIcon"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@drawable/ic_message_sent"
-                android:layout_gravity="center_vertical"
-                android:contentDescription="Message status" />
+                <TextView
+                    android:id="@+id/receiverMsg"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:textColor="@color/white"
+                    android:maxWidth="250dp"
+                    android:visibility="gone"/>
+
+                <ImageView
+                    android:id="@+id/receiverImage"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone"/>
+            </FrameLayout>
+
+            <!-- Timestamp + read status -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="end"
+                android:layout_marginTop="2dp">
+
+                <TextView
+                    android:id="@+id/receiverTimestamp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="11sp"
+                    android:textColor="#808080"
+                    android:layout_marginEnd="4dp"
+                    android:text="10:30 AM"/>
+
+                <ImageView
+                    android:id="@+id/readStatusIcon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_message_sent"/>
+            </LinearLayout>
+
         </LinearLayout>
+
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

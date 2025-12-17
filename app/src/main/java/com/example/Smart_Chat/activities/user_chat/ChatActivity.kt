@@ -1,69 +1,64 @@
 package com.example.Smart_Chat.activities.user_chat
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Base64
 import android.util.Log
 import android.view.View
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SimpleItemAnimator
+import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.MsgRecyclerAdapter
-import com.example.Smart_Chat.models.MsgModel
-import com.example.Smart_Chat.models.chatRoomModel
-import com.example.Smart_Chat.models.userModel
+import com.example.Smart_Chat.models.*
+import com.example.Smart_Chat.utils.*
 import com.example.Smart_Chat.utils.CloudinaryHelper
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.MediaMessageHelper
-import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.androidUtils
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.github.dhaval2404.imagepicker.ImagePicker
-import com.google.auth.oauth2.GoogleCredentials
-import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.Query
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
-import org.json.JSONObject
-import java.io.IOException
+import java.io.ByteArrayOutputStream
 
 class ChatActivity : AppCompatActivity() {
 
-    private var user2nd: userModel? = null
-    private lateinit var backBTN: ImageButton
-    private lateinit var panelName: TextView
-    private lateinit var chatBox: EditText
+    private lateinit var backBtn: ImageButton
+    private lateinit var profileImage: ImageView
+    private lateinit var userName: TextView
+    private lateinit var msgInput: EditText
     private lateinit var sendBtn: ImageButton
     private lateinit var sendImageBtn: ImageButton
-    private lateinit var chatList: RecyclerView
-    private lateinit var profileImage: ImageView
+    private lateinit var attachBtn: ImageButton
+    private lateinit var msgRecycler: RecyclerView
 
-    private lateinit var chatRoomID: String
-    private var chatRoom: chatRoomModel? = null
+    // NEW: Reply preview views
+    private lateinit var replyPreviewContainer: View
+    private lateinit var replyText: TextView
+    private lateinit var replyImage: ImageView
+    private lateinit var replySenderName: TextView
+    private lateinit var replyTextContainer: LinearLayout
+    private lateinit var cancelReplyBtn: ImageButton
+
+    private var otherUser: userModel? = null
+    private var chatRoomID: String? = null
     private lateinit var adapter: MsgRecyclerAdapter
-    private lateinit var sendFileBtn: ImageButton
+
+    // NEW: Current reply state
+    private var currentReplyData: ReplyMessageData? = null
 
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == RESULT_OK) {
                 val uri = result.data?.data
                 if (uri != null) {
-                    uploadAndSendImage(uri)
+                    sendImageMessage(uri)
                 }
             }
         }
@@ -73,114 +68,234 @@ class ChatActivity : AppCompatActivity() {
             if (result.resultCode == RESULT_OK) {
                 val uri = result.data?.data
                 if (uri != null) {
-                    uploadAndSendFile(uri)
+                    sendFileMessage(uri)
                 }
             }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Apply theme and language
         ThemeManager.applySavedTheme(this)
         LanguageManager.applySavedLanguage(this)
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
 
-        // Initialize Cloudinary
+        otherUser = androidUtils.getUserModelFromIntent(intent)
+
         CloudinaryHelper.initCloudinary(this)
 
-        // Get user model
-        user2nd = androidUtils.getUserModelFromIntent(intent)
-
-        if (user2nd == null) {
-            Log.e("ChatActivity", "user2nd is null!")
+        if (otherUser == null) {
+            Toast.makeText(this, "Error loading user", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
 
-        // CHECK FRIENDSHIP STATUS FIRST
-        checkFriendshipBeforeChat()
-    }
-
-    private fun checkFriendshipBeforeChat() {
-        FireBase_utils.checkFriendshipStatus(user2nd?.userID ?: "") { status ->
-            runOnUiThread {
-                when (status) {
-                    FireBase_utils.FriendshipStatus.FRIENDS -> {
-                        // They're friends - proceed with chat setup
-                        setupChat()
-                    }
-                    else -> {
-                        // Not friends - redirect to NotFriendsActivity
-                        val intent = Intent(this, NotFriendsActivity::class.java)
-                        androidUtils.passUserModelAsIntent(intent, user2nd)
-                        startActivity(intent)
-                        finish()
-                    }
-                }
-            }
-        }
-    }
-
-    fun getChatRoomID(): String {
-        return chatRoomID
-    }
-
-    private fun setupChat() {
         chatRoomID = FireBase_utils.getChatRoomID(
-            user2nd?.userID,
-            FireBase_utils.currentUserID()
+            FireBase_utils.currentUserID(),
+            otherUser?.userID
         )
 
-        // Initialize views
-        backBTN = findViewById(R.id.back_btn)
-        panelName = findViewById(R.id.panelName)
-        chatBox = findViewById(R.id.chatBox)
+        initViews()
+        setupUI()
+        setupRecycler()
+    }
+
+    private fun initViews() {
+        backBtn = findViewById(R.id.back_btn)
+        profileImage = findViewById(R.id.profile_image)
+        userName = findViewById(R.id.user_name)
+        msgInput = findViewById(R.id.chatBox)
         sendBtn = findViewById(R.id.sendBtn)
+        attachBtn = findViewById(R.id.send_file_btn)
         sendImageBtn = findViewById(R.id.send_image_btn)
-        sendFileBtn = findViewById(R.id.send_file_btn)
-        chatList = findViewById(R.id.chatList)
-        val profileContainer = findViewById<View>(R.id.profile_image_container)
-        profileImage = profileContainer.findViewById(R.id.profile_image)
+        msgRecycler = findViewById(R.id.chatList)
 
-        backBTN.setOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
+        // NEW: Reply preview views
+        replyPreviewContainer = findViewById(R.id.reply_preview)
+        replyText = replyPreviewContainer.findViewById(R.id.reply_text)
+        replyImage = replyPreviewContainer.findViewById(R.id.reply_image)
+        replySenderName = replyPreviewContainer.findViewById(R.id.reply_sender_name)
+        replyTextContainer = replyPreviewContainer.findViewById(R.id.reply_text_container)
+        cancelReplyBtn = replyPreviewContainer.findViewById(R.id.cancel_reply_btn)
+
+        backBtn.setOnClickListener { finish() }
+        sendBtn.setOnClickListener { sendMessage() }
+        sendImageBtn.setOnClickListener { pickImage() }
+        attachBtn.setOnClickListener { pickFile() }
+
+        // NEW: Cancel reply button
+        cancelReplyBtn.setOnClickListener {
+            cancelReply()
+        }
+    }
+
+    private fun setupUI() {
+        userName.text = otherUser?.username
+
+        if (!otherUser?.profileImage.isNullOrEmpty()) {
+            androidUtils.setProfileImageFromBase64(
+                this,
+                otherUser?.profileImage!!,
+                profileImage
+            )
         }
 
-        panelName.text = user2nd?.username
+        // Open user profile on click
+        profileImage.setOnClickListener {
+            // Open profile activity if needed
+        }
+    }
 
-        // Load profile image
-        val imageUrl = user2nd?.profileImage
-        if (!imageUrl.isNullOrBlank()) {
-            androidUtils.setProfileImageFromBase64(this, imageUrl, profileImage)
-        } else {
-            profileImage.setImageResource(R.drawable.ic_profile)
+    private fun setupRecycler() {
+        val query = FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!)
+            .orderBy("timestamp", Query.Direction.ASCENDING)
+
+        val options = FirestoreRecyclerOptions.Builder<MsgModel>()
+            .setQuery(query, MsgModel::class.java)
+            .build()
+
+        adapter = MsgRecyclerAdapter(options, this)
+
+        // Disable item animator to prevent inconsistency crashes
+        try {
+            val animator = msgRecycler.itemAnimator
+            if (animator is androidx.recyclerview.widget.SimpleItemAnimator) {
+                animator.supportsChangeAnimations = false
+            }
+            msgRecycler.itemAnimator = null
+        } catch (e: Exception) {
+            Log.w("ChatActivity", "Failed to modify itemAnimator: ${e.message}")
         }
 
-        sendBtn.setOnClickListener {
-            val msg = chatBox.text.toString().trim()
-            if (msg.isNotEmpty()) {
-                sendMsgToUser(msg)
+        val layoutManager = LinearLayoutManager(this)
+        layoutManager.stackFromEnd = true
+        msgRecycler.layoutManager = layoutManager
+        msgRecycler.adapter = adapter
+
+        adapter.startListening()
+
+        adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                super.onItemRangeInserted(positionStart, itemCount)
+                msgRecycler.smoothScrollToPosition(adapter.itemCount)
+            }
+        })
+    }
+
+    // NEW: Set reply message from adapter
+    fun setReplyMessage(replyData: ReplyMessageData) {
+        currentReplyData = replyData
+        showReplyPreview(replyData)
+    }
+
+    // NEW: Show reply preview
+    private fun showReplyPreview(replyData: ReplyMessageData) {
+        replyPreviewContainer.visibility = View.VISIBLE
+
+        // Hide sender name for 1-on-1 chat
+        replySenderName.visibility = View.GONE
+
+        when (replyData.type) {
+            "text" -> {
+                replyTextContainer.visibility = View.VISIBLE
+                replyImage.visibility = View.GONE
+                replyText.text = replyData.text
+            }
+            "image" -> {
+                replyTextContainer.visibility = View.GONE
+                replyImage.visibility = View.VISIBLE
+                Glide.with(this)
+                    .load(replyData.imageUrl)
+                    .placeholder(R.drawable.ic_image_loading)
+                    .into(replyImage)
+            }
+            "file" -> {
+                replyTextContainer.visibility = View.VISIBLE
+                replyImage.visibility = View.GONE
+                val fileName = replyData.fileName ?: "File"
+                val fileSize = formatFileSize(replyData.fileSize ?: 0)
+                replyText.text = "📎 $fileName\n$fileSize"
             }
         }
+    }
 
-        sendImageBtn.setOnClickListener {
-            pickImage()
+    // NEW: Cancel reply
+    private fun cancelReply() {
+        currentReplyData = null
+        replyPreviewContainer.visibility = View.GONE
+    }
+
+    // NEW: Scroll to specific position
+    fun scrollToPosition(position: Int) {
+        msgRecycler.smoothScrollToPosition(position)
+
+        // Optional: Highlight the message briefly
+        msgRecycler.postDelayed({
+            val viewHolder = msgRecycler.findViewHolderForAdapterPosition(position)
+            viewHolder?.itemView?.let { view ->
+                // Flash animation
+                view.animate()
+                    .alpha(0.3f)
+                    .setDuration(200)
+                    .withEndAction {
+                        view.animate()
+                            .alpha(1f)
+                            .setDuration(200)
+                            .start()
+                    }
+                    .start()
+            }
+        }, 300)
+    }
+
+    private fun sendMessage() {
+        val messageText = msgInput.text.toString().trim()
+
+        if (messageText.isEmpty()) {
+            msgInput.error = "Enter a message"
+            return
         }
 
-        sendFileBtn.setOnClickListener {
-            pickFile()
+        // NEW: Create message with reply data if exists
+        val msgModel = if (currentReplyData != null) {
+            MsgModel(
+                senderID = FireBase_utils.currentUserID(),
+                msg = messageText,
+                timestamp = Timestamp.now(),
+                messageType = "text",
+                replyToMessageId = currentReplyData!!.messageId,
+                replyToText = currentReplyData!!.text,
+                replyToType = currentReplyData!!.type,
+                replyToImageUrl = currentReplyData!!.imageUrl,
+                replyToFileName = currentReplyData!!.fileName,
+                replyToFileSize = currentReplyData!!.fileSize
+            )
+        } else {
+            MsgModel(
+                senderID = FireBase_utils.currentUserID(),
+                msg = messageText,
+                timestamp = Timestamp.now(),
+                messageType = "text"
+            )
         }
 
-        getOrCreateChatRoom {
-            // Setup recycler AFTER chat room exists
-            setupChatRecycler()
-        }
+        // Send message
+        FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!)
+            .add(msgModel)
+            .addOnSuccessListener {
+                msgInput.setText("")
+                cancelReply() // NEW: Clear reply state
+                updateChatRoom(messageText, "text")
+            }
+            .addOnFailureListener { e ->
+                Log.e("CHAT", "Failed to send message", e)
+                Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun pickImage() {
         ImagePicker.with(this)
-            .compress(512)
+            .compress(1024)
             .maxResultSize(1080, 1080)
             .createIntent { intent -> imagePickerLauncher.launch(intent) }
     }
@@ -205,252 +320,88 @@ class ChatActivity : AppCompatActivity() {
         filePickerLauncher.launch(intent)
     }
 
-    private fun uploadAndSendImage(imageUri: Uri) {
-        sendImageBtn.isEnabled = false
+    private fun sendImageMessage(imageUri: Uri) {
+        attachBtn.isEnabled = false
 
         MediaMessageHelper.uploadAndSendImage(
             this,
             imageUri,
-            FireBase_utils.getChatRoomReferences(chatRoomID),
-            FireBase_utils.getChatRoomMessagesReferences(chatRoomID),
+            FireBase_utils.getChatRoomReferences(chatRoomID!!),
+            FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!),
             FireBase_utils.currentUserID()!!,
             null,
             MediaMessageHelper.MessageType.ONE_TO_ONE,
             null,
             onSuccess = {
                 runOnUiThread {
-                    sendImageBtn.isEnabled = true
-                    sendNotification("📷 Photo")
+                    attachBtn.isEnabled = true
+                    cancelReply()
                 }
             },
             onError = {
                 runOnUiThread {
-                    sendImageBtn.isEnabled = true
+                    attachBtn.isEnabled = true
                 }
             }
         )
     }
 
-    private fun uploadAndSendFile(fileUri: Uri) {
-        sendFileBtn.isEnabled = false
+    private fun sendFileMessage(fileUri: Uri) {
+        attachBtn.isEnabled = false
 
         MediaMessageHelper.uploadAndSendFile(
             this,
             fileUri,
-            FireBase_utils.getChatRoomReferences(chatRoomID),
-            FireBase_utils.getChatRoomMessagesReferences(chatRoomID),
+            FireBase_utils.getChatRoomReferences(chatRoomID!!),
+            FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!),
             FireBase_utils.currentUserID()!!,
-            null,
+            null, // No sender name for 1-on-1
             MediaMessageHelper.MessageType.ONE_TO_ONE,
-            null,
+            null, // No encryption for regular chat
             onSuccess = {
                 runOnUiThread {
-                    sendFileBtn.isEnabled = true
-                    sendNotification("📎 File")
+                    attachBtn.isEnabled = true
+                    cancelReply()
                 }
             },
             onError = {
                 runOnUiThread {
-                    sendFileBtn.isEnabled = true
+                    attachBtn.isEnabled = true
                 }
             }
         )
     }
 
-    private fun getOrCreateChatRoom(onComplete: () -> Unit = {}) {
-        FireBase_utils.getChatRoomReferences(chatRoomID).get()
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    chatRoom = task.result.toObject(chatRoomModel::class.java)
-
-                    if (chatRoom == null) {
-                        // Create new chatroom
-                        chatRoom = chatRoomModel(
-                            chatRoomID,
-                            mutableListOf(FireBase_utils.currentUserID(), user2nd?.userID),
-                            "",
-                            "",
-                            Timestamp.now()
-                        )
-
-                        FireBase_utils.getChatRoomReferences(chatRoomID)
-                            .set(chatRoom!!)
-                            .addOnSuccessListener {
-                                Log.d("CHATROOM", "Created: $chatRoomID")
-                                onComplete() // ✅ Call after creation
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("CHATROOM", "ERROR: ${e.message}")
-                                onComplete() // Still call to show UI
-                            }
-                    } else {
-                        // Check if chat was soft-deleted by current user
-                        val currentUserID = FireBase_utils.currentUserID()
-                        if (chatRoom?.deletedBy?.contains(currentUserID) == true) {
-                            FireBase_utils.recoverChatRoom(
-                                chatRoomID,
-                                onSuccess = {
-                                    Log.d("CHATROOM", "Chat auto-recovered")
-                                    onComplete()
-                                },
-                                onFailure = { e ->
-                                    Log.e("CHATROOM", "Failed to auto-recover: ${e.message}")
-                                    onComplete()
-                                }
-                            )
-                        } else {
-                            onComplete() // Chat exists, proceed
-                        }
-                    }
-                } else {
-                    onComplete() // Error, but still show UI
-                }
-            }
-    }
-
-    private fun sendMsgToUser(msg: String) {
-        FireBase_utils.getChatRoomReferences(chatRoomID)
+    private fun updateChatRoom(lastMsg: String, messageType: String) {
+        FireBase_utils.getChatRoomReferences(chatRoomID!!)
             .update(
                 mapOf(
-                    "lastMsg" to msg,
+                    "lastMsg" to lastMsg,
                     "lastMsgSenderID" to FireBase_utils.currentUserID(),
-                    "lastMsgTimestamp" to Timestamp.Companion.now()
+                    "lastMsgTimestamp" to Timestamp.now(),
+                    "deletedBy" to emptyList<String>()
                 )
             )
-
-        val msgModel = MsgModel(
-            FireBase_utils.currentUserID(),
-            msg,
-            Timestamp.Companion.now()
-        )
-
-        FireBase_utils.getChatRoomMessagesReferences(chatRoomID)
-            .add(msgModel)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    chatBox.setText("")
-                    sendNotification(msg)
-                }
-            }
     }
 
-    private fun setupChatRecycler() {
-        val query = FireBase_utils.getChatRoomMessagesReferences(chatRoomID)
-            .orderBy("timestamp", Query.Direction.ASCENDING)
-
-        val options = FirestoreRecyclerOptions.Builder<MsgModel>()
-            .setQuery(query, MsgModel::class.java)
-            .setLifecycleOwner(this)
-            .build()
-
-        adapter = MsgRecyclerAdapter(options, this)
-
-        try {
-            val animator = chatList.itemAnimator
-            if (animator is SimpleItemAnimator) {
-                animator.supportsChangeAnimations = false
-            }
-            chatList.itemAnimator = null
-        } catch (e: Exception) {
-            Log.w("ChatActivity", "Failed to modify itemAnimator: ${e.message}")
-        }
-
-        val manager = LinearLayoutManager(this).apply {
-            stackFromEnd = true
-        }
-
-        chatList.layoutManager = manager
-        chatList.adapter = adapter
-
-        adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                super.onItemRangeInserted(positionStart, itemCount)
-                chatList.post {
-                    if (adapter.itemCount > 0) {
-                        chatList.scrollToPosition(adapter.itemCount - 1)
-                    }
-                }
-            }
-        })
-    }
-
-    private fun sendNotification(msg: String) {
-        val recipientToken = user2nd?.fcmToken
-
-        if (recipientToken.isNullOrEmpty()) {
-            return
-        }
-
-        FireBase_utils.currentUserDetails().get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val currentUser = task.result.toObject(userModel::class.java)
-
-                try {
-                    val jsonObject = JSONObject().apply {
-                        put("message", JSONObject().apply {
-                            put("token", user2nd?.fcmToken)
-                            put("notification", JSONObject().apply {
-                                put("title", currentUser?.username ?: "")
-                                put("body", msg)
-                            })
-                            put("data", JSONObject().apply {
-                                put("userID", currentUser?.userID ?: "")
-                            })
-                        })
-                    }
-
-                    callAPI(jsonObject)
-                } catch (e: Exception) {
-                    Log.e("NOTIFICATION", "Error creating notification", e)
-                }
-            }
+    private fun formatFileSize(size: Long): String {
+        return when {
+            size < 1024 -> "$size B"
+            size < 1024 * 1024 -> "${size / 1024} KB"
+            else -> String.format("%.2f MB", size / (1024.0 * 1024.0))
         }
     }
 
-    private fun callAPI(jsonObject: JSONObject) {
-        Thread {
-            try {
-                val accessToken = getAccessToken()
-                val json = "application/json".toMediaType()
-                val client = OkHttpClient()
-                val projectId = FirebaseApp.getInstance().options.projectId
-                val url = "https://fcm.googleapis.com/v1/projects/$projectId/messages:send"
+    // NEW: Public method to get chat room ID (for adapter)
+    fun getChatRoomID(): String? = chatRoomID
 
-                val requestBody = jsonObject.toString().toRequestBody(json)
-                val request = Request.Builder()
-                    .url(url)
-                    .post(requestBody)
-                    .header("Authorization", "Bearer $accessToken")
-                    .header("Content-Type", "application/json")
-                    .build()
-
-                client.newCall(request).enqueue(object : Callback {
-                    override fun onFailure(call: Call, e: IOException) {
-                        Log.e("NOTIFICATION", "Failed to send notification", e)
-                    }
-
-                    override fun onResponse(call: Call, response: Response) {
-                        val responseBody = response.body?.string() ?: ""
-                        if (response.isSuccessful) {
-                            Log.d("NOTIFICATION", "Notification sent successfully")
-                        } else {
-                            Log.e("NOTIFICATION", "Failed: ${response.code} - $responseBody")
-                        }
-                    }
-                })
-            } catch (e: Exception) {
-                Log.e("NOTIFICATION", "Error in callAPI", e)
-            }
-        }.start()
+    override fun onStart() {
+        super.onStart()
+        adapter.startListening()
     }
 
-    @Throws(IOException::class)
-    private fun getAccessToken(): String {
-        val googleCredentials = GoogleCredentials
-            .fromStream(resources.openRawResource(R.raw.service_account))
-            .createScoped(listOf("https://www.googleapis.com/auth/firebase.messaging"))
-
-        googleCredentials.refresh()
-        return googleCredentials.accessToken.tokenValue
+    override fun onStop() {
+        super.onStop()
+        adapter.stopListening()
     }
 }
