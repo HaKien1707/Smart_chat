@@ -10,13 +10,16 @@ class groupModel {
     var groupName: String? = null
 
     @JvmField
-    var groupImage: String? = null  // Base64 encoded image
+    var groupImage: String? = null
 
     @JvmField
-    var memberIDs: MutableList<String?>? = null  // List of user IDs in the group
+    var memberIDs: MutableList<String?>? = null
 
     @JvmField
-    var adminIDs: MutableList<String?>? = null  // List of admin user IDs
+    var adminIDs: MutableList<String?>? = null
+
+    @JvmField
+    var blockedUserIDs: MutableList<String> = mutableListOf() // NEW: Blocked users list
 
     @JvmField
     var lastMsg: String? = null
@@ -30,7 +33,7 @@ class groupModel {
     var createdTimestamp: Timestamp? = null
 
     @JvmField
-    var createdBy: String? = null  // User ID who created the group
+    var createdBy: String? = null
 
     constructor()
 
@@ -50,5 +53,6 @@ class groupModel {
         this.adminIDs = adminIDs
         this.createdTimestamp = createdTimestamp
         this.createdBy = createdBy
+        this.blockedUserIDs = mutableListOf()
     }
 }

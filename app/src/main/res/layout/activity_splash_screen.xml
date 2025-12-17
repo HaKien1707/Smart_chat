@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/lazuli"
-    tools:context="com.example.Smart_Chat.splashScreenActivity">
+    tools:context="com.example.Smart_Chat.activities.login.splashScreenActivity">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

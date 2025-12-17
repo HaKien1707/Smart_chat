@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/backgroundColor">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Top Panel -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/lazuli"
+            android:padding="12dp">
+
+            <ImageButton
+                android:id="@+id/back_btn"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_back"
+                android:contentDescription="Back" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="Create Community"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/black" />
+
+        </RelativeLayout>
+
+        <!-- Community Image -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="24dp">
+
+            <ImageView
+                android:id="@+id/community_image"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/ic_community"
+                android:background="@drawable/circle_bg"
+                android:scaleType="centerCrop"
+                android:contentDescription="Community image" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tap to add image"
+                android:textSize="14sp"
+                android:textColor="?android:textColorSecondary"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
+
+        <!-- Community Name -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Community Name"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="?android:textColorPrimary"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp" />
+
+        <EditText
+            android:id="@+id/community_name_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="8dp"
+            android:background="?attr/inputBoxBackground"
+            android:padding="16dp"
+            android:hint="Enter community name"
+            android:textColor="?attr/editTextColor"
+            android:textColorHint="?android:textColorSecondary"
+            android:inputType="text"
+            android:maxLines="1" />
+
+        <!-- Community Description -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Description"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="?android:textColorPrimary"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="24dp" />
+
+        <EditText
+            android:id="@+id/community_desc_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="8dp"
+            android:background="?attr/inputBoxBackground"
+            android:padding="16dp"
+            android:hint="Enter community description"
+            android:textColor="?attr/editTextColor"
+            android:textColorHint="?android:textColorSecondary"
+            android:inputType="textMultiLine"
+            android:minLines="3"
+            android:maxLines="5"
+            android:gravity="top" />
+
+        <!-- Create Button -->
+        <Button
+            android:id="@+id/create_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="24dp"
+            android:text="Create Community"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:backgroundTint="@color/my_primary"
+            android:textColor="@color/white"
+            android:padding="16dp" />
+
+    </LinearLayout>
+
+</ScrollView>

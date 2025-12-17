@@ -1,10 +1,30 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme -->
-    <style name="Base.Theme.Smart_Chat" parent="Theme.AppCompat.Light.NoActionBar">
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Light Theme -->
+    <style name="Theme.SmartChat" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Primary brand color -->
         <item name="colorPrimary">@color/lazuli</item>
         <item name="colorPrimaryVariant">@color/lazuli</item>
-        <item name="colorOnPrimary">@color/white</item>
-    </style>
+        <item name="colorOnPrimary">@color/black</item>
 
-    <style name="Theme.Smart_Chat" parent="Base.Theme.Smart_Chat" />
+        <!-- Background colors -->
+        <item name="android:windowBackground">@color/background_light</item>
+        <item name="backgroundColor">@color/background_light</item>
+        <item name="cardBackgroundColor">@color/card_background_light</item>
+
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">@color/text_primary_light</item>
+        <item name="android:textColorSecondary">@color/text_secondary_light</item>
+
+        <!-- EditText colors -->
+        <item name="editTextColor">@color/text_primary_light</item>
+        <item name="android:editTextColor">@color/text_primary_light</item>
+        <item name="android:textColorHint">@color/text_secondary_light</item>
+
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/lazuli</item>
+
+        <!-- Custom attributes -->
+        <item name="inputBoxBackground">@drawable/input_box_light</item>
+    </style>
 </resources>

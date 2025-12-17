@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- NEW: View Blocked Users Button -->
+    <Button
+        android:id="@+id/view_blocked_users_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Blocked Users"
+        android:background="@drawable/round_corner_button"
+        android:backgroundTint="@color/orange"
+        android:textColor="@color/white"
+        android:layout_margin="16dp"
+        android:padding="12dp" />
+
+    <!-- Friends List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/friends_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp" />
+
+    <!-- Empty State -->
+    <LinearLayout
+        android:id="@+id/empty_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_profile"
+            android:alpha="0.3"
+            android:contentDescription="No friends" />
+
+        <TextView
+            android:id="@+id/empty_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No friends yet"
+            android:textSize="18sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
+
+</LinearLayout>

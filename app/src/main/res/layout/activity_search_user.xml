@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.Smart_Chat.SearchUserActivity">
+    tools:context="com.example.Smart_Chat.activities.user_chat.SearchUserActivity">
 
     <RelativeLayout
         android:id="@+id/panel"
@@ -52,7 +52,9 @@
             android:id="@+id/searchUserInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/input_box"
+            android:background="?attr/inputBoxBackground"
+            android:textColor="?attr/editTextColor"
+            android:textColorHint="?android:textColorSecondary"
             android:layout_centerInParent="true"
             android:layout_marginHorizontal="10dp"
             android:padding="12dp"
@@ -72,8 +74,9 @@
             android:layout_alignParentEnd="true"
             android:layout_centerInParent="true"
             android:layout_marginEnd="10dp"
-            app:tint = "@color/black"
-            android:background="?attr/selectableItemBackgroundBorderless">
+            app:tint = "@color/white"
+            android:background="@drawable/circle_bg"
+            android:backgroundTint="@color/my_primary">
 
         </ImageButton>
     </RelativeLayout>

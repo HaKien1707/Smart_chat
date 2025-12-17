@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:background="?attr/selectableItemBackground">
+
+        <!-- Profile Image -->
+        <include
+            android:id="@+id/profile_image_container"
+            layout="@layout/profile_image_holder"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_margin="8dp" />
+
+        <!-- User Info -->
+        <LinearLayout
+            android:id="@+id/user_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/profile_image_container"
+            android:layout_toStartOf="@id/button_container"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/usernameText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/enter_username"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/usernamePhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/blank_number"
+                android:textSize="14sp"
+                android:textColor="@color/gray"
+                android:layout_marginTop="2dp" />
+
+            <TextView
+                android:id="@+id/status_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/youAreBlocked"
+                android:textSize="12sp"
+                android:textColor="@color/red"
+                android:layout_marginTop="4dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:id="@+id/button_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <!-- Add Friend Button (for non-friends) -->
+            <ImageButton
+                android:id="@+id/add_friend_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/circle_bg"
+                android:backgroundTint="@color/green"
+                android:src="@drawable/ic_person_add"
+                android:contentDescription="Add Friend"
+                android:padding="8dp"
+                android:visibility="gone"
+                app:tint="@color/white" />
+
+            <!-- Remove Friend Button (for friends) -->
+            <ImageButton
+                android:id="@+id/remove_friend_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/circle_bg"
+                android:backgroundTint="@color/red"
+                android:src="@drawable/ic_person_remove"
+                android:contentDescription="Remove Friend"
+                android:padding="8dp"
+                android:layout_marginTop="4dp"
+                android:visibility="gone"
+                app:tint="@color/white" />
+
+            <!-- Block Button -->
+            <ImageButton
+                android:id="@+id/block_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/circle_bg"
+                android:backgroundTint="@color/orange"
+                android:src="@drawable/ic_block"
+                android:contentDescription="Block User"
+                android:padding="8dp"
+                android:layout_marginTop="4dp"
+                android:visibility="gone"
+                app:tint="@color/white" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

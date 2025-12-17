@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground">
+
+    <!-- Profile Image -->
+    <include
+        android:id="@+id/profile_image_container"
+        layout="@layout/profile_image_holder"
+        android:layout_width="50dp"
+        android:layout_height="50dp" />
+
+    <!-- Member Name -->
+    <TextView
+        android:id="@+id/member_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Member Name"
+        android:textSize="16sp"
+        android:textColor="?android:textColorPrimary"
+        android:layout_marginStart="12dp" />
+
+    <!-- Unblock Button -->
+    <Button
+        android:id="@+id/unblock_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Unblock"
+        android:textSize="14sp"
+        android:backgroundTint="@color/green"
+        android:textColor="@color/white"
+        android:padding="8dp" />
+
+</LinearLayout>

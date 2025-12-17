@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/replied_message_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:background="@drawable/replied_message_bg"
+    android:layout_marginBottom="4dp"
+    android:visibility="gone">
+
+    <!-- Vertical line indicator -->
+    <View
+        android:layout_width="3dp"
+        android:layout_height="match_parent"
+        android:background="@color/violet"
+        android:layout_marginEnd="8dp" />
+
+    <!-- Content container -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Sender name (for group/community) -->
+        <TextView
+            android:id="@+id/replied_sender_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sender Name"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textColor="@color/violet"
+            android:visibility="gone" />
+
+        <!-- Text content -->
+        <TextView
+            android:id="@+id/replied_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Replied message text"
+            android:textSize="12sp"
+            android:textColor="@color/gray"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:visibility="gone" />
+
+        <!-- Image preview -->
+        <ImageView
+            android:id="@+id/replied_image"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:contentDescription="Replied image" />
+    </LinearLayout>
+
+</LinearLayout>

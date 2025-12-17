@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="?attr/cardBackgroundColor">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:background="?attr/selectableItemBackground">
+
+        <!-- Profile Image -->
+        <ImageView
+            android:id="@+id/profile_image"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_profile"
+            android:background="@drawable/circle_bg"
+            android:scaleType="centerCrop"
+            android:contentDescription="Profile image" />
+
+        <!-- Username -->
+        <TextView
+            android:id="@+id/username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/profile_image"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="12dp"
+            android:text="Username"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="?android:textColorPrimary" />
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

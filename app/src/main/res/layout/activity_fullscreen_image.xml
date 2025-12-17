@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <!-- PhotoView for pinch-to-zoom -->
+    <com.github.chrisbanes.photoview.PhotoView
+        android:id="@+id/photo_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="Full screen image" />
+
+    <!-- Close Button -->
+    <ImageButton
+        android:id="@+id/close_btn"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Close"
+        android:src="@drawable/ic_close"
+        app:tint="@android:color/white" />
+
+    <!-- Download Button -->
+    <ImageButton
+        android:id="@+id/download_btn"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/round_corner_button"
+        android:contentDescription="Download"
+        android:src="@drawable/ic_download"
+        android:padding="12dp"
+        app:tint="@android:color/white" />
+
+</RelativeLayout>

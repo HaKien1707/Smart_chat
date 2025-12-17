@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/backgroundColor">
+
+    <!-- Top Panel -->
+    <RelativeLayout
+        android:id="@+id/panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/lazuli"
+        android:padding="12dp">
+
+        <ImageButton
+            android:id="@+id/back_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_back"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Unban User"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+
+    </RelativeLayout>
+
+    <!-- User List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/user_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/panel"
+        android:padding="8dp" />
+
+    <!-- Empty State -->
+    <LinearLayout
+        android:id="@+id/empty_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No banned users"
+            android:textSize="18sp"
+            android:textColor="?android:textColorSecondary" />
+
+    </LinearLayout>
+
+</RelativeLayout>

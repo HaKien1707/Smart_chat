@@ -42,11 +42,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    buildFeatures {
+        viewBinding = true
+    }
 
     kotlin {compilerOptions {
         jvmTarget.set(JvmTarget.JVM_11)
+        freeCompilerArgs.add("-Xnested-type-aliases")
     }
-
 
     buildFeatures {
         viewBinding = true
@@ -66,8 +69,10 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.firebase.messaging)
     testImplementation(libs.junit)
+    implementation(libs.preference)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
     implementation("com.hbb20:ccp:2.7.3")
 
     // FirebaseUI for Firebase Realtime Database
@@ -96,6 +101,17 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:5.3.2")
 
     implementation("com.google.auth:google-auth-library-oauth2-http:1.19.0")
+
+    // Cloudinary for image store
+    implementation("com.cloudinary:cloudinary-android:3.1.2")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.navigation:navigation-fragment:2.7.7")
+    implementation("androidx.navigation:navigation-ui:2.7.7")
+
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
+
+    // Video Call
+    implementation("io.getstream:stream-webrtc-android:1.3.10")
 }
 }
 dependencies {
