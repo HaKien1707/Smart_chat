@@ -98,7 +98,7 @@ class GroupChatSettingsActivity : AppCompatActivity() {
         saveNameBtn = findViewById(R.id.save_name_btn)
         addMemberBtn = findViewById(R.id.add_member_btn)
         viewMembersBtn = findViewById(R.id.view_members_btn)
-        blockedListBtn = findViewById(R.id.blocked_list_btn)  // NEW
+        blockedListBtn = findViewById(R.id.blocked_list_btn)
         leaveGroupBtn = findViewById(R.id.leave_group_btn)
         deleteGroupBtn = findViewById(R.id.delete_group_btn)
     }

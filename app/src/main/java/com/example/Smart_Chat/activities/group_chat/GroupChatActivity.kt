@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
@@ -24,8 +25,10 @@ import com.example.Smart_Chat.models.GroupMsgModel
 import com.example.Smart_Chat.models.ReplyMessageData
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.models.userModel
+import com.example.Smart_Chat.utils.BotMessageHelper
 import com.example.Smart_Chat.utils.CloudinaryHelper
 import com.example.Smart_Chat.utils.FireBase_utils
+import com.example.Smart_Chat.utils.GeminiHelper
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.MediaMessageHelper
 import com.example.Smart_Chat.utils.ThemeManager
@@ -36,6 +39,7 @@ import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.launch
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -61,6 +65,8 @@ class GroupChatActivity : AppCompatActivity() {
     private lateinit var cancelReplyBtn: ImageButton
 
     private var currentReplyData: ReplyMessageData? = null
+
+    private var isBotProcessing = false
 
     private val settingsLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -402,6 +408,12 @@ class GroupChatActivity : AppCompatActivity() {
     }
 
     private fun sendMsgToGroup(msg: String) {
+        // Check if it's a bot command
+        if (BotMessageHelper.isBotCommand(msg)) {
+            handleBotCommand(msg)
+            return
+        }
+
         FireBase_utils.getGroupReference(groupID)
             .update(
                 mapOf(
@@ -488,6 +500,130 @@ class GroupChatActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    // ========================================================================
+    //                              CHAT BOT
+    // ========================================================================
+
+    private fun handleBotCommand(command: String) {
+        if (isBotProcessing) {
+            Toast.makeText(this, "Bot is processing. Please wait...", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Check rate limit
+        val (canProcess, errorMsg) = BotMessageHelper.canProcessBotRequest(this)
+        if (!canProcess) {
+            Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // Extract prompt
+        val userPrompt = BotMessageHelper.extractPrompt(command)
+
+        if (userPrompt.isEmpty()) {
+            Toast.makeText(this, "Please provide a command after @Bot", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Show user's command as a message
+        val userCommandMsg = GroupMsgModel(
+            FireBase_utils.currentUserID(),
+            currentUserName ?: "Unknown",
+            command,
+            Timestamp.now()
+        )
+
+        FireBase_utils.getGroupMessagesReference(groupID)
+            .add(userCommandMsg)
+            .addOnSuccessListener {
+                chatBox.setText("")
+
+                showBotTyping()
+                processBotRequest(userPrompt)
+            }
+    }
+
+    private fun showBotTyping() {
+        isBotProcessing = true
+        sendBtn.isEnabled = false
+        Toast.makeText(this, "🤖 Bot is thinking...", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun hideBotTyping() {
+        isBotProcessing = false
+        sendBtn.isEnabled = true
+    }
+
+    private fun processBotRequest(userPrompt: String) {
+        lifecycleScope.launch {
+            try {
+                // Fetch and format messages
+                val messages = BotMessageHelper.fetchAndFormatMessages(
+                    messagesRef = FireBase_utils.getGroupMessagesReference(groupID),
+                    currentUserId = FireBase_utils.currentUserID()!!,
+                    chatType = BotMessageHelper.ChatType.GROUP_CHAT
+                )
+
+                if (messages.isEmpty()) {
+                    Toast.makeText(
+                        this@GroupChatActivity,
+                        "No messages to analyze",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    hideBotTyping()
+                    return@launch
+                }
+
+                // Call Gemini API
+                val result = GeminiHelper.getBotResponse(this@GroupChatActivity, messages, userPrompt)
+
+                result.onSuccess { response ->
+                    // Send bot response
+                    BotMessageHelper.sendBotResponse(
+                        messagesRef = FireBase_utils.getGroupMessagesReference(groupID),
+                        chatRef = FireBase_utils.getGroupReference(groupID),
+                        response = response,
+                        chatType = BotMessageHelper.ChatType.GROUP_CHAT,
+                        currentUserId = FireBase_utils.currentUserID()!!,
+                        currentUserName = currentUserName
+                    )
+
+                    // Send usage info message
+                    BotMessageHelper.sendUsageMessage(
+                        context = this@GroupChatActivity,
+                        messagesRef = FireBase_utils.getGroupMessagesReference(groupID),
+                        chatType = BotMessageHelper.ChatType.GROUP_CHAT
+                    )
+
+                    Toast.makeText(
+                        this@GroupChatActivity,
+                        "Bot responded!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                result.onFailure { error ->
+                    Toast.makeText(
+                        this@GroupChatActivity,
+                        "Bot error: ${error.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                hideBotTyping()
+
+            } catch (e: Exception) {
+                Log.e("GroupChatActivity", "Bot error", e)
+                hideBotTyping()
+                Toast.makeText(
+                    this@GroupChatActivity,
+                    "Failed to get bot response",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 
     private fun sendNotificationToMembers(msg: String) {

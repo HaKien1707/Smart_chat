@@ -4,7 +4,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!-- NEW: View Blocked Users Button -->
+    <!-- Friends List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/friends_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp" />
+
     <Button
         android:id="@+id/view_blocked_users_btn"
         android:layout_width="match_parent"
@@ -15,14 +22,6 @@
         android:textColor="@color/white"
         android:layout_margin="16dp"
         android:padding="12dp" />
-
-    <!-- Friends List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/friends_recycler"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp" />
 
     <!-- Empty State -->
     <LinearLayout

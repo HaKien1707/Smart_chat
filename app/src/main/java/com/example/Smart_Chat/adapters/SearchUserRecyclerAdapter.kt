@@ -75,7 +75,7 @@ class SearchUserRecyclerAdapter(
 
                         when (status) {
                             FireBase_utils.FriendshipStatus.FRIENDS -> {
-                                // Show remove friend and block buttons
+                                // Friends - show remove friend and block
                                 holder.addFriendBtn.visibility = View.GONE
                                 holder.removeFriendBtn.visibility = View.VISIBLE
                                 holder.blockBtn.visibility = View.VISIBLE
@@ -86,9 +86,31 @@ class SearchUserRecyclerAdapter(
                                     activity.startActivity(intent)
                                 }
                             }
-                            else -> {
-                                // Show add friend and block buttons
+                            FireBase_utils.FriendshipStatus.REQUEST_SENT -> {
+                                // Request sent - HIDE add friend button
+                                holder.addFriendBtn.visibility = View.GONE
+                                holder.removeFriendBtn.visibility = View.GONE
+                                holder.blockBtn.visibility = View.VISIBLE
+                                holder.statusText.visibility = View.VISIBLE
+                                holder.statusText.text = "Friend request sent"
+
+                                holder.itemView.setOnClickListener(null)
+                            }
+                            FireBase_utils.FriendshipStatus.REQUEST_RECEIVED -> {
+                                // Request received - show accept option
                                 holder.addFriendBtn.visibility = View.VISIBLE
+                                holder.addFriendBtn.setImageResource(R.drawable.ic_check) // Change to checkmark icon
+                                holder.removeFriendBtn.visibility = View.GONE
+                                holder.blockBtn.visibility = View.VISIBLE
+                                holder.statusText.visibility = View.VISIBLE
+                                holder.statusText.text = "Wants to be friends"
+
+                                holder.itemView.setOnClickListener(null)
+                            }
+                            FireBase_utils.FriendshipStatus.NOT_FRIENDS -> {
+                                // Not friends - show add friend and block
+                                holder.addFriendBtn.visibility = View.VISIBLE
+                                holder.addFriendBtn.setImageResource(R.drawable.ic_person_add) // Reset icon
                                 holder.removeFriendBtn.visibility = View.GONE
                                 holder.blockBtn.visibility = View.VISIBLE
 
@@ -125,7 +147,10 @@ class SearchUserRecyclerAdapter(
             onSuccess = {
                 activity.runOnUiThread {
                     Toast.makeText(activity, "Friend request sent", Toast.LENGTH_SHORT).show()
+                    // Hide button and show status
                     holder.addFriendBtn.visibility = View.GONE
+                    holder.statusText.visibility = View.VISIBLE
+                    holder.statusText.text = "Friend request sent"
                 }
             },
             onFailure = { e ->

@@ -73,7 +73,7 @@ class SettingsFragment : Fragment() {
         )
 
         val currentTheme = ThemeManager.getThemeMode(requireContext())
-        val checkedItem = when (currentTheme) {
+        var checkedItem = when (currentTheme) {
             ThemeManager.THEME_LIGHT -> 0
             ThemeManager.THEME_DARK -> 1
             ThemeManager.THEME_SYSTEM -> 2
@@ -92,9 +92,14 @@ class SettingsFragment : Fragment() {
 
                 ThemeManager.saveThemeMode(requireContext(), selectedTheme)
                 updateThemeValue()
-                dialog.dismiss() // ✅ Closes immediately after selection
+                checkedItem = which // Update checked item
+
+                // DON'T dismiss - let user click outside or press back
+                // dialog.dismiss() // REMOVED
             }
-            .setNegativeButton(getString(R.string.cancel), null) // Optional cancel button
+            .setPositiveButton("Close") { dialog, _ ->
+                dialog.dismiss()
+            }
             .show()
     }
 

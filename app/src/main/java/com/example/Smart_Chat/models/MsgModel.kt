@@ -27,12 +27,15 @@ class MsgModel {
     var messageType: String? = "text" // "text", "image", "file"
 
     @JvmField
+    var isBot: Boolean = false
+
+    @JvmField
     var isRead: Boolean = false
 
     @JvmField
     var isDeleted: Boolean = false  // Track if message is deleted
 
-    // NEW: Reply fields
+    // Reply fields
     @JvmField
     var replyToMessageId: String? = null
 
@@ -52,15 +55,6 @@ class MsgModel {
     var replyToFileSize: Long? = null
 
     constructor()
-
-    constructor(senderID: String?, msg: String?, timestamp: Timestamp?) {
-        this.senderID = senderID
-        this.msg = msg
-        this.timestamp = timestamp
-        this.messageType = "text"
-        this.isRead = false
-        this.isDeleted = false
-    }
 
     constructor(
         senderID: String?,
@@ -129,5 +123,39 @@ class MsgModel {
         this.replyToImageUrl = replyToImageUrl
         this.replyToFileName = replyToFileName
         this.replyToFileSize = replyToFileSize
+    }
+
+    constructor(
+        senderID: String?,
+        msg: String?,
+        timestamp: Timestamp?,
+        imageUrl: String? = null,
+        messageType: String? = "text",
+        fileUrl: String? = null,
+        fileName: String? = null,
+        fileSize: Long? = null,
+        replyToMessageId: String? = null,
+        replyToText: String? = null,
+        replyToType: String? = null,
+        replyToImageUrl: String? = null,
+        replyToFileName: String? = null,
+        replyToFileSize: Long? = null,
+        isBot: Boolean = false
+    ) {
+        this.senderID = senderID
+        this.msg = msg
+        this.timestamp = timestamp
+        this.imageUrl = imageUrl
+        this.messageType = messageType
+        this.fileUrl = fileUrl
+        this.fileName = fileName
+        this.fileSize = fileSize
+        this.replyToMessageId = replyToMessageId
+        this.replyToText = replyToText
+        this.replyToType = replyToType
+        this.replyToImageUrl = replyToImageUrl
+        this.replyToFileName = replyToFileName
+        this.replyToFileSize = replyToFileSize
+        this.isBot = isBot
     }
 }

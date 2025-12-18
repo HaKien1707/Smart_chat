@@ -20,6 +20,7 @@
     <color name="green">#008000</color>
     <color name="orange">#FF7F00</color>
     <color name="light_gray">#d3d3d3</color>
+    <color name="cyan">#00BCD4</color>
 
     <color name="announcement_bg">#FFF3E0</color>
 
@@ -28,10 +29,15 @@
     <color name="card_background_light">#F5F5F5</color>
     <color name="text_primary_light">#000000</color>
     <color name="text_secondary_light">#808080</color>
+    <color name="button_background_light">@color/lazuli</color>
+    <color name="button_text_light">@color/white</color>
 
     <!-- Dark Theme Colors -->
     <color name="background_dark">#121212</color>
     <color name="card_background_dark">#1E1E1E</color>
     <color name="text_primary_dark">#FFFFFF</color>
     <color name="text_secondary_dark">#B0B0B0</color>
+    <color name="button_background_dark">@color/dark_blue</color>
+    <color name="button_text_dark">@color/white</color>
+
 </resources>

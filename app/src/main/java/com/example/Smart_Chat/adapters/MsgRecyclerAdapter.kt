@@ -39,6 +39,43 @@ class MsgRecyclerAdapter(
     }
 
     override fun onBindViewHolder(holder: MsgViewHolder, position: Int, model: MsgModel) {
+        // Check if it's a bot or system message
+        if (model.isBot || model.senderID == "SYSTEM" || model.senderID == "BOT") {
+            holder.sender.visibility = View.VISIBLE
+            holder.receiver.visibility = View.GONE
+
+            holder.senderTimestamp.text = formatTimestamp(model.timestamp?.toDate())
+            holder.senderRepliedContainer.visibility = View.GONE
+
+            holder.senderImage.visibility = View.GONE
+            holder.senderMsg.visibility = View.VISIBLE
+
+            // Different styling for system vs bot messages
+            if (model.senderID == "SYSTEM") {
+                holder.senderMsg.text = model.msg
+                holder.senderMessageContainer.backgroundTintList =
+                    context.getColorStateList(R.color.gray) // Gray for system messages
+            } else {
+                holder.senderMsg.text = "🤖 ${model.msg}"
+                holder.senderMessageContainer.backgroundTintList =
+                    context.getColorStateList(R.color.cyan) // Cyan for bot messages
+            }
+
+            holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+            val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
+            holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
+
+            // Don't allow long-press on system messages
+            if (model.senderID != "SYSTEM") {
+                holder.sender.setOnLongClickListener {
+                    showMessageOptions(holder.sender, position, model)
+                    true
+                }
+            }
+
+            return
+        }
+
         if (model.senderID == currentUserID()) {
             // My message → show on right (receiver side)
             holder.sender.visibility = View.GONE

@@ -19,6 +19,7 @@ import com.example.Smart_Chat.models.UserChatModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.firebase.FirebaseFriends
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 
@@ -31,6 +32,8 @@ class RecentChatRecyclerAdapter(
     // Filter items based on deleted status
     private val filteredItems = mutableListOf<UserChatModel>()
     private val currentUserID = FireBase_utils.currentUserID()
+
+    private val unreadListeners = mutableMapOf<String, com.google.firebase.firestore.ListenerRegistration>()
 
     override fun onDataChanged() {
         super.onDataChanged()
@@ -97,29 +100,48 @@ class RecentChatRecyclerAdapter(
                     }
 
                     // Check friendship status
-                    FireBase_utils.checkFriendshipStatus(otherUser?.userID ?: "") { status ->
+                    FirebaseFriends.checkFriendshipStatus(otherUser?.userID ?: "") { status ->
                         (context as? Activity)?.runOnUiThread {
-                            if (status == FireBase_utils.FriendshipStatus.FRIENDS) {
+                            if (status == FirebaseFriends.FriendshipStatus.FRIENDS) {
                                 holder.lastMsg.text = model.lastMsg
                                 holder.lastMsg.setTextColor(context.getColor(R.color.black))
                                 holder.lastMsgTime.visibility = View.VISIBLE
                                 holder.lastMsgTime.text = androidUtils.timestampToString(model.lastMsgTimestamp)
                                 // Count unread messages for this chat
-                                FireBase_utils.getChatRoomMessagesReferences(model.chatRoomID ?: "")
-                                    .whereEqualTo("senderID", otherUser?.userID)
-                                    .whereEqualTo("isRead", false)
-                                    .get()
-                                    .addOnSuccessListener { documents ->
-                                        val unreadCount = documents.size()
-                                        (context as? Activity)?.runOnUiThread {
-                                            if (unreadCount > 0) {
-                                                holder.unreadCount.visibility = View.VISIBLE
-                                                holder.unreadCount.text = (if (unreadCount > 9) "9+" else unreadCount.toString())
-                                            } else {
-                                                holder.unreadCount.visibility = View.GONE
+                                val chatRoomID = model.chatRoomID ?: ""
+                                if (chatRoomID.isNotEmpty()) {
+                                    // Remove old listener if exists
+                                    unreadListeners[chatRoomID]?.remove()
+
+                                    // Add real-time listener
+                                    val listener = FireBase_utils.getChatRoomMessagesReferences(chatRoomID)
+                                        .whereEqualTo("senderID", otherUser?.userID)
+                                        .whereEqualTo("isRead", false)
+                                        .addSnapshotListener { snapshots, error ->
+                                            if (error != null) {
+                                                Log.e("RecentChatAdapter", "Error listening to unread count", error)
+                                                return@addSnapshotListener
+                                            }
+
+                                            if (snapshots != null) {
+                                                val unreadCount = snapshots.size()
+                                                context.runOnUiThread {
+                                                    // Make sure the view is still valid
+                                                    if (holder.bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                                                        if (unreadCount > 0) {
+                                                            holder.unreadCount.visibility = View.VISIBLE
+                                                            holder.unreadCount.text = if (unreadCount > 9) "9+" else unreadCount.toString()
+                                                        } else {
+                                                            holder.unreadCount.visibility = View.GONE
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
-                                    }
+
+                                    // Store listener for cleanup
+                                    unreadListeners[chatRoomID] = listener
+                                }
                             } else {
                                 holder.lastMsg.text = "You and this user are not friends"
                                 holder.lastMsg.setTextColor(context.getColor(R.color.red))
@@ -142,7 +164,7 @@ class RecentChatRecyclerAdapter(
                     }
 
                     // Configure action button based on view type
-                    // IMPORTANT: Use holder.bindingAdapterPosition to get current position
+                    // Use holder.bindingAdapterPosition to get current position
                     if (isDeletedView) {
                         // In deleted view: show recover icon
                         holder.deleteBtn.setImageResource(R.drawable.ic_restore)
@@ -293,6 +315,13 @@ class RecentChatRecyclerAdapter(
                 }
             }
         )
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView)
+        // Clean up all listeners
+        unreadListeners.values.forEach { it.remove() }
+        unreadListeners.clear()
     }
 
     class ChatRoomViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

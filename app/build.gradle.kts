@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     id ("com.android.application")
     id ("com.google.gms.google-services")
-    id("org.jetbrains.kotlin.android")
+    id ("org.jetbrains.kotlin.android")
 }
 
 android {
@@ -19,6 +19,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "GEMINI_API_KEY",
+            "\"${project.findProperty("GEMINI_API_KEY")}\""
+        )
     }
 
     packaging {
@@ -26,6 +32,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             merges += "META-INF/INDEX.LIST"
             excludes += "META-INF/DEPENDENCIES"
+
+            pickFirsts += "META-INF/INDEX.LIST"
+            pickFirsts += "META-INF/io.netty.versions.properties"
+            excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
     }
 
@@ -44,16 +54,16 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
-    kotlin {compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_11)
-        freeCompilerArgs.add("-Xnested-type-aliases")
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+            freeCompilerArgs.add("-Xnested-type-aliases")
+        }
     }
 
-    buildFeatures {
-        viewBinding = true
-    }
     buildToolsVersion = "36.1.0"
 }
 
@@ -85,7 +95,7 @@ dependencies {
     implementation("com.firebaseui:firebase-ui-storage:9.1.1")
 
     // Import the BoM for the Firebase platform
-    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
     implementation("com.google.firebase:firebase-analytics")
 
     // Add the dependency for the Firebase Authentication library
@@ -96,27 +106,24 @@ dependencies {
 
     implementation("com.github.bumptech.glide:glide:5.0.5")
 
-    implementation("com.google.firebase:firebase-messaging:25.0.1")
+    implementation(libs.firebase.messaging)
 
     implementation("com.squareup.okhttp3:okhttp:5.3.2")
 
-    implementation("com.google.auth:google-auth-library-oauth2-http:1.19.0")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0")
 
     // Cloudinary for image store
     implementation("com.cloudinary:cloudinary-android:3.1.2")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.navigation:navigation-fragment:2.7.7")
-    implementation("androidx.navigation:navigation-ui:2.7.7")
-
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
 
     // Video Call
     implementation("io.getstream:stream-webrtc-android:1.3.10")
-}
-}
-dependencies {
-    implementation(libs.appcompat)
-    implementation(libs.material)
-    implementation(libs.activity)
-    implementation(libs.constraintlayout)
+
+    // Gemini AI
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+
+    implementation("io.grpc:grpc-okhttp:1.77.0")
+    implementation("io.grpc:grpc-android:1.77.0")
+    implementation("com.google.guava:guava:33.5.0-android")
 }

@@ -26,5 +26,14 @@
 
         <!-- Custom attributes -->
         <item name="inputBoxBackground">@drawable/input_box_dark</item>
+
+        <!-- Button style -->
+        <item name="materialButtonStyle">@style/Widget.App.Button.Dark</item>
+    </style>
+
+    <!-- Button Style for Dark Theme -->
+    <style name="Widget.App.Button.Dark" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/dark_blue</item>
+        <item name="android:textColor">@color/white</item>
     </style>
 </resources>

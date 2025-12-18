@@ -2,8 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white">
+    android:layout_height="match_parent">
 
     <!-- Top Bar -->
     <RelativeLayout
@@ -61,7 +60,6 @@
             android:text="User Name"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="@color/black"
             android:layout_marginTop="16dp" />
 
         <!-- User Phone -->
@@ -89,7 +87,6 @@
             android:layout_height="wrap_content"
             android:text="@string/notFriendYet"
             android:textSize="18sp"
-            android:textColor="@color/black"
             android:textAlignment="center"
             android:gravity="center"
             android:layout_marginBottom="24dp" />
@@ -102,8 +99,7 @@
             android:text="@string/sendFriendRequest"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:backgroundTint="@color/lazuli"
-            android:textColor="@color/black"
+            android:background="@drawable/round_corner_button"
             android:layout_marginBottom="12dp" />
 
         <!-- Cancel/Reject Button -->
@@ -112,9 +108,8 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:text="@string/cancel"
+            android:background="@drawable/round_corner_button"
             android:textSize="16sp"
-            android:backgroundTint="@color/red"
-            android:textColor="@color/white"
             android:visibility="gone" />
 
     </LinearLayout>

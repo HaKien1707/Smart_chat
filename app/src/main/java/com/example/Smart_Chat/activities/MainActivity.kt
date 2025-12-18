@@ -62,6 +62,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        if (savedInstanceState == null) {
+            replaceFragment(ChatFragment())
+        }
+
         createNotificationChannel()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -362,7 +366,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         binding.drawerLayout.closeDrawer(GravityCompat.START)
-        return true
+        return false
     }
 
     private fun deselectBottomNavigation() {
@@ -404,9 +408,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun replaceFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_frame, fragment)
-            .commit()
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.replace(R.id.main_frame, fragment)
+
+        // Add to backstack unless it's the home fragment
+        if (fragment !is ChatFragment) {
+            transaction.addToBackStack(null)
+        }
+
+        transaction.commit()
     }
 
     private fun getFCMtoken() {
@@ -458,6 +468,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onResume() {
         super.onResume()
-        // Listeners are always active, no need to reload
+        binding.navView.setCheckedItem(View.NO_ID)
     }
 }
