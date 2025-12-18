@@ -37,7 +37,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/selectMember"
-        android:textSize="16sp"
+        android:textSize="18sp"
         android:padding="15dp"
         android:background="@android:color/white"
         android:textColor="@android:color/darker_gray" />
@@ -61,5 +61,30 @@
         android:textSize="16sp"
         android:padding="15dp"
         android:enabled="false" />
+
+    <!-- Empty State -->
+    <LinearLayout
+        android:id="@+id/empty_state"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_block"
+            android:alpha="0.3"
+            android:contentDescription="No blocked members" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No blocked members"
+            android:textSize="18sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
 
 </LinearLayout>

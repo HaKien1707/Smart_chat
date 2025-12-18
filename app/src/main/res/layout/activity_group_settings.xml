@@ -134,7 +134,7 @@
                 android:layout_marginBottom="10dp"
                 android:padding="15dp" />
 
-            <!-- NEW: View Members Button -->
+            <!-- View Members Button -->
             <Button
                 android:id="@+id/view_members_btn"
                 android:layout_width="match_parent"
@@ -150,8 +150,6 @@
                 android:layout_height="wrap_content"
                 android:text="Blocked List"
                 android:background="@drawable/round_corner_button"
-                android:backgroundTint="@color/orange"
-                android:textColor="@color/white"
                 android:layout_marginBottom="30dp"
                 android:padding="15dp"
                 android:visibility="gone" />

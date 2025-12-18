@@ -260,7 +260,11 @@ class TempChatMsgAdapter(
                 }
             },
             onForward = {
-                openForwardActivity(message)
+                Toast.makeText(
+                    context,
+                    "Cannot forward temporary messages for security reasons",
+                    Toast.LENGTH_SHORT
+                ).show()
             },
             onDelete = {
                 // Temp chat messages can't be deleted individually
@@ -269,7 +273,7 @@ class TempChatMsgAdapter(
         )
     }
 
-    // NEW: Show replied message preview
+    // Show replied message preview
     private fun showRepliedMessage(
         container: View,
         textView: TextView,
@@ -311,7 +315,7 @@ class TempChatMsgAdapter(
         }
     }
 
-    // NEW: Scroll to the replied message
+    // Scroll to the replied message
     private fun scrollToMessage(messageId: String?) {
         if (messageId == null) return
 
@@ -342,11 +346,6 @@ class TempChatMsgAdapter(
         return SimpleDateFormat("h:mm a", Locale.getDefault()).format(date)
     }
 
-    private fun openForwardActivity(message: DecryptedTempMessage) {
-        // Temp chat messages shouldn't be forwarded for security reasons
-        Toast.makeText(context, "Cannot forward temporary messages", Toast.LENGTH_SHORT).show()
-    }
-
     class MsgViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val sender: LinearLayout = itemView.findViewById(R.id.sender)
         val receiver: LinearLayout = itemView.findViewById(R.id.receiver)
@@ -359,7 +358,7 @@ class TempChatMsgAdapter(
         val senderTimestamp: TextView = itemView.findViewById(R.id.senderTimestamp)
         val receiverTimestamp: TextView = itemView.findViewById(R.id.receiverTimestamp)
         val readStatusIcon: ImageView = itemView.findViewById(R.id.readStatusIcon)
-        // NEW: Replied message views
+        // Replied message views
         val senderRepliedContainer: View = itemView.findViewById(R.id.sender_replied_message)
         val senderRepliedText: TextView = senderRepliedContainer.findViewById(R.id.replied_text)
         val senderRepliedImage: ImageView = senderRepliedContainer.findViewById(R.id.replied_image)

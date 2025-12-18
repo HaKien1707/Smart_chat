@@ -26,5 +26,14 @@
 
         <!-- Custom attributes -->
         <item name="inputBoxBackground">@drawable/input_box_light</item>
+
+        <!-- Button style -->
+        <item name="materialButtonStyle">@style/Widget.App.Button</item>
+    </style>
+
+    <!-- Button Style for Light Theme -->
+    <style name="Widget.App.Button" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/lazuli</item>
+        <item name="android:textColor">@color/black</item>
     </style>
 </resources>

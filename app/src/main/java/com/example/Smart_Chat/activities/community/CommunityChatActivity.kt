@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
@@ -27,8 +28,10 @@ import com.example.Smart_Chat.models.CommunityModel
 import com.example.Smart_Chat.models.CommunityMsgModel
 import com.example.Smart_Chat.models.ReplyMessageData
 import com.example.Smart_Chat.models.userModel
+import com.example.Smart_Chat.utils.BotMessageHelper
 import com.example.Smart_Chat.utils.CloudinaryHelper
 import com.example.Smart_Chat.utils.FireBase_utils
+import com.example.Smart_Chat.utils.GeminiHelper
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.MediaMessageHelper
 import com.example.Smart_Chat.utils.ThemeManager
@@ -37,6 +40,7 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.launch
 
 class CommunityChatActivity : AppCompatActivity() {
 
@@ -63,6 +67,8 @@ class CommunityChatActivity : AppCompatActivity() {
     private lateinit var cancelReplyBtn: ImageButton
 
     private var currentReplyData: ReplyMessageData? = null
+
+    private var isBotProcessing = false
 
     private val settingsLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -305,13 +311,13 @@ class CommunityChatActivity : AppCompatActivity() {
         }
     }
 
-    // NEW: Cancel reply
+    // Cancel reply
     private fun cancelReply() {
         currentReplyData = null
         replyPreviewContainer.visibility = View.GONE
     }
 
-    // NEW: Scroll to specific position
+    // Scroll to specific position
     fun scrollToPosition(position: Int) {
         chatList.smoothScrollToPosition(position)
 
@@ -497,6 +503,12 @@ class CommunityChatActivity : AppCompatActivity() {
     }
 
     private fun sendMsgToCommunity(msg: String) {
+        // Check if it's a bot command
+        if (BotMessageHelper.isBotCommand(msg)) {
+            handleBotCommand(msg)
+            return
+        }
+
         FireBase_utils.getCommunityReference(communityID)
             .update(
                 mapOf(
@@ -582,6 +594,128 @@ class CommunityChatActivity : AppCompatActivity() {
         })
     }
 
+    // =============================================================================
+    //                                  CHAT BOT
+    // =============================================================================
+    private fun handleBotCommand(command: String) {
+        if (isBotProcessing) {
+            Toast.makeText(this, "Bot is processing. Please wait...", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Check rate limit
+        val (canProcess, errorMsg) = BotMessageHelper.canProcessBotRequest(this)
+        if (!canProcess) {
+            Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // Extract prompt
+        val userPrompt = BotMessageHelper.extractPrompt(command)
+
+        if (userPrompt.isEmpty()) {
+            Toast.makeText(this, "Please provide a command after @Bot", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Show user's command as a message
+        val userCommandMsg = CommunityMsgModel(
+            FireBase_utils.currentUserID(),
+            currentUserName ?: "Unknown",
+            command,
+            Timestamp.now()
+        )
+
+        FireBase_utils.getCommunityMessagesReference(communityID)
+            .add(userCommandMsg)
+            .addOnSuccessListener {
+                chatBox.setText("")
+
+                showBotTyping()
+                processBotRequest(userPrompt)
+            }
+    }
+
+    private fun showBotTyping() {
+        isBotProcessing = true
+        sendBtn.isEnabled = false
+        Toast.makeText(this, "🤖 Bot is thinking...", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun hideBotTyping() {
+        isBotProcessing = false
+        sendBtn.isEnabled = true
+    }
+
+    private fun processBotRequest(userPrompt: String) {
+        lifecycleScope.launch {
+            try {
+                // Fetch and format messages
+                val messages = BotMessageHelper.fetchAndFormatMessages(
+                    messagesRef = FireBase_utils.getCommunityMessagesReference(communityID),
+                    currentUserId = FireBase_utils.currentUserID()!!,
+                    chatType = BotMessageHelper.ChatType.COMMUNITY_CHAT
+                )
+
+                if (messages.isEmpty()) {
+                    Toast.makeText(
+                        this@CommunityChatActivity,
+                        "No messages to analyze",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    hideBotTyping()
+                    return@launch
+                }
+
+                // Call Gemini API
+                val result = GeminiHelper.getBotResponse(this@CommunityChatActivity, messages, userPrompt)
+
+                result.onSuccess { response ->
+                    // Send bot response
+                    BotMessageHelper.sendBotResponse(
+                        messagesRef = FireBase_utils.getCommunityMessagesReference(communityID),
+                        chatRef = FireBase_utils.getCommunityReference(communityID),
+                        response = response,
+                        chatType = BotMessageHelper.ChatType.COMMUNITY_CHAT,
+                        currentUserId = FireBase_utils.currentUserID()!!,
+                        currentUserName = currentUserName
+                    )
+
+                    // Send usage info message
+                    BotMessageHelper.sendUsageMessage(
+                        context = this@CommunityChatActivity,
+                        messagesRef = FireBase_utils.getCommunityMessagesReference(communityID),
+                        chatType = BotMessageHelper.ChatType.COMMUNITY_CHAT
+                    )
+
+                    Toast.makeText(
+                        this@CommunityChatActivity,
+                        "Bot responded!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                result.onFailure { error ->
+                    Toast.makeText(
+                        this@CommunityChatActivity,
+                        "Bot error: ${error.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                hideBotTyping()
+
+            } catch (e: Exception) {
+                Log.e("CommunityChatActivity", "Bot error", e)
+                hideBotTyping()
+                Toast.makeText(
+                    this@CommunityChatActivity,
+                    "Failed to get bot response",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
     fun getCommunityID(): String {
         return communityID
     }

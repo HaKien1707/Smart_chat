@@ -16,40 +16,56 @@ import com.google.firebase.messaging.RemoteMessage
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
+    // Inside MyFirebaseMessagingService.kt
+
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
-        Log.d("FCM", "========== onMessageReceived CALLED ==========")
-        Log.d("FCM", "Thread: ${Thread.currentThread().name}")
-        Log.d("FCM", "Message from: ${remoteMessage.from}")
+        // 1. Extract Title and Body (from either notification or data payload)
+        val title = remoteMessage.notification?.title ?: remoteMessage.data["title"]
+        val body = remoteMessage.notification?.body ?: remoteMessage.data["body"]
 
-        // Check if message contains a notification payload
-        if (remoteMessage.notification != null) {
-            Log.d("FCM", "Processing notification payload")
-            val title = remoteMessage.notification?.title
-            val body = remoteMessage.notification?.body
-            val userID = remoteMessage.data["userID"]
+        // 2. Extract Navigation Data
+        val userID = remoteMessage.data["userID"]
+        val groupID = remoteMessage.data["groupID"]
+        val chatType = remoteMessage.data["type"] // "group" or "private"
 
-            Log.d("FCM", "Notification - Title: $title, Body: $body, UserID: $userID")
-
-            showNotification(title, body, userID)
-        } else {
-            Log.d("FCM", "No notification payload, checking data only")
-
-            // Handle data-only messages
-            if (remoteMessage.data.isNotEmpty()) {
-                val userID = remoteMessage.data["userID"]
-                Log.d("FCM", "Data-only message from userID: $userID")
-
-                // You might need to extract title/body from data if sent that way
-                val title = remoteMessage.data["title"]
-                val body = remoteMessage.data["body"]
-
-                if (title != null && body != null) {
-                    showNotification(title, body, userID)
-                }
-            }
+        if (title != null && body != null) {
+            showNotification(title, body, userID, groupID, chatType)
         }
+    }
+
+    private fun showNotification(title: String, body: String, userID: String?, groupID: String?, chatType: String?) {
+        val channelId = "chat_notifications"
+
+        // Create Intent to Splash (or an intermediate Dispatcher)
+        val intent = Intent(this, splashScreenActivity::class.java).apply {
+            putExtra("userID", userID)
+            putExtra("groupID", groupID)
+            putExtra("chatType", chatType)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            System.currentTimeMillis().toInt(), // Unique ID so notifications don't overwrite each other
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val builder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_notifications)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        // Use unique ID so multiple messages show multiple notifications
+        val notificationId = System.currentTimeMillis().toInt()
+        notificationManager.notify(notificationId, builder.build())
     }
 
     private fun showNotification(title: String?, body: String?, userID: String?) {

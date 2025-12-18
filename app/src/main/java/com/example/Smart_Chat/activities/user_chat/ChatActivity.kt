@@ -1,17 +1,15 @@
 package com.example.Smart_Chat.activities.user_chat
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
-import android.util.Base64
 import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -21,11 +19,12 @@ import com.example.Smart_Chat.models.*
 import com.example.Smart_Chat.utils.*
 import com.example.Smart_Chat.utils.CloudinaryHelper
 import com.example.Smart_Chat.utils.MediaMessageHelper
+import com.example.Smart_Chat.utils.firebase.FirebaseFriends
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.Query
-import java.io.ByteArrayOutputStream
+import kotlinx.coroutines.launch
 
 class ChatActivity : AppCompatActivity() {
 
@@ -38,7 +37,9 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var attachBtn: ImageButton
     private lateinit var msgRecycler: RecyclerView
 
-    // NEW: Reply preview views
+    private var isCheckingFriendship = true
+
+    // Reply preview views
     private lateinit var replyPreviewContainer: View
     private lateinit var replyText: TextView
     private lateinit var replyImage: ImageView
@@ -50,8 +51,10 @@ class ChatActivity : AppCompatActivity() {
     private var chatRoomID: String? = null
     private lateinit var adapter: MsgRecyclerAdapter
 
-    // NEW: Current reply state
+    // Current reply state
     private var currentReplyData: ReplyMessageData? = null
+
+    private var isBotProcessing = false
 
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -97,6 +100,7 @@ class ChatActivity : AppCompatActivity() {
 
         initViews()
         setupUI()
+        checkFriendshipStatus()
         setupRecycler()
     }
 
@@ -146,6 +150,25 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
+    private fun checkFriendshipStatus() {
+        FirebaseFriends.checkFriendshipStatus(otherUser?.userID ?: "") { status ->
+            runOnUiThread {
+                isCheckingFriendship = false
+
+                if (status != FirebaseFriends.FriendshipStatus.FRIENDS) {
+                    // Not friends - redirect to NotFriendsActivity
+                    val intent = Intent(this, NotFriendsActivity::class.java)
+                    androidUtils.passUserModelAsIntent(intent, otherUser)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    // Friends - setup chat normally
+                    setupRecycler()
+                }
+            }
+        }
+    }
+
     private fun setupRecycler() {
         val query = FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!)
             .orderBy("timestamp", Query.Direction.ASCENDING)
@@ -182,13 +205,13 @@ class ChatActivity : AppCompatActivity() {
         })
     }
 
-    // NEW: Set reply message from adapter
+    // Set reply message from adapter
     fun setReplyMessage(replyData: ReplyMessageData) {
         currentReplyData = replyData
         showReplyPreview(replyData)
     }
 
-    // NEW: Show reply preview
+    // Show reply preview
     private fun showReplyPreview(replyData: ReplyMessageData) {
         replyPreviewContainer.visibility = View.VISIBLE
 
@@ -219,13 +242,13 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-    // NEW: Cancel reply
+    // Cancel reply
     private fun cancelReply() {
         currentReplyData = null
         replyPreviewContainer.visibility = View.GONE
     }
 
-    // NEW: Scroll to specific position
+    // Scroll to specific position
     fun scrollToPosition(position: Int) {
         msgRecycler.smoothScrollToPosition(position)
 
@@ -256,7 +279,22 @@ class ChatActivity : AppCompatActivity() {
             return
         }
 
-        // NEW: Create message with reply data if exists
+        // Check if it's a bot command using helper
+        if (BotMessageHelper.isBotCommand(messageText)) {
+            handleBotCommand(messageText)
+            return
+        }
+
+        // Check if it's a bot command
+        if (messageText.startsWith("@Bot", ignoreCase = true) ||
+            messageText.startsWith("@bot", ignoreCase = true) ||
+            messageText.startsWith("@BOT")) {
+
+            handleBotCommand(messageText)
+            return
+        }
+
+        // Normal message sending (existing code)
         val msgModel = if (currentReplyData != null) {
             MsgModel(
                 senderID = FireBase_utils.currentUserID(),
@@ -279,12 +317,11 @@ class ChatActivity : AppCompatActivity() {
             )
         }
 
-        // Send message
         FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!)
             .add(msgModel)
             .addOnSuccessListener {
                 msgInput.setText("")
-                cancelReply() // NEW: Clear reply state
+                cancelReply()
                 updateChatRoom(messageText, "text")
             }
             .addOnFailureListener { e ->
@@ -372,16 +409,142 @@ class ChatActivity : AppCompatActivity() {
         )
     }
 
-    private fun updateChatRoom(lastMsg: String, messageType: String) {
-        FireBase_utils.getChatRoomReferences(chatRoomID!!)
-            .update(
-                mapOf(
-                    "lastMsg" to lastMsg,
-                    "lastMsgSenderID" to FireBase_utils.currentUserID(),
-                    "lastMsgTimestamp" to Timestamp.now(),
-                    "deletedBy" to emptyList<String>()
+    // ==============================================================
+    //                          CHAT BOT
+    // ==============================================================
+    private fun handleBotCommand(command: String) {
+        if (isBotProcessing) {
+            Toast.makeText(this, "Bot is processing. Please wait...", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Check rate limit
+        val (canProcess, errorMsg) = BotMessageHelper.canProcessBotRequest(this)
+        if (!canProcess) {
+            Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // Extract prompt
+        val userPrompt = BotMessageHelper.extractPrompt(command)
+
+        if (userPrompt.isEmpty()) {
+            Toast.makeText(this, "Please provide a command after @Bot", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Show user's command as a message
+        val userCommandMsg = MsgModel(
+            senderID = FireBase_utils.currentUserID(),
+            msg = command,
+            timestamp = Timestamp.now(),
+            messageType = "text"
+        )
+
+        FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!)
+            .add(userCommandMsg)
+            .addOnSuccessListener {
+                msgInput.setText("")
+                cancelReply()
+
+                showBotTyping()
+                processBotRequest(userPrompt)
+            }
+    }
+
+    private fun processBotRequest(userPrompt: String) {
+        lifecycleScope.launch {
+            try {
+                // Fetch and format messages
+                val messages = BotMessageHelper.fetchAndFormatMessages(
+                    messagesRef = FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!),
+                    currentUserId = FireBase_utils.currentUserID()!!,
+                    chatType = BotMessageHelper.ChatType.USER_CHAT,
+                    otherUserName = otherUser?.username
                 )
-            )
+
+                // Call Gemini API
+                val result = GeminiHelper.getBotResponse(this@ChatActivity, messages, userPrompt)
+
+                result.onSuccess { response ->
+                    // Send bot response
+                    BotMessageHelper.sendBotResponse(
+                        messagesRef = FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!),
+                        chatRef = FireBase_utils.getChatRoomReferences(chatRoomID!!),
+                        response = response,
+                        chatType = BotMessageHelper.ChatType.USER_CHAT,
+                        currentUserId = FireBase_utils.currentUserID()!!
+                    )
+
+                    // Send usage info message
+                    BotMessageHelper.sendUsageMessage(
+                        context = this@ChatActivity,
+                        messagesRef = FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!),
+                        chatType = BotMessageHelper.ChatType.USER_CHAT
+                    )
+
+                    Toast.makeText(
+                        this@ChatActivity,
+                        "Bot responded!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                result.onFailure { error ->
+                    Toast.makeText(
+                        this@ChatActivity,
+                        "Bot error: ${error.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                hideBotTyping()
+
+            } catch (e: Exception) {
+                Log.e("CHAT", "Bot error", e)
+                hideBotTyping()
+                Toast.makeText(
+                    this@ChatActivity,
+                    "Failed to get bot response",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    private fun showBotTyping() {
+        isBotProcessing = true
+        sendBtn.isEnabled = false
+        Toast.makeText(this, "🤖 Bot is thinking...", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun hideBotTyping() {
+        isBotProcessing = false
+        sendBtn.isEnabled = true
+    }
+
+    private fun updateChatRoom(lastMsg: String, messageType: String) {
+        val currentId = FireBase_utils.currentUserID()
+        val otherId = otherUser?.userID
+
+        if (currentId == null || otherId == null) return
+
+        // You MUST include the 'userID' array here so the Security Rules
+        // allow the "create" operation.
+        val roomData = mapOf(
+            "userID" to listOf(currentId, otherId),
+            "lastMsg" to lastMsg,
+            "lastMsgSenderID" to currentId,
+            "lastMsgTimestamp" to com.google.firebase.Timestamp.now(),
+            "deletedBy" to emptyList<String>(),
+            "chatRoomID" to chatRoomID
+        )
+
+        FireBase_utils.getChatRoomReferences(chatRoomID!!)
+            .set(roomData, com.google.firebase.firestore.SetOptions.merge())
+            .addOnFailureListener { e ->
+                Log.e("CHAT", "Failed to initialize/update room", e)
+            }
     }
 
     private fun formatFileSize(size: Long): String {
@@ -392,7 +555,7 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-    // NEW: Public method to get chat room ID (for adapter)
+    // Public method to get chat room ID (for adapter)
     fun getChatRoomID(): String? = chatRoomID
 
     override fun onStart() {

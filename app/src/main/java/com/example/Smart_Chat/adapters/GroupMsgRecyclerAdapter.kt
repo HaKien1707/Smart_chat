@@ -41,6 +41,46 @@ class GroupMsgRecyclerAdapter(
     }
 
     override fun onBindViewHolder(holder: GroupMsgViewHolder, position: Int, model: GroupMsgModel) {
+        // Handle bot and system messages
+        if (model.senderID == "BOT" || model.senderID == "SYSTEM") {
+            holder.sender.visibility = View.VISIBLE
+            holder.receiver.visibility = View.GONE
+
+            holder.senderTimestamp.text = formatTimestamp(model.timestamp?.toDate())
+
+            // Hide profile image for bot messages
+            holder.senderProfileImage.visibility = View.GONE
+            holder.senderName.text = model.senderName ?: "🤖 Bot"
+
+            holder.senderImage.visibility = View.GONE
+            holder.senderMsg.visibility = View.VISIBLE
+
+            // Different styling for system vs bot messages
+            if (model.senderID == "SYSTEM") {
+                holder.senderMsg.text = model.msg
+                holder.senderMessageContainer.backgroundTintList =
+                    context.getColorStateList(R.color.gray) // Gray for system
+            } else {
+                holder.senderMsg.text = model.msg
+                holder.senderMessageContainer.backgroundTintList =
+                    context.getColorStateList(R.color.cyan) // Cyan for bot
+            }
+
+            holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+            val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
+            holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
+
+            // Don't allow long-press on system messages
+            if (model.senderID != "SYSTEM") {
+                holder.sender.setOnLongClickListener {
+                    showMessageOptions(holder.sender, position, model)
+                    true
+                }
+            }
+
+            return // Exit early
+        }
+
         val isMe = model.senderID == currentUserID()
 
         if (isMe) {
@@ -92,7 +132,7 @@ class GroupMsgRecyclerAdapter(
                         holder.receiverMsg.setOnLongClickListener(null)
 
                         if (!model.isDeleted) {
-                            // ✅ Enable download only if NOT deleted
+                            // Enable download only if NOT deleted
                             holder.receiverMsg.setOnClickListener {
                                 FileDownloadHelper.showDownloadDialog(
                                     context,

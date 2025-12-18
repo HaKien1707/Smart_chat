@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Blocked Users"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/blocked_users_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"/>
+
+    <Button
+        android:id="@+id/unblock_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Unblock Selected Users"
+        android:background="@drawable/round_corner_button"
+        android:layout_marginTop="16dp"/>
+
+</LinearLayout>

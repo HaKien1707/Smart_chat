@@ -1,8 +1,10 @@
 package com.example.Smart_Chat.activities.group_chat
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,6 +21,7 @@ class AddMembersActivity : AppCompatActivity() {
 
     private lateinit var backBtn: ImageButton
     private lateinit var memberRecycler: RecyclerView
+    private lateinit var emptyState: LinearLayout
     private lateinit var addBtn: Button
 
     private var groupID: String? = null
@@ -44,6 +47,7 @@ class AddMembersActivity : AppCompatActivity() {
 
         backBtn = findViewById(R.id.back_btn)
         memberRecycler = findViewById(R.id.member_recycler)
+        emptyState = findViewById(R.id.empty_state)
         addBtn = findViewById(R.id.add_btn)
 
         backBtn.setOnClickListener { finish() }
@@ -94,9 +98,7 @@ class AddMembersActivity : AppCompatActivity() {
                 }
 
                 if (availableUsers.isEmpty()) {
-                    Toast.makeText(this, "No users available to add", Toast.LENGTH_SHORT).show()
-                    finish()
-                    return@addOnSuccessListener
+                    showEmptyState()
                 }
 
                 setupMemberRecycler(availableUsers)
@@ -167,5 +169,11 @@ class AddMembersActivity : AppCompatActivity() {
                 addBtn.isEnabled = true
                 updateAddButton()
             }
+    }
+
+    private fun showEmptyState() {
+        emptyState.visibility = View.VISIBLE
+        memberRecycler.visibility = View.GONE
+        addBtn.visibility = View.GONE
     }
 }
