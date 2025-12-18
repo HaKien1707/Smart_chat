@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.Smart_Chat.adapters.RecentChatRecyclerAdapter
+import com.example.Smart_Chat.adapters.user_chat.RecentChatRecyclerAdapter
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.UserChatModel
 import com.example.Smart_Chat.utils.FireBase_utils

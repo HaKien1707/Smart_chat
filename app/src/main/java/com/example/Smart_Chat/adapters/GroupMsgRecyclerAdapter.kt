@@ -2,6 +2,8 @@ package com.example.Smart_Chat.adapters
 
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -33,6 +35,8 @@ class GroupMsgRecyclerAdapter(
     options: FirestoreRecyclerOptions<GroupMsgModel>,
     private val context: Context
 ) : FirestoreRecyclerAdapter<GroupMsgModel, GroupMsgRecyclerAdapter.GroupMsgViewHolder>(options) {
+
+    private val profileImageCache = mutableMapOf<String, String?>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupMsgViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -394,18 +398,29 @@ class GroupMsgRecyclerAdapter(
     private fun scrollToMessage(messageId: String?) {
         if (messageId == null) return
 
-        for (i in 0 until itemCount) {
-            try {
-                val snapshot = snapshots.getSnapshot(i)
-                if (snapshot.id == messageId) {
-                    if (context is GroupChatActivity) {
-                        context.scrollToPosition(i)
+        try {
+            for (i in 0 until itemCount) {
+                try {
+                    val snapshot = snapshots.getSnapshot(i)
+                    if (snapshot.id == messageId) {
+                        if (context is GroupChatActivity) {
+                            Handler(Looper.getMainLooper()).post {
+                                try {
+                                    context.scrollToPosition(i)
+                                } catch (e: Exception) {
+                                    Log.e("MSG_SCROLL", "Error calling scrollToPosition", e)
+                                }
+                            }
+                        }
+                        break
                     }
-                    break
+                } catch (e: Exception) {
+                    Log.e("MSG_SCROLL", "Error at index $i", e)
+                    continue
                 }
-            } catch (e: Exception) {
-                Log.e("MSG_SCROLL", "Error finding message", e)
             }
+        } catch (e: Exception) {
+            Log.e("MSG_SCROLL", "Error finding message", e)
         }
     }
 
@@ -446,24 +461,46 @@ class GroupMsgRecyclerAdapter(
             return
         }
 
+        // Check cache first
+        if (profileImageCache.containsKey(senderID)) {
+            val cachedImage = profileImageCache[senderID]
+            if (!cachedImage.isNullOrBlank()) {
+                androidUtils.setProfileImageFromBase64(
+                    context,
+                    cachedImage,
+                    holder.senderProfileImage
+                )
+            } else {
+                holder.senderProfileImage.setImageResource(R.drawable.ic_profile)
+            }
+            return
+        }
+
+        // Set default image while loading
+        holder.senderProfileImage.setImageResource(R.drawable.ic_profile)
+
+        // Fetch from Firebase only if not cached
         FireBase_utils.allUsersCollection().document(senderID).get()
             .addOnSuccessListener { document ->
                 val user = document.toObject(userModel::class.java)
                 val profileImage = user?.profileImage
 
+                // Cache the result (even if null)
+                profileImageCache[senderID] = profileImage
+
                 if (!profileImage.isNullOrBlank()) {
+                    // Check if the holder is still for the same sender (avoid race condition)
                     androidUtils.setProfileImageFromBase64(
                         context,
                         profileImage,
                         holder.senderProfileImage
                     )
-                } else {
-                    holder.senderProfileImage.setImageResource(R.drawable.ic_profile)
                 }
             }
             .addOnFailureListener { e ->
                 Log.e("GroupMsgAdapter", "Failed to load profile image", e)
-                holder.senderProfileImage.setImageResource(R.drawable.ic_profile)
+                // Cache null to avoid repeated failed requests
+                profileImageCache[senderID] = null
             }
     }
 

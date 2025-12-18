@@ -1,7 +1,10 @@
-package com.example.Smart_Chat.adapters
+package com.example.Smart_Chat.adapters.user_chat
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Typeface
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +13,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
@@ -19,13 +23,15 @@ import com.example.Smart_Chat.activities.user_chat.ChatActivity
 import com.example.Smart_Chat.models.MsgModel
 import com.example.Smart_Chat.models.ReplyMessageData
 import com.example.Smart_Chat.utils.FileDownloadHelper
-import com.example.Smart_Chat.utils.FireBase_utils.currentUserID
+import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.MessageOptionsHelper
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class MsgRecyclerAdapter(
     options: FirestoreRecyclerOptions<MsgModel>,
@@ -76,7 +82,7 @@ class MsgRecyclerAdapter(
             return
         }
 
-        if (model.senderID == currentUserID()) {
+        if (model.senderID == FireBase_utils.currentUserID()) {
             // My message → show on right (receiver side)
             holder.sender.visibility = View.GONE
             holder.receiver.visibility = View.VISIBLE
@@ -102,7 +108,7 @@ class MsgRecyclerAdapter(
                 holder.receiverImage.visibility = View.GONE
                 holder.receiverMsg.text = "🚫 This message was deleted"
                 holder.receiverMsg.setTextColor(context.getColor(R.color.gray))
-                holder.receiverMsg.setTypeface(null, android.graphics.Typeface.ITALIC)
+                holder.receiverMsg.setTypeface(null, Typeface.ITALIC)
                 holder.receiverMessageContainer.setBackgroundResource(0)
                 holder.readStatusIcon.visibility = View.GONE
             } else {
@@ -122,7 +128,7 @@ class MsgRecyclerAdapter(
                         val fileSize = formatFileSize(model.fileSize ?: 0)
                         holder.receiverMsg.text = "📎 $fileName\n$fileSize"
                         holder.receiverMsg.setTextColor(context.getColor(R.color.white))
-                        holder.receiverMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
+                        holder.receiverMsg.setTypeface(null, Typeface.NORMAL)
 
                         holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
                         holder.receiverMessageContainer.backgroundTintList =
@@ -181,7 +187,7 @@ class MsgRecyclerAdapter(
                         holder.receiverMsg.visibility = View.VISIBLE
                         holder.receiverMsg.text = model.msg
                         holder.receiverMsg.setTextColor(context.getColor(R.color.white))
-                        holder.receiverMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
+                        holder.receiverMsg.setTypeface(null, Typeface.NORMAL)
 
                         holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
                         holder.receiverMessageContainer.backgroundTintList =
@@ -222,7 +228,7 @@ class MsgRecyclerAdapter(
                 holder.senderImage.visibility = View.GONE
                 holder.senderMsg.text = "🚫 This message was deleted"
                 holder.senderMsg.setTextColor(context.getColor(R.color.gray))
-                holder.senderMsg.setTypeface(null, android.graphics.Typeface.ITALIC)
+                holder.senderMsg.setTypeface(null, Typeface.ITALIC)
                 holder.senderMessageContainer.setBackgroundResource(0)
             } else {
                 when (model.messageType) {
@@ -234,7 +240,7 @@ class MsgRecyclerAdapter(
                         val fileSize = formatFileSize(model.fileSize ?: 0)
                         holder.senderMsg.text = "📎 $fileName\n$fileSize"
                         holder.senderMsg.setTextColor(context.getColor(R.color.black))
-                        holder.senderMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
+                        holder.senderMsg.setTypeface(null, Typeface.NORMAL)
 
                         holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
                         holder.senderMessageContainer.backgroundTintList =
@@ -294,7 +300,7 @@ class MsgRecyclerAdapter(
                         holder.senderMsg.visibility = View.VISIBLE
                         holder.senderMsg.text = model.msg
                         holder.senderMsg.setTextColor(context.getColor(R.color.black))
-                        holder.senderMsg.setTypeface(null, android.graphics.Typeface.NORMAL)
+                        holder.senderMsg.setTypeface(null, Typeface.NORMAL)
 
                         holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
                         holder.senderMessageContainer.backgroundTintList =
@@ -359,30 +365,41 @@ class MsgRecyclerAdapter(
             }
         }
 
-        // NEW: Click to scroll to original message
+        // Click to scroll to original message
         container.setOnClickListener {
             scrollToMessage(model.replyToMessageId)
         }
     }
 
-    // NEW: Scroll to the replied message
+    // Scroll to the replied message
     private fun scrollToMessage(messageId: String?) {
         if (messageId == null) return
 
-        // Find the position of the message in the adapter
-        for (i in 0 until itemCount) {
-            try {
-                val snapshot = snapshots.getSnapshot(i)
-                if (snapshot.id == messageId) {
-                    // Scroll to this position
-                    if (context is ChatActivity) {
-                        context.scrollToPosition(i)
+        try {
+            // Find the position of the message in the adapter
+            for (i in 0 until itemCount) {
+                try {
+                    val snapshot = snapshots.getSnapshot(i)
+                    if (snapshot.id == messageId) {
+                        // Use Handler.post to avoid conflicts
+                        if (context is ChatActivity) {
+                            Handler(Looper.getMainLooper()).post {
+                                try {
+                                    context.scrollToPosition(i)
+                                } catch (e: Exception) {
+                                    Log.e("MSG_SCROLL", "Error calling scrollToPosition", e)
+                                }
+                            }
+                        }
+                        break
                     }
-                    break
+                } catch (e: Exception) {
+                    Log.e("MSG_SCROLL", "Error at index $i", e)
+                    continue
                 }
-            } catch (e: Exception) {
-                Log.e("MSG_SCROLL", "Error finding message", e)
             }
+        } catch (e: Exception) {
+            Log.e("MSG_SCROLL", "Error finding message", e)
         }
     }
 
@@ -400,7 +417,7 @@ class MsgRecyclerAdapter(
         MessageOptionsHelper.showMessageOptions(
             context = context,
             view = view,
-            canDelete = model.senderID == currentUserID(),
+            canDelete = model.senderID == FireBase_utils.currentUserID(),
             messageData = messageData,
             onReply = { replyData ->
                 if (context is ChatActivity) {
@@ -436,11 +453,11 @@ class MsgRecyclerAdapter(
             val snapshot = snapshots.getSnapshot(position)
             snapshot.reference.update("isDeleted", true)
                 .addOnSuccessListener {
-                    android.widget.Toast.makeText(context, "Message deleted", android.widget.Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener { e ->
                     Log.e("MSG_DELETE", "Failed to delete", e)
-                    android.widget.Toast.makeText(context, "Failed to delete message", android.widget.Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Failed to delete message", Toast.LENGTH_SHORT).show()
                 }
         } catch (e: Exception) {
             Log.e("MSG_DELETE", "Error deleting message", e)
@@ -453,7 +470,7 @@ class MsgRecyclerAdapter(
             snapshot.reference.update(
                 mapOf(
                     "isRead" to true,
-                    "readTimestamp" to Timestamp.now()
+                    "readTimestamp" to Timestamp.Companion.now()
                 )
             ).addOnSuccessListener {
                 Log.d("MSG_READ", "Message marked as read")
