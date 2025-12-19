@@ -25,7 +25,7 @@ import com.example.Smart_Chat.fragment.GroupFragment
 import com.example.Smart_Chat.fragment.ProfileFragment
 import com.example.Smart_Chat.fragment.FriendsListFragment
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.others.androidUtils
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.messaging.FirebaseMessaging
 import androidx.core.view.size
@@ -40,11 +40,12 @@ import com.example.Smart_Chat.activities.user_chat.SearchUserActivity
 import com.example.Smart_Chat.fragment.CommunityFragment
 import com.example.Smart_Chat.fragment.SettingsFragment
 import com.example.Smart_Chat.fragment.TemporaryChatFragment
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
 import com.example.Smart_Chat.utils.firebase.*
 import com.google.firebase.firestore.ListenerRegistration
 import android.Manifest
+import com.example.Smart_Chat.models.video_call.VideoCallModel
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     companion object {
@@ -209,7 +210,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun showIncomingCall(call: com.example.Smart_Chat.models.VideoCallModel) {
+    private fun showIncomingCall(call: VideoCallModel) {
         // Get caller info
         FirebaseAuthentication.allUsersCollection().document(call.callerId ?: "").get()
             .addOnSuccessListener { doc ->

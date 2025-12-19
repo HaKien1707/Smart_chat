@@ -8,9 +8,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.models.groupModel
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.models.group.groupModel
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
 import com.example.Smart_Chat.utils.firebase.*
 
 class GroupJoinRequestActivity : AppCompatActivity() {

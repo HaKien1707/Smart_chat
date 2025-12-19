@@ -11,10 +11,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.GroupBlockedMemberAdapter
+import com.example.Smart_Chat.adapters.group.GroupBlockedMemberAdapter
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
 import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.example.Smart_Chat.utils.firebase.FirebaseBlocking
 
@@ -33,7 +33,7 @@ class BlockedMembersActivity : AppCompatActivity() {
         LanguageManager.applySavedLanguage(this)
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_blocked_members)
+        setContentView(R.layout.activity_blocked_members_group)
 
         groupID = intent.getStringExtra("groupID")
 

@@ -12,9 +12,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.PasswordUtils
-import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.security.PasswordUtils
+import com.example.Smart_Chat.utils.UI.ThemeManager
 import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.hbb20.CountryCodePicker
 

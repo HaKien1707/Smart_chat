@@ -13,11 +13,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.SelectMemberAdapter
-import com.example.Smart_Chat.models.groupModel
+import com.example.Smart_Chat.adapters.group.SelectGroupMemberAdapter
+import com.example.Smart_Chat.models.group.groupModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.*
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
 import com.example.Smart_Chat.utils.firebase.*
+import com.example.Smart_Chat.utils.others.androidUtils
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.Timestamp
 import java.util.UUID
@@ -32,7 +34,7 @@ class CreateGroupActivity : AppCompatActivity() {
 
     private var selectedImageBase64: String? = null
     private val selectedMembers = mutableListOf<String>()
-    private lateinit var memberAdapter: SelectMemberAdapter
+    private lateinit var memberAdapter: SelectGroupMemberAdapter
 
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -91,7 +93,7 @@ class CreateGroupActivity : AppCompatActivity() {
                     }
                 }
 
-                memberAdapter = SelectMemberAdapter(users, this) { userID, isSelected ->
+                memberAdapter = SelectGroupMemberAdapter(users, this) { userID, isSelected ->
                     if (isSelected) {
                         selectedMembers.add(userID)
                     } else {

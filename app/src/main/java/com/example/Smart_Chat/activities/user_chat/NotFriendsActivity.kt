@@ -11,8 +11,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.*
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
 import com.example.Smart_Chat.utils.firebase.FirebaseFriends
+import com.example.Smart_Chat.utils.others.androidUtils
 
 class NotFriendsActivity : AppCompatActivity() {
 

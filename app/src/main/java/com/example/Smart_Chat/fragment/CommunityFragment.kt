@@ -9,8 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.CommunityAdapter
-import com.example.Smart_Chat.models.CommunityModel
+import com.example.Smart_Chat.adapters.community.CommunityAdapter
+import com.example.Smart_Chat.models.community.CommunityModel
 import com.example.Smart_Chat.utils.firebase.FirebaseCommunity
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.firebase.firestore.Query

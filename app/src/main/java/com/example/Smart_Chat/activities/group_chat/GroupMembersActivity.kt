@@ -12,12 +12,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.user_chat.ChatActivity
-import com.example.Smart_Chat.adapters.GroupMemberClickableAdapter
-import com.example.Smart_Chat.models.groupModel
+import com.example.Smart_Chat.adapters.group.GroupMemberAdapter
+import com.example.Smart_Chat.models.group.groupModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.others.androidUtils
 import com.example.Smart_Chat.utils.firebase.*
 
 class GroupMembersActivity : AppCompatActivity() {
@@ -26,7 +26,7 @@ class GroupMembersActivity : AppCompatActivity() {
     private lateinit var titleText: TextView
     private lateinit var membersRecycler: RecyclerView
     private lateinit var emptyState: LinearLayout
-    private lateinit var adapter: GroupMemberClickableAdapter
+    private lateinit var adapter: GroupMemberAdapter
 
     private var groupID: String? = null
     private var group: groupModel? = null
@@ -122,7 +122,7 @@ class GroupMembersActivity : AppCompatActivity() {
     }
 
     private fun setupAdapter() {
-        adapter = GroupMemberClickableAdapter(
+        adapter = GroupMemberAdapter(
             membersList,
             this,
             isAdmin,

@@ -1,8 +1,8 @@
 package com.example.Smart_Chat.utils.firebase
 
 import android.util.Log
-import com.example.Smart_Chat.models.TemporaryChatModel
-import com.example.Smart_Chat.utils.EncryptionUtils
+import com.example.Smart_Chat.models.temp_chat.TemporaryChatModel
+import com.example.Smart_Chat.utils.security.EncryptionUtils
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference

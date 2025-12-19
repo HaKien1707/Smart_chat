@@ -11,9 +11,9 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.others.androidUtils
 import com.example.Smart_Chat.utils.firebase.FirebaseCommunity
 import com.github.dhaval2404.imagepicker.ImagePicker
 

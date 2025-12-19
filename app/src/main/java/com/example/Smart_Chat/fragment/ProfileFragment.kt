@@ -14,12 +14,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.androidUtils
-import com.example.Smart_Chat.utils.androidUtils.showToast
+import com.example.Smart_Chat.utils.others.androidUtils
+import com.example.Smart_Chat.utils.others.androidUtils.showToast
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.firestore.SetOptions
 import com.example.Smart_Chat.databinding.FragmentProfileBinding
-import com.example.Smart_Chat.utils.PasswordUtils
+import com.example.Smart_Chat.utils.security.PasswordUtils
 import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import java.util.Locale
 

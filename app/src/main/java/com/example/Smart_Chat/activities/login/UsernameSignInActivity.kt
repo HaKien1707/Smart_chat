@@ -9,9 +9,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.MainActivity
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.others.androidUtils
 import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 
 class UsernameSignInActivity : AppCompatActivity() {

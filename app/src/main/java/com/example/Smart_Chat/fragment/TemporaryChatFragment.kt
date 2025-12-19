@@ -8,8 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.TemporaryChatAdapter
-import com.example.Smart_Chat.models.TemporaryChatModel
+import com.example.Smart_Chat.adapters.temporary_chat.TemporaryChatAdapter
+import com.example.Smart_Chat.models.temp_chat.TemporaryChatModel
 import com.example.Smart_Chat.utils.firebase.FirebaseTemporaryChat
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 

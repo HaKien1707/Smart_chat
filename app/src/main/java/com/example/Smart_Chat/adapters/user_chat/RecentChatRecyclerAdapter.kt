@@ -17,7 +17,7 @@ import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.user_chat.ChatActivity
 import com.example.Smart_Chat.models.UserChatModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.others.androidUtils
 import com.example.Smart_Chat.utils.firebase.*
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions

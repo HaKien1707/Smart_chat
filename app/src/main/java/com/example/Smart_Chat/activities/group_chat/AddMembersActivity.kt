@@ -10,11 +10,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.SelectMemberAdapter
-import com.example.Smart_Chat.models.groupModel
+import com.example.Smart_Chat.adapters.group.SelectGroupMemberAdapter
+import com.example.Smart_Chat.models.group.groupModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
 import com.example.Smart_Chat.utils.firebase.*
 
 class AddMembersActivity : AppCompatActivity() {
@@ -27,7 +27,7 @@ class AddMembersActivity : AppCompatActivity() {
     private var groupID: String? = null
     private var group: groupModel? = null
     private val selectedMembers = mutableListOf<String>()
-    private lateinit var memberAdapter: SelectMemberAdapter
+    private lateinit var memberAdapter: SelectGroupMemberAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Apply theme and language
@@ -110,7 +110,7 @@ class AddMembersActivity : AppCompatActivity() {
     }
 
     private fun setupMemberRecycler(users: List<userModel>) {
-        memberAdapter = SelectMemberAdapter(users, this) { userID, isSelected ->
+        memberAdapter = SelectGroupMemberAdapter(users, this) { userID, isSelected ->
             if (isSelected) {
                 selectedMembers.add(userID)
             } else {

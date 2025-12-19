@@ -11,11 +11,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.SelectUserAdapter
-import com.example.Smart_Chat.models.CommunityModel
+import com.example.Smart_Chat.adapters.social.SelectUserAdapter
+import com.example.Smart_Chat.models.community.CommunityModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
 import com.example.Smart_Chat.utils.firebase.*
 
 class UnbanUserActivity : AppCompatActivity() {

@@ -15,9 +15,9 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.user_chat.FriendsListAdapter
+import com.example.Smart_Chat.adapters.social.FriendsListAdapter
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.others.androidUtils
 import com.example.Smart_Chat.utils.firebase.*
 
 class FriendsListFragment : Fragment() {

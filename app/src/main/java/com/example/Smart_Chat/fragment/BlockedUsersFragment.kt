@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.user_chat.BlockedUsersAdapter
+import com.example.Smart_Chat.adapters.social.BlockedUsersAdapter
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 

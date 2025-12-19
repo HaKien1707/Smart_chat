@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.user_chat.RecentChatRecyclerAdapter
 import com.example.Smart_Chat.models.UserChatModel
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
 import com.example.Smart_Chat.utils.firebase.FirebaseChat
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 

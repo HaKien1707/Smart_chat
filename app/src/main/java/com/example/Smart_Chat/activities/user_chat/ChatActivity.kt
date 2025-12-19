@@ -16,12 +16,19 @@ import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.user_chat.MsgRecyclerAdapter
 import com.example.Smart_Chat.models.*
-import com.example.Smart_Chat.utils.*
-import com.example.Smart_Chat.utils.CloudinaryHelper
-import com.example.Smart_Chat.utils.MediaMessageHelper
+import com.example.Smart_Chat.models.msg_action.ReplyMessageData
+import com.example.Smart_Chat.utils.AI.BotMessageHelper
+import com.example.Smart_Chat.utils.AI.GeminiHelper
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.media.CloudinaryHelper
+import com.example.Smart_Chat.utils.media.MediaMessageHelper
 import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.example.Smart_Chat.utils.firebase.FirebaseChat
 import com.example.Smart_Chat.utils.firebase.FirebaseFriends
+import com.example.Smart_Chat.utils.notification.UserChatNotificationHelper
+import com.example.Smart_Chat.utils.others.ChatStateManager
+import com.example.Smart_Chat.utils.others.androidUtils
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.Timestamp
@@ -608,8 +615,21 @@ class ChatActivity : AppCompatActivity() {
         adapter.startListening()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Track that user is in this chat
+        ChatStateManager.setCurrentChat(chatRoomID!!)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Clear when leaving chat
+        ChatStateManager.clearCurrentChat()
+    }
+
     override fun onStop() {
         super.onStop()
         adapter.stopListening()
+        ChatStateManager.clearCurrentChat()
     }
 }

@@ -1,8 +1,8 @@
 package com.example.Smart_Chat.utils.firebase
 
 import android.util.Log
-import com.example.Smart_Chat.models.GroupJoinRequestModel
-import com.example.Smart_Chat.models.groupModel
+import com.example.Smart_Chat.models.request.GroupJoinRequestModel
+import com.example.Smart_Chat.models.group.groupModel
 import com.example.Smart_Chat.models.userModel
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference

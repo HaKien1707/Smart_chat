@@ -1,6 +1,6 @@
 package com.example.Smart_Chat.utils.firebase
 
-import com.example.Smart_Chat.models.groupModel
+import com.example.Smart_Chat.models.group.groupModel
 import com.example.Smart_Chat.models.userModel
 import com.google.firebase.firestore.FieldValue
 

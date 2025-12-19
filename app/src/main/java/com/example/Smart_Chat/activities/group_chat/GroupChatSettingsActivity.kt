@@ -18,12 +18,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.GroupMemberAdapter
-import com.example.Smart_Chat.models.groupModel
+import com.example.Smart_Chat.models.group.groupModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.others.androidUtils
 import com.example.Smart_Chat.utils.firebase.*
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.firestore.FirebaseFirestore
@@ -43,7 +42,6 @@ class GroupChatSettingsActivity : AppCompatActivity() {
     private var groupID: String? = null
     private var group: groupModel? = null
     private var isAdmin = false
-    private lateinit var memberAdapter: GroupMemberAdapter
 
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -78,10 +76,6 @@ class GroupChatSettingsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Only reload if group data might have changed (after add members)
-        if (::memberAdapter.isInitialized) {
-            loadGroupDetails()
-        }
     }
 
     private lateinit var blockedListBtn: Button
@@ -194,30 +188,6 @@ class GroupChatSettingsActivity : AppCompatActivity() {
                 Toast.makeText(this, "Failed to load group", Toast.LENGTH_SHORT).show()
                 finish()
             }
-    }
-
-    // Update blockMember function to use the new Firebase function
-    private fun blockMember(userID: String) {
-        val member = memberAdapter.members.find { it.first.userID == userID }?.first
-
-        AlertDialog.Builder(this)
-            .setTitle("Block Member")
-            .setMessage("Block ${member?.username}? They will be removed from the group and won't be able to rejoin.")
-            .setPositiveButton("Block & Remove") { _, _ ->
-                FirebaseBlocking.blockUserFromGroup(
-                    groupID!!,
-                    userID,
-                    onSuccess = {
-                        Toast.makeText(this, "Member blocked and removed", Toast.LENGTH_SHORT).show()
-                        loadGroupDetails()
-                    },
-                    onFailure = { e ->
-                        Toast.makeText(this, "Failed to block: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-                )
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
     }
 
     private fun loadMembers() {

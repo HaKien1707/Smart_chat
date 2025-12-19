@@ -1,8 +1,8 @@
 package com.example.Smart_Chat.utils.firebase
 
 import android.util.Log
-import com.example.Smart_Chat.models.IceCandidateModel
-import com.example.Smart_Chat.models.VideoCallModel
+import com.example.Smart_Chat.models.video_call.IceCandidateModel
+import com.example.Smart_Chat.models.video_call.VideoCallModel
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference

@@ -20,13 +20,21 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.GroupMsgRecyclerAdapter
-import com.example.Smart_Chat.models.GroupMsgModel
-import com.example.Smart_Chat.models.ReplyMessageData
-import com.example.Smart_Chat.models.groupModel
+import com.example.Smart_Chat.adapters.group.GroupMsgRecyclerAdapter
+import com.example.Smart_Chat.models.group.GroupMsgModel
+import com.example.Smart_Chat.models.msg_action.ReplyMessageData
+import com.example.Smart_Chat.models.group.groupModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.*
+import com.example.Smart_Chat.utils.AI.BotMessageHelper
+import com.example.Smart_Chat.utils.AI.GeminiHelper
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
 import com.example.Smart_Chat.utils.firebase.*
+import com.example.Smart_Chat.utils.media.CloudinaryHelper
+import com.example.Smart_Chat.utils.media.MediaMessageHelper
+import com.example.Smart_Chat.utils.notification.FCMTokenManager
+import com.example.Smart_Chat.utils.others.ChatStateManager
+import com.example.Smart_Chat.utils.others.androidUtils
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.auth.oauth2.GoogleCredentials
@@ -758,5 +766,23 @@ class GroupChatActivity : AppCompatActivity() {
 
     fun getGroupID(): String {
         return groupID
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Track that user is in this group
+        ChatStateManager.setCurrentGroup(groupID)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Clear when leaving group
+        ChatStateManager.clearCurrentChat()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Clear when activity destroyed
+        ChatStateManager.clearCurrentChat()
     }
 }

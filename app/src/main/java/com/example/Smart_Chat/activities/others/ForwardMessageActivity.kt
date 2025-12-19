@@ -12,9 +12,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.ForwardChatAdapter
+import com.example.Smart_Chat.adapters.social.ForwardChatAdapter
 import com.example.Smart_Chat.models.*
-import com.example.Smart_Chat.utils.*
+import com.example.Smart_Chat.models.group.GroupMsgModel
+import com.example.Smart_Chat.models.group.groupModel
+import com.example.Smart_Chat.models.msg_action.ForwardChatItemModel
+import com.example.Smart_Chat.models.msg_action.ForwardChatType
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
 import com.example.Smart_Chat.utils.firebase.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.Timestamp

@@ -1,6 +1,6 @@
 package com.example.Smart_Chat.utils.firebase
 
-import com.example.Smart_Chat.models.FriendRequestModel
+import com.example.Smart_Chat.models.request.FriendRequestModel
 import com.example.Smart_Chat.models.userModel
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
