@@ -22,9 +22,8 @@ import com.example.Smart_Chat.activities.others.FullScreenImageActivity
 import com.example.Smart_Chat.activities.user_chat.ChatActivity
 import com.example.Smart_Chat.models.MsgModel
 import com.example.Smart_Chat.models.ReplyMessageData
-import com.example.Smart_Chat.utils.FileDownloadHelper
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.MessageOptionsHelper
+import com.example.Smart_Chat.utils.*
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.firebase.Timestamp
@@ -82,7 +81,7 @@ class MsgRecyclerAdapter(
             return
         }
 
-        if (model.senderID == FireBase_utils.currentUserID()) {
+        if (model.senderID == FirebaseAuthentication.currentUserID()) {
             // My message → show on right (receiver side)
             holder.sender.visibility = View.GONE
             holder.receiver.visibility = View.VISIBLE
@@ -417,7 +416,7 @@ class MsgRecyclerAdapter(
         MessageOptionsHelper.showMessageOptions(
             context = context,
             view = view,
-            canDelete = model.senderID == FireBase_utils.currentUserID(),
+            canDelete = model.senderID == FirebaseAuthentication.currentUserID(),
             messageData = messageData,
             onReply = { replyData ->
                 if (context is ChatActivity) {

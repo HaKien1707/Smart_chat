@@ -14,10 +14,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.CommunityModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
 import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.firebase.FirebaseCommunity
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -112,7 +112,7 @@ class CommunitySettingsActivity : AppCompatActivity() {
     }
 
     private fun loadCommunityDetails() {
-        FireBase_utils.getCommunityReference(communityID!!).get()
+        FirebaseCommunity.getCommunityReference(communityID!!).get()
             .addOnSuccessListener { document ->
                 community = document.toObject(CommunityModel::class.java)
 
@@ -151,7 +151,7 @@ class CommunitySettingsActivity : AppCompatActivity() {
             updates["communityImage"] = selectedImageBase64!!
         }
 
-        FireBase_utils.getCommunityReference(communityID!!)
+        FirebaseCommunity.getCommunityReference(communityID!!)
             .update(updates)
             .addOnSuccessListener {
                 Toast.makeText(this, "Community updated successfully", Toast.LENGTH_SHORT).show()
@@ -180,7 +180,7 @@ class CommunitySettingsActivity : AppCompatActivity() {
         deleteCommunityBtn.isEnabled = false
 
         // First delete all messages
-        FireBase_utils.getCommunityMessagesReference(communityID!!)
+        FirebaseCommunity.getCommunityMessagesReference(communityID!!)
             .get()
             .addOnSuccessListener { messages ->
                 val batch = FirebaseFirestore.getInstance().batch()
@@ -191,7 +191,7 @@ class CommunitySettingsActivity : AppCompatActivity() {
                 }
 
                 // Add community deletion to batch
-                batch.delete(FireBase_utils.getCommunityReference(communityID!!))
+                batch.delete(FirebaseCommunity.getCommunityReference(communityID!!))
 
                 // Commit batch delete
                 batch.commit()

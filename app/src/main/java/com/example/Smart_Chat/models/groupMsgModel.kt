@@ -30,9 +30,9 @@ class GroupMsgModel {
     var fileSize: Long? = null
 
     @JvmField
-    var isDeleted: Boolean = false  // NEW: Track if message is deleted
+    var isDeleted: Boolean = false  // Track if message is deleted
 
-    // NEW: Reply fields
+    // Reply fields
     @JvmField
     var replyToMessageId: String? = null
 

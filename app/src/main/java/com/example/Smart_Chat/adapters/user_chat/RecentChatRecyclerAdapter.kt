@@ -17,9 +17,8 @@ import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.user_chat.ChatActivity
 import com.example.Smart_Chat.models.UserChatModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
-import com.example.Smart_Chat.utils.firebase.FirebaseFriends
+import com.example.Smart_Chat.utils.firebase.*
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.firebase.firestore.ListenerRegistration
@@ -32,7 +31,7 @@ class RecentChatRecyclerAdapter(
 
     // Filter items based on deleted status
     private val filteredItems = mutableListOf<UserChatModel>()
-    private val currentUserID = FireBase_utils.currentUserID()
+    private val currentUserID = FirebaseAuthentication.currentUserID()
 
     private val unreadListeners = mutableMapOf<String, ListenerRegistration>()
 
@@ -82,7 +81,7 @@ class RecentChatRecyclerAdapter(
 
         val model = filteredItems[position]
 
-        FireBase_utils.get2ndUserInChatRoom(model.userID)?.get()
+        FirebaseChat.get2ndUserInChatRoom(model.userID)?.get()
             ?.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val otherUser = task.result.toObject(userModel::class.java)
@@ -93,7 +92,7 @@ class RecentChatRecyclerAdapter(
                     if (!otherUser?.profileImage.isNullOrBlank()) {
                         androidUtils.setProfileImageFromBase64(
                             context,
-                            otherUser?.profileImage,
+                            otherUser.profileImage,
                             holder.profileImage
                         )
                     } else {
@@ -115,7 +114,7 @@ class RecentChatRecyclerAdapter(
                                     unreadListeners[chatRoomID]?.remove()
 
                                     // Add real-time listener
-                                    val listener = FireBase_utils.getChatRoomMessagesReferences(chatRoomID)
+                                    val listener = FirebaseChat.getChatRoomMessagesReference(chatRoomID)
                                         .whereEqualTo("senderID", otherUser?.userID)
                                         .whereEqualTo("isRead", false)
                                         .addSnapshotListener { snapshots, error ->
@@ -228,7 +227,7 @@ class RecentChatRecyclerAdapter(
     private fun softDeleteChat(chatRoom: UserChatModel, position: Int) {
         Log.d("ADAPTER_DELETE", "Deleting chat at position $position: ${chatRoom.chatRoomID}")
 
-        FireBase_utils.softDeleteChatRoom(
+        FirebaseChat.softDeleteChatRoom(
             chatRoom.chatRoomID ?: "",
             onSuccess = {
                 (context as? Activity)?.runOnUiThread {
@@ -259,7 +258,7 @@ class RecentChatRecyclerAdapter(
     private fun recoverChat(chatRoom: UserChatModel, position: Int) {
         Log.d("ADAPTER_RECOVER", "Recovering chat at position $position: ${chatRoom.chatRoomID}")
 
-        FireBase_utils.recoverChatRoom(
+        FirebaseChat.recoverChatRoom(
             chatRoom.chatRoomID ?: "",
             onSuccess = {
                 (context as? Activity)?.runOnUiThread {
@@ -290,7 +289,7 @@ class RecentChatRecyclerAdapter(
     private fun permanentlyDeleteChat(chatRoom: UserChatModel, position: Int) {
         Log.d("ADAPTER_PERM_DELETE", "Permanently deleting chat at position $position: ${chatRoom.chatRoomID}")
 
-        FireBase_utils.permanentlyDeleteChatRoom(
+        FirebaseChat.permanentlyDeleteChatRoom(
             chatRoom.chatRoomID ?: "",
             onSuccess = {
                 (context as? Activity)?.runOnUiThread {

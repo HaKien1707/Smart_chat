@@ -23,7 +23,7 @@ object MediaMessageHelper {
         senderID: String,
         senderName: String? = null,
         messageType: MessageType,
-        encryptionKey: String? = null, // NEW: For temp chat
+        encryptionKey: String? = null,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -104,7 +104,7 @@ object MediaMessageHelper {
         senderID: String,
         senderName: String? = null,
         messageType: MessageType,
-        encryptionKey: String? = null, // NEW: For temp chat
+        encryptionKey: String? = null,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {

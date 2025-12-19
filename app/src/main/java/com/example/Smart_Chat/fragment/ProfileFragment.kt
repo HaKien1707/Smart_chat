@@ -1,13 +1,8 @@
 package com.example.Smart_Chat.fragment
 
 import android.app.Activity
-import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
-import android.util.Base64
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,16 +14,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils.currentUserDetails
-import com.example.Smart_Chat.utils.FireBase_utils.currentUserID
 import com.example.Smart_Chat.utils.androidUtils
 import com.example.Smart_Chat.utils.androidUtils.showToast
 import com.github.dhaval2404.imagepicker.ImagePicker
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.example.Smart_Chat.databinding.FragmentProfileBinding
 import com.example.Smart_Chat.utils.PasswordUtils
-import java.io.ByteArrayOutputStream
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import java.util.Locale
 
 class ProfileFragment : Fragment() {
@@ -163,7 +155,7 @@ class ProfileFragment : Fragment() {
     private fun loadUserData() {
         setInProgress(true)
 
-        currentUserDetails().get()
+        FirebaseAuthentication.currentUserDetails().get()
             .addOnSuccessListener { snapshot ->
                 setInProgress(false)
 
@@ -227,7 +219,7 @@ class ProfileFragment : Fragment() {
 
         setInProgress(true)
 
-        currentUserDetails()
+        FirebaseAuthentication.currentUserDetails()
             .set(currentUser!!, SetOptions.merge())
             .addOnSuccessListener {
                 setInProgress(false)
@@ -283,7 +275,7 @@ class ProfileFragment : Fragment() {
         }
 
         val hashedPassword = PasswordUtils.hashPassword(newPassword)
-        currentUserDetails().update("password", hashedPassword)
+        FirebaseAuthentication.currentUserDetails().update("password", hashedPassword)
             .addOnSuccessListener {
                 showToast(requireContext(), "Password changed successfully")
                 currentUser?.password = hashedPassword

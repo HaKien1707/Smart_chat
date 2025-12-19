@@ -25,10 +25,10 @@ class TemporaryChatModel {
     var lastMsgTimestamp: Timestamp? = null
 
     @JvmField
-    var encryptionKey: String? = null // NEW: AES encryption key
+    var encryptionKey: String? = null // AES encryption key
 
     @JvmField
-    var activeUsers: MutableList<String?>? = null // NEW: Track active users
+    var activeUsers: MutableList<String?>? = null // Track active users
 
     constructor()
 
@@ -36,7 +36,7 @@ class TemporaryChatModel {
         chatID: String?,
         userIDs: MutableList<String?>?,
         createdAt: Timestamp?,
-        encryptionKey: String? // NEW parameter
+        encryptionKey: String?
     ) {
         this.chatID = chatID
         this.userIDs = userIDs

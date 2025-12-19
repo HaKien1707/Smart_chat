@@ -6,8 +6,8 @@ enum class NotificationType {
     GROUP_JOIN_REQUEST,
     GROUP_JOIN_REQUEST_ACCEPTED,
     REMOVED_FROM_GROUP,
-    BLOCKED_FROM_GROUP,      // NEW
-    UNBLOCKED_FROM_GROUP,    // NEW
+    BLOCKED_FROM_GROUP,
+    UNBLOCKED_FROM_GROUP,
     BANNED_FROM_COMMUNITY,
     UNBANNED_FROM_COMMUNITY,
     BLOCKED_BY_USER,
@@ -19,5 +19,5 @@ data class NotificationItemModel(
     val user: userModel?,  // Make optional
     val friendRequest: FriendRequestModel? = null,
     val groupJoinRequest: GroupJoinRequestModel? = null,
-    val notification: NotificationModel? = null  // NEW: For other notification types
+    val notification: NotificationModel? = null  // For other notification types
 )

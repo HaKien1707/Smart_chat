@@ -12,8 +12,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.firebase.FirebaseBlocking
 
 class BlockedUsersAdapter(
     private val context: Context,
@@ -57,7 +57,7 @@ class BlockedUsersAdapter(
     }
 
     private fun unblockUser(user: userModel, position: Int) {
-        FireBase_utils.unblockUser(
+        FirebaseBlocking.unblockUser(
             user.userID ?: "",
             onSuccess = {
                 Toast.makeText(context, "${user.username} unblocked", Toast.LENGTH_SHORT).show()

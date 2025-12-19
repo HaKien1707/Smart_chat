@@ -36,7 +36,7 @@ class CommunityMsgModel {
     @JvmField
     var isDeleted: Boolean = false
 
-    // NEW: Reply fields
+    // Reply fields
     @JvmField
     var replyToMessageId: String? = null
 

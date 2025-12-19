@@ -19,7 +19,7 @@ class groupModel {
     var adminIDs: MutableList<String?>? = null
 
     @JvmField
-    var blockedUserIDs: MutableList<String> = mutableListOf() // NEW: Blocked users list
+    var blockedUserIDs: MutableList<String> = mutableListOf() // Blocked users list
 
     @JvmField
     var lastMsg: String? = null

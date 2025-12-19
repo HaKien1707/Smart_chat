@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.CommunityAdapter
 import com.example.Smart_Chat.models.CommunityModel
-import com.example.Smart_Chat.utils.FireBase_utils
+import com.example.Smart_Chat.utils.firebase.FirebaseCommunity
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.firebase.firestore.Query
 
@@ -34,7 +34,7 @@ class CommunityFragment : Fragment() {
     }
 
     private fun setupCommunityRecycler() {
-        val query = FireBase_utils.allCommunitiesCollection()
+        val query = FirebaseCommunity.allCommunitiesCollection()
             .orderBy("lastMsgTimestamp", Query.Direction.DESCENDING)
 
         val options = FirestoreRecyclerOptions.Builder<CommunityModel>()

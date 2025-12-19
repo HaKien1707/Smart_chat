@@ -22,7 +22,7 @@ class CommunityModel {
     var bannedUserIDs: MutableList<String> = mutableListOf()
 
     @JvmField
-    var announcement: String? = null // NEW: Announcement field
+    var announcement: String? = null
 
     @JvmField
     var lastMsg: String? = null

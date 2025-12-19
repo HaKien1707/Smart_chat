@@ -34,10 +34,10 @@ object FirebaseVideoCalls {
         onSuccess: (String) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
         val callId = videoCallsCollection().document().id
 
-        FirebaseAuth.currentUserDetails().get().addOnSuccessListener { doc ->
+        FirebaseAuthentication.currentUserDetails().get().addOnSuccessListener { doc ->
             val currentUser = doc.toObject(com.example.Smart_Chat.models.userModel::class.java)
 
             val call = VideoCallModel(
@@ -189,7 +189,7 @@ object FirebaseVideoCalls {
     fun listenForIncomingCalls(
         onCallReceived: (VideoCallModel) -> Unit
     ): ListenerRegistration {
-        val currentUserID = FirebaseAuth.currentUserID() ?: throw Exception("User not logged in")
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: throw Exception("User not logged in")
 
         return videoCallsCollection()
             .whereEqualTo("receiverId", currentUserID)

@@ -9,19 +9,19 @@ import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.MainActivity
 import com.example.Smart_Chat.activities.user_chat.ChatActivity
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 
 class splashScreenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
 
-        if (FireBase_utils.isLoggedIn && intent.extras != null) {
+        if (FirebaseAuthentication.isLoggedIn && intent.extras != null) {
             val userID = intent.extras?.getString("userID")
 
             userID?.let {
-                FireBase_utils.allUsersCollection().document(it).get()
+                FirebaseAuthentication.allUsersCollection().document(it).get()
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             val model = task.result.toObject(userModel::class.java)

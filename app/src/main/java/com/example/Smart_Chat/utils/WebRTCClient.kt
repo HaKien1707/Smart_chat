@@ -202,7 +202,7 @@ class WebRTCClient(
         peerConnection?.addIceCandidate(iceCandidate)
     }
 
-    // NEW: Optional method for removing ICE candidates (rarely used)
+    // Optional method for removing ICE candidates (rarely used)
     fun removeIceCandidates(candidates: Array<out IceCandidate>?) {
         candidates?.let {
             try {

@@ -33,7 +33,7 @@ object FirebaseTemporaryChat {
         onSuccess: (String, String) -> Unit, // Returns chatID and encryptionKey
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
         val chatID = allTemporaryChatsCollection().document().id
 
         // Generate encryption key
@@ -53,7 +53,7 @@ object FirebaseTemporaryChat {
 
     @JvmStatic
     fun markUserAsActiveInTempChat(chatID: String) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
         getTemporaryChatReference(chatID)
             .update("activeUsers", FieldValue.arrayUnion(currentUserID))
@@ -70,7 +70,7 @@ object FirebaseTemporaryChat {
         chatID: String,
         onBothLeft: () -> Unit = {}
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
         getTemporaryChatReference(chatID)
             .update("activeUsers", FieldValue.arrayRemove(currentUserID))
@@ -155,7 +155,7 @@ object FirebaseTemporaryChat {
 
     @JvmStatic
     fun getUserTemporaryChatsQuery(): Query {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return allTemporaryChatsCollection()
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return allTemporaryChatsCollection()
             .whereArrayContains("userIDs", "")
 
         return allTemporaryChatsCollection()

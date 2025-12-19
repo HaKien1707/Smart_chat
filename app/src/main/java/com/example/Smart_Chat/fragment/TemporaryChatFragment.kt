@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.TemporaryChatAdapter
 import com.example.Smart_Chat.models.TemporaryChatModel
-import com.example.Smart_Chat.utils.FireBase_utils
+import com.example.Smart_Chat.utils.firebase.FirebaseTemporaryChat
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 
 class TemporaryChatFragment : Fragment() {
@@ -29,13 +29,13 @@ class TemporaryChatFragment : Fragment() {
         setupRecycler()
 
         // Clean up expired chats
-        FireBase_utils.deleteExpiredTemporaryChats()
+        FirebaseTemporaryChat.deleteExpiredTemporaryChats()
 
         return view
     }
 
     private fun setupRecycler() {
-        val query = FireBase_utils.getUserTemporaryChatsQuery()
+        val query = FirebaseTemporaryChat.getUserTemporaryChatsQuery()
 
         val options = FirestoreRecyclerOptions.Builder<TemporaryChatModel>()
             .setQuery(query, TemporaryChatModel::class.java)
@@ -72,6 +72,6 @@ class TemporaryChatFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         // Clean up expired chats when fragment resumes
-        FireBase_utils.deleteExpiredTemporaryChats()
+        FirebaseTemporaryChat.deleteExpiredTemporaryChats()
     }
 }

@@ -14,8 +14,8 @@ import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.temporary_chat.TemporaryChatActivity
 import com.example.Smart_Chat.models.TemporaryChatModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.firebase.*
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 
@@ -49,13 +49,13 @@ class TemporaryChatAdapter(
             holder.expiryTimer.text = "Expired"
             model.chatID?.let {
                 // Delete this specific chat
-                FireBase_utils.getTemporaryChatReference(it).delete()
+                FirebaseTemporaryChat.getTemporaryChatReference(it).delete()
             }
             return
         }
 
         // Get other user
-        FireBase_utils.get2ndUserInChatRoom(model.userIDs)?.get()
+        FirebaseChat.get2ndUserInChatRoom(model.userIDs)?.get()
             ?.addOnSuccessListener { userDoc ->
                 // Check if holder is still valid
                 if (holder.bindingAdapterPosition == RecyclerView.NO_POSITION) {
@@ -71,7 +71,7 @@ class TemporaryChatAdapter(
                 if (!otherUser?.profileImage.isNullOrBlank()) {
                     androidUtils.setProfileImageFromBase64(
                         context,
-                        otherUser?.profileImage,
+                        otherUser.profileImage,
                         holder.profileImage
                     )
                 } else {
@@ -116,7 +116,7 @@ class TemporaryChatAdapter(
                     holder.expiryTimer.text = "Expired"
                 }
                 // Delete the chat
-                FireBase_utils.getTemporaryChatReference(chatID).delete()
+                FirebaseTemporaryChat.getTemporaryChatReference(chatID).delete()
                 timers.remove(chatID)
             }
         }

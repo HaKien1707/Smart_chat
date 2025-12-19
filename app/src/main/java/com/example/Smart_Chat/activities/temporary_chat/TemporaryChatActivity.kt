@@ -27,11 +27,11 @@ import com.example.Smart_Chat.models.TemporaryChatModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.CloudinaryHelper
 import com.example.Smart_Chat.utils.EncryptionUtils
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.MediaMessageHelper
 import com.example.Smart_Chat.utils.ThemeManager
 import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.firebase.*
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.ListenerRegistration
@@ -61,7 +61,7 @@ class TemporaryChatActivity : AppCompatActivity() {
 
     private lateinit var sendFileBtn: ImageButton
 
-    // NEW: Reply preview views
+    // Reply preview views
     private lateinit var replyPreviewContainer: View
     private lateinit var replyText: TextView
     private lateinit var replyImage: ImageView
@@ -122,7 +122,7 @@ class TemporaryChatActivity : AppCompatActivity() {
         val profileContainer = findViewById<View>(R.id.profile_image_container)
         profileImage = profileContainer.findViewById(R.id.profile_image)
 
-        // NEW: Reply preview views
+        // Reply preview views
         replyPreviewContainer = findViewById(R.id.reply_preview)
         replyText = replyPreviewContainer.findViewById(R.id.reply_text)
         replyImage = replyPreviewContainer.findViewById(R.id.reply_image)
@@ -201,9 +201,9 @@ class TemporaryChatActivity : AppCompatActivity() {
         MediaMessageHelper.uploadAndSendImage(
             this,
             imageUri,
-            FireBase_utils.getTemporaryChatReference(chatID),
-            FireBase_utils.getTemporaryChatMessagesReference(chatID),
-            FireBase_utils.currentUserID()!!,
+            FirebaseTemporaryChat.getTemporaryChatReference(chatID),
+            FirebaseTemporaryChat.getTemporaryChatMessagesReference(chatID),
+            FirebaseAuthentication.currentUserID()!!,
             null,
             MediaMessageHelper.MessageType.PRIVATE_TEMP,
             encryptionKey,
@@ -226,9 +226,9 @@ class TemporaryChatActivity : AppCompatActivity() {
         MediaMessageHelper.uploadAndSendFile(
             this,
             fileUri,
-            FireBase_utils.getTemporaryChatReference(chatID),
-            FireBase_utils.getTemporaryChatMessagesReference(chatID),
-            FireBase_utils.currentUserID()!!,
+            FirebaseTemporaryChat.getTemporaryChatReference(chatID),
+            FirebaseTemporaryChat.getTemporaryChatMessagesReference(chatID),
+            FirebaseAuthentication.currentUserID()!!,
             null,
             MediaMessageHelper.MessageType.PRIVATE_TEMP,
             encryptionKey,
@@ -322,7 +322,7 @@ class TemporaryChatActivity : AppCompatActivity() {
     }
 
     private fun startListeningForMessages() {
-        messageListener = FireBase_utils.getTemporaryChatMessagesReference(chatID)
+        messageListener = FirebaseTemporaryChat.getTemporaryChatMessagesReference(chatID)
             .orderBy("timestamp", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshots, error ->
                 if (error != null) {
@@ -414,7 +414,7 @@ class TemporaryChatActivity : AppCompatActivity() {
     }
 
     private fun loadChatDetails() {
-        FireBase_utils.getTemporaryChatReference(chatID).get()
+        FirebaseTemporaryChat.getTemporaryChatReference(chatID).get()
             .addOnSuccessListener { document ->
                 tempChat = document.toObject(TemporaryChatModel::class.java)
 
@@ -428,7 +428,7 @@ class TemporaryChatActivity : AppCompatActivity() {
                 }
 
                 // Mark user as active
-                FireBase_utils.markUserAsActiveInTempChat(chatID)
+                FirebaseTemporaryChat.markUserAsActiveInTempChat(chatID)
 
                 // Start countdown timer
                 val expiresAt = tempChat?.expiresAt?.toDate()?.time ?: 0
@@ -491,11 +491,11 @@ class TemporaryChatActivity : AppCompatActivity() {
         try {
             val encryptedText = EncryptionUtils.encrypt(plainText, encryptionKey)
 
-            FireBase_utils.getTemporaryChatReference(chatID)
+            FirebaseTemporaryChat.getTemporaryChatReference(chatID)
                 .update(
                     mapOf(
                         "lastMsg" to plainText,
-                        "lastMsgSenderID" to FireBase_utils.currentUserID(),
+                        "lastMsgSenderID" to FirebaseAuthentication.currentUserID(),
                         "lastMsgTimestamp" to Timestamp.now()
                     )
                 )
@@ -513,7 +513,7 @@ class TemporaryChatActivity : AppCompatActivity() {
                 }
 
                 TempChatMsgModel(
-                    FireBase_utils.currentUserID(),
+                    FirebaseAuthentication.currentUserID(),
                     encryptedText,
                     Timestamp.now(),
                     messageType = "text",
@@ -526,13 +526,13 @@ class TemporaryChatActivity : AppCompatActivity() {
                 )
             } else {
                 TempChatMsgModel(
-                    FireBase_utils.currentUserID(),
+                    FirebaseAuthentication.currentUserID(),
                     encryptedText,
                     Timestamp.now()
                 )
             }
 
-            FireBase_utils.getTemporaryChatMessagesReference(chatID)
+            FirebaseTemporaryChat.getTemporaryChatMessagesReference(chatID)
                 .add(msgModel)
                 .addOnSuccessListener {
                     chatBox.setText("")
@@ -560,7 +560,7 @@ class TemporaryChatActivity : AppCompatActivity() {
 
         // Mark user as inactive (will delete chat if both users left)
         if (::chatID.isInitialized) {
-            FireBase_utils.markUserAsInactiveInTempChat(chatID) {
+            FirebaseTemporaryChat.markUserAsInactiveInTempChat(chatID) {
                 Log.d("TemporaryChatActivity", "Chat deleted - both users left")
             }
         }
@@ -569,14 +569,14 @@ class TemporaryChatActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         if (::chatID.isInitialized) {
-            FireBase_utils.markUserAsInactiveInTempChat(chatID)
+            FirebaseTemporaryChat.markUserAsInactiveInTempChat(chatID)
         }
     }
 
     override fun onResume() {
         super.onResume()
         if (::chatID.isInitialized) {
-            FireBase_utils.markUserAsActiveInTempChat(chatID)
+            FirebaseTemporaryChat.markUserAsActiveInTempChat(chatID)
         }
     }
 }

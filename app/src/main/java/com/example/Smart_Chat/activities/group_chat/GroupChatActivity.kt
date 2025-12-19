@@ -25,15 +25,8 @@ import com.example.Smart_Chat.models.GroupMsgModel
 import com.example.Smart_Chat.models.ReplyMessageData
 import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.BotMessageHelper
-import com.example.Smart_Chat.utils.CloudinaryHelper
-import com.example.Smart_Chat.utils.FCMTokenManager
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.GeminiHelper
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.MediaMessageHelper
-import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.*
+import com.example.Smart_Chat.utils.firebase.*
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.auth.oauth2.GoogleCredentials
@@ -134,7 +127,7 @@ class GroupChatActivity : AppCompatActivity() {
         val profileContainer = findViewById<View>(R.id.profile_image_container)
         groupImage = profileContainer.findViewById(R.id.profile_image)
 
-        // NEW: Reply preview views
+        // Reply preview views
         replyPreviewContainer = findViewById(R.id.reply_preview)
         replyText = replyPreviewContainer.findViewById(R.id.reply_text)
         replyImage = replyPreviewContainer.findViewById(R.id.reply_image)
@@ -214,9 +207,9 @@ class GroupChatActivity : AppCompatActivity() {
         MediaMessageHelper.uploadAndSendImage(
             this,
             imageUri,
-            FireBase_utils.getGroupReference(groupID),
-            FireBase_utils.getGroupMessagesReference(groupID),
-            FireBase_utils.currentUserID()!!,
+            FirebaseGroups.getGroupReference(groupID),
+            FirebaseGroups.getGroupMessagesReference(groupID),
+            FirebaseAuthentication.currentUserID()!!,
             currentUserName,
             MediaMessageHelper.MessageType.GROUP,
             null,
@@ -240,9 +233,9 @@ class GroupChatActivity : AppCompatActivity() {
         MediaMessageHelper.uploadAndSendFile(
             this,
             fileUri,
-            FireBase_utils.getGroupReference(groupID),
-            FireBase_utils.getGroupMessagesReference(groupID),
-            FireBase_utils.currentUserID()!!,
+            FirebaseGroups.getGroupReference(groupID),
+            FirebaseGroups.getGroupMessagesReference(groupID),
+            FirebaseAuthentication.currentUserID()!!,
             currentUserName,
             MediaMessageHelper.MessageType.GROUP,
             null,
@@ -261,7 +254,7 @@ class GroupChatActivity : AppCompatActivity() {
     }
 
     private fun getCurrentUserName() {
-        FireBase_utils.currentUserDetails().get()
+        FirebaseAuthentication.currentUserDetails().get()
             .addOnSuccessListener { document ->
                 val user = document.toObject(userModel::class.java)
                 currentUserName = user?.username
@@ -272,7 +265,7 @@ class GroupChatActivity : AppCompatActivity() {
     }
 
     private fun loadGroupDetails() {
-        FireBase_utils.getGroupReference(groupID).get()
+        FirebaseGroups.getGroupReference(groupID).get()
             .addOnSuccessListener { document ->
                 group = document.toObject(groupModel::class.java)
 
@@ -296,13 +289,13 @@ class GroupChatActivity : AppCompatActivity() {
             }
     }
 
-    // NEW: Set reply message from adapter
+    // Set reply message from adapter
     fun setReplyMessage(replyData: ReplyMessageData) {
         currentReplyData = replyData
         showReplyPreview(replyData)
     }
 
-    // NEW: Show reply preview
+    // Show reply preview
     private fun showReplyPreview(replyData: ReplyMessageData) {
         replyPreviewContainer.visibility = View.VISIBLE
 
@@ -338,7 +331,7 @@ class GroupChatActivity : AppCompatActivity() {
         }
     }
 
-    // NEW: Cancel reply
+    // Cancel reply
     private fun cancelReply() {
         currentReplyData = null
         replyPreviewContainer.visibility = View.GONE
@@ -400,7 +393,7 @@ class GroupChatActivity : AppCompatActivity() {
 
     private fun listenForGroupChanges() {
         // Listen to group document changes in real-time
-        FireBase_utils.getGroupReference(groupID)
+        FirebaseGroups.getGroupReference(groupID)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     Log.e("GroupChatActivity", "Listen failed: ${error.message}")
@@ -412,7 +405,7 @@ class GroupChatActivity : AppCompatActivity() {
                     val memberIDs = updatedGroup?.memberIDs ?: emptyList()
 
                     // Check if current user is still a member
-                    if (!memberIDs.contains(FireBase_utils.currentUserID())) {
+                    if (!memberIDs.contains(FirebaseAuthentication.currentUserID())) {
                         // User was removed from group
                         Toast.makeText(
                             this,
@@ -440,18 +433,18 @@ class GroupChatActivity : AppCompatActivity() {
             return
         }
 
-        FireBase_utils.getGroupReference(groupID)
+        FirebaseGroups.getGroupReference(groupID)
             .update(
                 mapOf(
                     "lastMsg" to msg,
-                    "lastMsgSenderID" to FireBase_utils.currentUserID(),
+                    "lastMsgSenderID" to FirebaseAuthentication.currentUserID(),
                     "lastMsgTimestamp" to Timestamp.now()
                 )
             )
 
         val msgModel = if (currentReplyData != null) {
             GroupMsgModel(
-                FireBase_utils.currentUserID(),
+                FirebaseAuthentication.currentUserID(),
                 currentUserName ?: "Unknown",
                 msg,
                 Timestamp.now(),
@@ -466,18 +459,18 @@ class GroupChatActivity : AppCompatActivity() {
             )
         } else {
             GroupMsgModel(
-                FireBase_utils.currentUserID(),
+                FirebaseAuthentication.currentUserID(),
                 currentUserName ?: "Unknown",
                 msg,
                 Timestamp.now()
             )
         }
 
-        FireBase_utils.getGroupMessagesReference(groupID)
+        FirebaseGroups.getGroupMessagesReference(groupID)
             .add(msgModel)
             .addOnSuccessListener {
                 chatBox.setText("")
-                cancelReply() // NEW: Clear reply state
+                cancelReply() // Clear reply state
                 sendNotificationToMembers(msg)
             }
             .addOnFailureListener { e ->
@@ -487,7 +480,7 @@ class GroupChatActivity : AppCompatActivity() {
     }
 
     private fun setupChatRecycler() {
-        val query = FireBase_utils.getGroupMessagesReference(groupID)
+        val query = FirebaseGroups.getGroupMessagesReference(groupID)
             .orderBy("timestamp", Query.Direction.ASCENDING)
 
         val options = FirestoreRecyclerOptions.Builder<GroupMsgModel>()
@@ -555,13 +548,13 @@ class GroupChatActivity : AppCompatActivity() {
 
         // Show user's command as a message
         val userCommandMsg = GroupMsgModel(
-            FireBase_utils.currentUserID(),
+            FirebaseAuthentication.currentUserID(),
             currentUserName ?: "Unknown",
             command,
             Timestamp.now()
         )
 
-        FireBase_utils.getGroupMessagesReference(groupID)
+        FirebaseGroups.getGroupMessagesReference(groupID)
             .add(userCommandMsg)
             .addOnSuccessListener {
                 chatBox.setText("")
@@ -587,8 +580,8 @@ class GroupChatActivity : AppCompatActivity() {
             try {
                 // Fetch and format messages
                 val messages = BotMessageHelper.fetchAndFormatMessages(
-                    messagesRef = FireBase_utils.getGroupMessagesReference(groupID),
-                    currentUserId = FireBase_utils.currentUserID()!!,
+                    messagesRef = FirebaseGroups.getGroupMessagesReference(groupID),
+                    currentUserId = FirebaseAuthentication.currentUserID()!!,
                     chatType = BotMessageHelper.ChatType.GROUP_CHAT
                 )
 
@@ -608,18 +601,18 @@ class GroupChatActivity : AppCompatActivity() {
                 result.onSuccess { response ->
                     // Send bot response
                     BotMessageHelper.sendBotResponse(
-                        messagesRef = FireBase_utils.getGroupMessagesReference(groupID),
-                        chatRef = FireBase_utils.getGroupReference(groupID),
+                        messagesRef = FirebaseGroups.getGroupMessagesReference(groupID),
+                        chatRef = FirebaseGroups.getGroupReference(groupID),
                         response = response,
                         chatType = BotMessageHelper.ChatType.GROUP_CHAT,
-                        currentUserId = FireBase_utils.currentUserID()!!,
+                        currentUserId = FirebaseAuthentication.currentUserID()!!,
                         currentUserName = currentUserName
                     )
 
                     // Send usage info message
                     BotMessageHelper.sendUsageMessage(
                         context = this@GroupChatActivity,
-                        messagesRef = FireBase_utils.getGroupMessagesReference(groupID),
+                        messagesRef = FirebaseGroups.getGroupMessagesReference(groupID),
                         chatType = BotMessageHelper.ChatType.GROUP_CHAT
                     )
 
@@ -659,13 +652,13 @@ class GroupChatActivity : AppCompatActivity() {
         val memberIDs = group?.memberIDs ?: return
 
         // Get current user info
-        FireBase_utils.currentUserDetails().get().addOnCompleteListener { task ->
+        FirebaseAuthentication.currentUserDetails().get().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val currentUser = task.result.toObject(userModel::class.java)
 
                 // Send notification to each member (except yourself)
                 memberIDs.forEach { memberID ->
-                    if (memberID != FireBase_utils.currentUserID() && memberID != null) {
+                    if (memberID != FirebaseAuthentication.currentUserID() && memberID != null) {
                         sendNotificationToMember(memberID, currentUser?.username ?: "Someone", msg)
                     }
                 }
@@ -675,7 +668,7 @@ class GroupChatActivity : AppCompatActivity() {
 
     private fun sendNotificationToMember(memberID: String, senderName: String, msg: String) {
         // Get member's FCM token
-        FireBase_utils.allUsersCollection().document(memberID).get()
+        FirebaseAuthentication.allUsersCollection().document(memberID).get()
             .addOnSuccessListener { document ->
                 val member = document.toObject(userModel::class.java)
                 val fcmToken = member?.fcmToken
@@ -733,7 +726,7 @@ class GroupChatActivity : AppCompatActivity() {
                     }
 
                     override fun onResponse(call: Call, response: Response) {
-                        val responseBody = response.body?.string() ?: ""
+                        val responseBody = response.body.string()
                         if (response.isSuccessful) {
                             Log.d("GROUP_NOTIFICATION", "Notification sent successfully to $memberID")
                         } else {

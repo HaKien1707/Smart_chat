@@ -31,7 +31,7 @@ object FirebaseCommunity {
         onSuccess: (String) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
         val communityID = allCommunitiesCollection().document().id
 
         val community = CommunityModel(

@@ -19,7 +19,7 @@ import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
 import com.example.Smart_Chat.utils.WebRTCClient
 import com.example.Smart_Chat.utils.androidUtils
-import com.example.Smart_Chat.utils.firebase.FirebaseAuth
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.example.Smart_Chat.utils.firebase.FirebaseVideoCalls
 import com.google.firebase.firestore.ListenerRegistration
 import org.webrtc.IceCandidate
@@ -358,7 +358,7 @@ class VideoCallActivity : AppCompatActivity() {
             iceCandidate.sdpMid,
             iceCandidate.sdpMLineIndex,
             iceCandidate.sdp,
-            FirebaseAuth.currentUserID()
+            FirebaseAuthentication.currentUserID()
         )
 
         FirebaseVideoCalls.addIceCandidate(
@@ -376,7 +376,7 @@ class VideoCallActivity : AppCompatActivity() {
     private fun listenForIceCandidates() {
         iceCandidateListener = FirebaseVideoCalls.listenForIceCandidates(callId!!) { candidate ->
             // Only process candidates from the other user
-            if (candidate.userId != FirebaseAuth.currentUserID()) {
+            if (candidate.userId != FirebaseAuthentication.currentUserID()) {
                 Log.d(TAG, "Remote ICE candidate received")
                 val iceCandidate = IceCandidate(
                     candidate.sdpMid,

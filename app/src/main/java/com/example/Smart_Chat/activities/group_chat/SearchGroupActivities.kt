@@ -11,9 +11,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.SearchGroupRecyclerAdapter
 import com.example.Smart_Chat.models.groupModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.firebase.FirebaseGroups
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 
 class SearchGroupActivity : AppCompatActivity() {
@@ -60,7 +60,7 @@ class SearchGroupActivity : AppCompatActivity() {
         emptyStateText.visibility = View.GONE
         groupList.visibility = View.VISIBLE
 
-        val query = FireBase_utils.allGroupsCollection()
+        val query = FirebaseGroups.allGroupsCollection()
             .whereGreaterThanOrEqualTo("groupName", searchQuery)
             .whereLessThanOrEqualTo("groupName", searchQuery + "\uf8ff")
 

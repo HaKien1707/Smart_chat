@@ -25,7 +25,6 @@ import com.example.Smart_Chat.fragment.GroupFragment
 import com.example.Smart_Chat.fragment.ProfileFragment
 import com.example.Smart_Chat.fragment.FriendsListFragment
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.messaging.FirebaseMessaging
@@ -43,7 +42,7 @@ import com.example.Smart_Chat.fragment.SettingsFragment
 import com.example.Smart_Chat.fragment.TemporaryChatFragment
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.firebase.FirebaseVideoCalls
+import com.example.Smart_Chat.utils.firebase.*
 import com.google.firebase.firestore.ListenerRegistration
 import android.Manifest
 
@@ -212,9 +211,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun showIncomingCall(call: com.example.Smart_Chat.models.VideoCallModel) {
         // Get caller info
-        FireBase_utils.allUsersCollection().document(call.callerId ?: "").get()
+        FirebaseAuthentication.allUsersCollection().document(call.callerId ?: "").get()
             .addOnSuccessListener { doc ->
-                val caller = doc.toObject(com.example.Smart_Chat.models.userModel::class.java)
+                val caller = doc.toObject(userModel::class.java)
 
                 val intent = Intent(this, com.example.Smart_Chat.activities.video_call.IncomingCallActivity::class.java)
                 intent.putExtra("callId", call.callId)
@@ -228,7 +227,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun startNotificationListeners() {
-        val currentUserID = FireBase_utils.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
         var friendRequestCount = 0
         var groupRequestCount = 0
@@ -242,7 +241,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         // Listen to friend requests
-        friendRequestListener = FireBase_utils.getFriendRequestsCollection()
+        friendRequestListener = FirebaseFriends.friendRequestsCollection()
             .whereEqualTo("receiverID", currentUserID)
             .whereEqualTo("status", "pending")
             .addSnapshotListener { snapshots, error ->
@@ -257,7 +256,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
         // Listen to group join requests (for groups where user is admin)
-        FireBase_utils.getGroupsCollection()
+        FirebaseGroups.allGroupsCollection()
             .whereArrayContains("adminIDs", currentUserID)
             .get()
             .addOnSuccessListener { groupDocs ->
@@ -270,7 +269,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
 
                 // Listen to all group join requests for groups where user is admin
-                groupRequestListener = FireBase_utils.getGroupJoinRequestsCollection()
+                groupRequestListener = FirebaseGroups.groupJoinRequestsCollection()
                     .whereIn("groupID", adminGroupIDs)
                     .whereEqualTo("status", "pending")
                     .addSnapshotListener { snapshots, error ->
@@ -289,7 +288,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
         // Listen to info notifications
-        notificationListener = FireBase_utils.notificationsCollection()
+        notificationListener = FirebaseNotifications.notificationsCollection()
             .whereEqualTo("recipientID", currentUserID)
             .whereEqualTo("isRead", false)
             .addSnapshotListener { snapshots, error ->
@@ -364,7 +363,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun loadUserDataIntoDrawer() {
-        FireBase_utils.currentUserDetails().get()
+        FirebaseAuthentication.currentUserDetails().get()
             .addOnSuccessListener { document ->
                 val user = document.toObject(userModel::class.java)
 
@@ -379,7 +378,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if (!user?.profileImage.isNullOrBlank()) {
                     androidUtils.setProfileImageFromBase64(
                         this,
-                        user?.profileImage,
+                        user.profileImage,
                         imageView
                     )
                 }
@@ -442,7 +441,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             Log.e("FCM_TOKEN", "Failed to delete token", task.exception)
                         }
 
-                        FireBase_utils.logout()
+                        FirebaseAuthentication.logout()
 
                         val intent = Intent(this, splashScreenActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -472,7 +471,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val token = task.result
                 Log.d("FCM_TOKEN", "My Token: $token")
 
-                FireBase_utils.currentUserDetails().update("fcmToken", token)
+                FirebaseAuthentication.currentUserDetails().update("fcmToken", token)
                     .addOnSuccessListener {
                         Log.d("FCM_TOKEN", "Token saved to Firestore")
                     }

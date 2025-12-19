@@ -12,20 +12,20 @@ object FirebaseBlocking {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
         // Remove friend if they are friends
         val requestID = FirebaseFriends.generateFriendRequestID(currentUserID, userID)
         FirebaseFriends.getFriendRequestReference(requestID).delete()
 
         // Add to blocked list
-        FirebaseAuth.currentUserDetails().update(
+        FirebaseAuthentication.currentUserDetails().update(
             "blockedUsers",
             FieldValue.arrayUnion(userID)
         )
             .addOnSuccessListener {
                 // Send notification
-                FirebaseAuth.currentUserDetails().get().addOnSuccessListener { doc ->
+                FirebaseAuthentication.currentUserDetails().get().addOnSuccessListener { doc ->
                     val currentUser = doc.toObject(userModel::class.java)
                     FirebaseNotifications.createNotification(
                         type = "BLOCKED_BY_USER",
@@ -46,7 +46,7 @@ object FirebaseBlocking {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        FirebaseAuth.currentUserDetails().update(
+        FirebaseAuthentication.currentUserDetails().update(
             "blockedUsers",
             FieldValue.arrayRemove(userID)
         )
@@ -59,7 +59,7 @@ object FirebaseBlocking {
         userID: String,
         onResult: (Boolean) -> Unit
     ) {
-        FirebaseAuth.currentUserDetails().get()
+        FirebaseAuthentication.currentUserDetails().get()
             .addOnSuccessListener { document ->
                 val user = document.toObject(userModel::class.java)
                 val isBlocked = user?.blockedUsers?.contains(userID) == true
@@ -75,10 +75,10 @@ object FirebaseBlocking {
         userID: String,
         onResult: (Boolean) -> Unit
     ) {
-        FirebaseAuth.allUsersCollection().document(userID).get()
+        FirebaseAuthentication.allUsersCollection().document(userID).get()
             .addOnSuccessListener { document ->
                 val user = document.toObject(userModel::class.java)
-                val isBlockedBy = user?.blockedUsers?.contains(FirebaseAuth.currentUserID()) == true
+                val isBlockedBy = user?.blockedUsers?.contains(FirebaseAuthentication.currentUserID()) == true
                 onResult(isBlockedBy)
             }
             .addOnFailureListener {
@@ -112,7 +112,7 @@ object FirebaseBlocking {
                 FirebaseNotifications.createNotification(
                     type = "BLOCKED_FROM_GROUP",
                     recipientID = userID,
-                    senderID = FirebaseAuth.currentUserID() ?: "",
+                    senderID = FirebaseAuthentication.currentUserID() ?: "",
                     senderName = "Admin",
                     groupID = groupID,
                     groupName = group?.groupName,
@@ -143,7 +143,7 @@ object FirebaseBlocking {
                     FirebaseNotifications.createNotification(
                         type = "UNBLOCKED_FROM_GROUP",
                         recipientID = userID,
-                        senderID = FirebaseAuth.currentUserID() ?: "",
+                        senderID = FirebaseAuthentication.currentUserID() ?: "",
                         senderName = "Admin",
                         groupID = groupID,
                         groupName = group?.groupName,

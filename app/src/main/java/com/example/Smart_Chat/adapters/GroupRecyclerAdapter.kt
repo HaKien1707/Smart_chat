@@ -12,8 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.group_chat.GroupChatActivity
 import com.example.Smart_Chat.models.groupModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 
@@ -42,7 +42,7 @@ class GroupRecyclerAdapter(
         // --- Last message ---
         if (model.lastMsg != null) {
             // Get sender name for last message
-            if (model.lastMsgSenderID == FireBase_utils.currentUserID()) {
+            if (model.lastMsgSenderID == FirebaseAuthentication.currentUserID()) {
                 holder.lastMsg.text = "You: ${model.lastMsg}"
             } else {
                 // Show just the message or sender name if available

@@ -14,9 +14,9 @@ import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.SelectUserAdapter
 import com.example.Smart_Chat.models.CommunityModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.firebase.*
 
 class BanUserActivity : AppCompatActivity() {
 
@@ -65,19 +65,19 @@ class BanUserActivity : AppCompatActivity() {
 
     private fun loadCommunityMembers() {
         // Load ALL users from database (except current user and already banned users)
-        FireBase_utils.getCommunityReference(communityID!!).get()
+        FirebaseCommunity.getCommunityReference(communityID!!).get()
             .addOnSuccessListener { communityDoc ->
                 val community = communityDoc.toObject(CommunityModel::class.java)
                 val bannedUserIDs = community?.bannedUserIDs ?: emptyList()
 
                 // Get all users
-                FireBase_utils.allUsersCollection().get()
+                FirebaseAuthentication.allUsersCollection().get()
                     .addOnSuccessListener { usersSnapshot ->
                         usersSnapshot.forEach { userDoc ->
                             val user = userDoc.toObject(userModel::class.java)
 
                             // Exclude current user and already banned users
-                            if (user.userID != FireBase_utils.currentUserID() &&
+                            if (user.userID != FirebaseAuthentication.currentUserID() &&
                                 !bannedUserIDs.contains(user.userID)) {
                                 userList.add(user)
                             }
@@ -114,18 +114,18 @@ class BanUserActivity : AppCompatActivity() {
     }
 
     private fun banUser(user: userModel) {
-        FireBase_utils.banUserFromCommunity(
+        FirebaseCommunity.banUserFromCommunity(
             communityID!!,
             user.userID ?: "",
             onSuccess = {
                 // Send notification
-                FireBase_utils.getCommunityReference(communityID!!).get()
+                FirebaseCommunity.getCommunityReference(communityID!!).get()
                     .addOnSuccessListener { doc ->
                         val community = doc.toObject(CommunityModel::class.java)
-                        FireBase_utils.createNotification(
+                        FirebaseNotifications.createNotification(
                             type = "BANNED_FROM_COMMUNITY",
                             recipientID = user.userID ?: "",
-                            senderID = FireBase_utils.currentUserID() ?: "",
+                            senderID = FirebaseAuthentication.currentUserID() ?: "",
                             senderName = "Admin",
                             communityID = communityID,
                             communityName = community?.communityName,

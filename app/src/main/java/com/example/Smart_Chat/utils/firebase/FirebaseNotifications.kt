@@ -8,7 +8,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
 object FirebaseNotifications {
-
     @JvmStatic
     fun notificationsCollection(): CollectionReference {
         return FirebaseFirestore.getInstance().collection("notifications")

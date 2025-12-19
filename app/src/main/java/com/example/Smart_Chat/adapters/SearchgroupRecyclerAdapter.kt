@@ -12,8 +12,8 @@ import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.group_chat.GroupChatActivity
 import com.example.Smart_Chat.activities.group_chat.GroupJoinRequestActivity
 import com.example.Smart_Chat.models.groupModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 
@@ -38,7 +38,7 @@ class SearchGroupRecyclerAdapter(
         holder.memberCount.text = "${model.memberIDs?.size ?: 0} members"
 
         // Check if user is a member
-        val isMember = model.memberIDs?.contains(FireBase_utils.currentUserID()) == true
+        val isMember = model.memberIDs?.contains(FirebaseAuthentication.currentUserID()) == true
 
         holder.itemView.setOnClickListener {
             if (isMember) {

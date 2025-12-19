@@ -11,10 +11,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.*
+import com.example.Smart_Chat.utils.firebase.FirebaseFriends
 
 class NotFriendsActivity : AppCompatActivity() {
 
@@ -27,7 +25,7 @@ class NotFriendsActivity : AppCompatActivity() {
     private lateinit var cancelButton: Button
 
     private var otherUser: userModel? = null
-    private var currentStatus: FireBase_utils.FriendshipStatus? = null
+    private var currentStatus: FirebaseFriends.FriendshipStatus? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Apply theme and language
@@ -81,7 +79,7 @@ class NotFriendsActivity : AppCompatActivity() {
     }
 
     private fun checkFriendshipStatus() {
-        FireBase_utils.checkFriendshipStatus(otherUser?.userID ?: "") { status ->
+        FirebaseFriends.checkFriendshipStatus(otherUser?.userID ?: "") { status ->
             currentStatus = status
             runOnUiThread {
                 updateUI(status)
@@ -89,9 +87,9 @@ class NotFriendsActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateUI(status: FireBase_utils.FriendshipStatus) {
+    private fun updateUI(status: FirebaseFriends.FriendshipStatus) {
         when (status) {
-            FireBase_utils.FriendshipStatus.NOT_FRIENDS -> {
+            FirebaseFriends.FriendshipStatus.NOT_FRIENDS -> {
                 statusText.text = "You are not friends with this user"
                 actionButton.text = "Send Friend Request"
                 actionButton.visibility = View.VISIBLE
@@ -102,7 +100,7 @@ class NotFriendsActivity : AppCompatActivity() {
                 }
             }
 
-            FireBase_utils.FriendshipStatus.REQUEST_SENT -> {
+            FirebaseFriends.FriendshipStatus.REQUEST_SENT -> {
                 statusText.text = "Waiting for ${otherUser?.username} to accept your request"
                 actionButton.visibility = View.GONE
                 cancelButton.visibility = View.VISIBLE
@@ -113,7 +111,7 @@ class NotFriendsActivity : AppCompatActivity() {
                 }
             }
 
-            FireBase_utils.FriendshipStatus.REQUEST_RECEIVED -> {
+            FirebaseFriends.FriendshipStatus.REQUEST_RECEIVED -> {
                 statusText.text = "${otherUser?.username} sent you a friend request"
                 actionButton.text = "Accept Request"
                 actionButton.visibility = View.VISIBLE
@@ -129,7 +127,7 @@ class NotFriendsActivity : AppCompatActivity() {
                 }
             }
 
-            FireBase_utils.FriendshipStatus.FRIENDS -> {
+            FirebaseFriends.FriendshipStatus.FRIENDS -> {
                 // They're friends, shouldn't be here - redirect to chat
                 finish()
             }
@@ -138,7 +136,7 @@ class NotFriendsActivity : AppCompatActivity() {
 
     private fun sendFriendRequest() {
         actionButton.isEnabled = false
-        FireBase_utils.sendFriendRequest(
+        FirebaseFriends.sendFriendRequest(
             otherUser?.userID ?: "",
             otherUser?.username ?: "",
             onSuccess = {
@@ -159,7 +157,7 @@ class NotFriendsActivity : AppCompatActivity() {
 
     private fun cancelFriendRequest() {
         cancelButton.isEnabled = false
-        FireBase_utils.cancelFriendRequest(
+        FirebaseFriends.cancelFriendRequest(
             otherUser?.userID ?: "",
             onSuccess = {
                 runOnUiThread {
@@ -179,7 +177,7 @@ class NotFriendsActivity : AppCompatActivity() {
 
     private fun acceptFriendRequest() {
         actionButton.isEnabled = false
-        FireBase_utils.acceptFriendRequest(
+        FirebaseFriends.acceptFriendRequest(
             otherUser?.userID ?: "",
             onSuccess = {
                 runOnUiThread {
@@ -199,7 +197,7 @@ class NotFriendsActivity : AppCompatActivity() {
 
     private fun rejectFriendRequest() {
         cancelButton.isEnabled = false
-        FireBase_utils.rejectFriendRequest(
+        FirebaseFriends.rejectFriendRequest(
             otherUser?.userID ?: "",
             onSuccess = {
                 runOnUiThread {

@@ -18,7 +18,7 @@ class GroupMemberAdapter(
     private val currentUserIsAdmin: Boolean,
     private val currentUserID: String?,
     private val onRemoveMember: (String) -> Unit,
-    private val onBlockMember: (String) -> Unit // NEW: Block callback
+    private val onBlockMember: (String) -> Unit // Block callback
 ) : RecyclerView.Adapter<GroupMemberAdapter.MemberViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MemberViewHolder {

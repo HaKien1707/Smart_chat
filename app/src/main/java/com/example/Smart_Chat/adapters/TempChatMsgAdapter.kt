@@ -19,8 +19,8 @@ import com.example.Smart_Chat.activities.temporary_chat.TemporaryChatActivity
 import com.example.Smart_Chat.models.DecryptedTempMessage
 import com.example.Smart_Chat.models.ReplyMessageData
 import com.example.Smart_Chat.utils.FileDownloadHelper
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.MessageOptionsHelper
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -38,13 +38,13 @@ class TempChatMsgAdapter(
     override fun onBindViewHolder(holder: MsgViewHolder, position: Int) {
         val message = messages[position]
 
-        if (message.senderID == FireBase_utils.currentUserID()) {
+        if (message.senderID == FirebaseAuthentication.currentUserID()) {
             // My message
             holder.sender.visibility = View.GONE
             holder.receiver.visibility = View.VISIBLE
 
             holder.receiverTimestamp.text = formatTimestamp(message.timestamp?.toDate())
-            // NEW: Show replied message if exists
+            // Show replied message if exists
             if (!message.replyToMessageId.isNullOrEmpty()) {
                 showRepliedMessage(
                     holder.receiverRepliedContainer,
@@ -146,7 +146,7 @@ class TempChatMsgAdapter(
 
             holder.senderTimestamp.text = formatTimestamp(message.timestamp?.toDate())
 
-            // NEW: Show replied message if exists
+            // Show replied message if exists
             if (!message.replyToMessageId.isNullOrEmpty()) {
                 showRepliedMessage(
                     holder.senderRepliedContainer,
@@ -252,7 +252,7 @@ class TempChatMsgAdapter(
         MessageOptionsHelper.showMessageOptions(
             context = context,
             view = view,
-            canDelete = message.senderID == FireBase_utils.currentUserID(),
+            canDelete = message.senderID == FirebaseAuthentication.currentUserID(),
             messageData = messageData,
             onReply = { replyData ->
                 if (context is TemporaryChatActivity) {

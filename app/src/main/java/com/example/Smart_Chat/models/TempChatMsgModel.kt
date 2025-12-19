@@ -15,13 +15,13 @@ class TempChatMsgModel {
     var encryptedImageUrl: String? = null
 
     @JvmField
-    var encryptedFileUrl: String? = null // NEW
+    var encryptedFileUrl: String? = null
 
     @JvmField
-    var encryptedFileName: String? = null // NEW
+    var encryptedFileName: String? = null
 
     @JvmField
-    var fileSize: Long? = null // NEW (not encrypted, just size)
+    var fileSize: Long? = null
 
     @JvmField
     var messageType: String? = "text"
@@ -29,7 +29,7 @@ class TempChatMsgModel {
     @JvmField
     var replyToFileSize: Long? = null
 
-    // NEW: Reply fields (encrypted)
+    // Reply fields (encrypted)
     @JvmField
     var replyToMessageId: String? = null
 
@@ -68,7 +68,7 @@ class TempChatMsgModel {
         this.messageType = messageType
     }
 
-    // NEW: File constructor
+    // File constructor
     constructor(
         senderID: String?,
         encryptedMsg: String?,

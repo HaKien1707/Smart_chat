@@ -20,8 +20,7 @@ import com.example.Smart_Chat.models.CommunityMsgModel
 import com.example.Smart_Chat.models.ReplyMessageData
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FileDownloadHelper
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.FireBase_utils.currentUserID
+import com.example.Smart_Chat.utils.firebase.*
 import com.example.Smart_Chat.utils.MessageOptionsHelper
 import com.example.Smart_Chat.utils.androidUtils
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
@@ -80,7 +79,7 @@ class CommunityMsgRecyclerAdapter(
             return
         }
 
-        val isMe = model.senderID == currentUserID()
+        val isMe = model.senderID == FirebaseAuthentication.currentUserID()
 
         if (isMe) {
             // My message
@@ -89,7 +88,7 @@ class CommunityMsgRecyclerAdapter(
 
             holder.receiverTimestamp.text = formatTimestamp(model.timestamp?.toDate())
 
-            // NEW: Show replied message if exists
+            // Show replied message if exists
             if (!model.replyToMessageId.isNullOrEmpty()) {
                 showRepliedMessage(
                     holder.receiverRepliedContainer,
@@ -206,7 +205,7 @@ class CommunityMsgRecyclerAdapter(
             loadSenderProfileImage(holder, model.senderID)
             holder.senderTimestamp.text = formatTimestamp(model.timestamp?.toDate())
 
-            // NEW: Show replied message if exists
+            // Show replied message if exists
             if (!model.replyToMessageId.isNullOrEmpty()) {
                 showRepliedMessage(
                     holder.senderRepliedContainer,
@@ -327,7 +326,7 @@ class CommunityMsgRecyclerAdapter(
         MessageOptionsHelper.showMessageOptions(
             context = context,
             view = view,
-            canDelete = model.senderID == currentUserID(),
+            canDelete = model.senderID == FirebaseAuthentication.currentUserID(),
             messageData = messageData,
             onReply = { replyData ->
                 if (context is CommunityChatActivity) {
@@ -343,7 +342,7 @@ class CommunityMsgRecyclerAdapter(
         )
     }
 
-    // NEW: Show replied message preview
+    // Show replied message preview
     private fun showRepliedMessage(
         container: View,
         textView: TextView,
@@ -390,7 +389,7 @@ class CommunityMsgRecyclerAdapter(
         }
     }
 
-    // NEW: Scroll to the replied message
+    // Scroll to the replied message
     private fun scrollToMessage(messageId: String?) {
         if (messageId == null) return
 
@@ -446,7 +445,7 @@ class CommunityMsgRecyclerAdapter(
             return
         }
 
-        FireBase_utils.allUsersCollection().document(senderID).get()
+        FirebaseAuthentication.allUsersCollection().document(senderID).get()
             .addOnSuccessListener { document ->
                 val user = document.toObject(userModel::class.java)
                 val profileImage = user?.profileImage
@@ -512,7 +511,7 @@ class CommunityMsgRecyclerAdapter(
         val receiverImage: ImageView = itemView.findViewById(R.id.receiverImage)
         val senderTimestamp: TextView = itemView.findViewById(R.id.senderTimestamp)
         val receiverTimestamp: TextView = itemView.findViewById(R.id.receiverTimestamp)
-        // NEW: Replied message views
+        // Replied message views
         val senderRepliedContainer: View = itemView.findViewById(R.id.sender_replied_message)
         val senderRepliedText: TextView = senderRepliedContainer.findViewById(R.id.replied_text)
         val senderRepliedImage: ImageView = senderRepliedContainer.findViewById(R.id.replied_image)

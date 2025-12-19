@@ -22,10 +22,9 @@ import com.example.Smart_Chat.models.GroupMsgModel
 import com.example.Smart_Chat.models.ReplyMessageData
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FileDownloadHelper
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.FireBase_utils.currentUserID
 import com.example.Smart_Chat.utils.MessageOptionsHelper
 import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import java.text.SimpleDateFormat
@@ -85,7 +84,7 @@ class GroupMsgRecyclerAdapter(
             return // Exit early
         }
 
-        val isMe = model.senderID == currentUserID()
+        val isMe = model.senderID == FirebaseAuthentication.currentUserID()
 
         if (isMe) {
             // My message
@@ -94,7 +93,7 @@ class GroupMsgRecyclerAdapter(
 
             holder.receiverTimestamp.text = formatTimestamp(model.timestamp?.toDate())
 
-            // NEW: Show replied message if exists
+            // Show replied message if exists
             if (!model.replyToMessageId.isNullOrEmpty()) {
                 showRepliedMessage(
                     holder.receiverRepliedContainer,
@@ -211,7 +210,7 @@ class GroupMsgRecyclerAdapter(
             loadSenderProfileImage(holder, model.senderID)
             holder.senderTimestamp.text = formatTimestamp(model.timestamp?.toDate())
 
-            // NEW: Show replied message if exists
+            // Show replied message if exists
             if (!model.replyToMessageId.isNullOrEmpty()) {
                 showRepliedMessage(
                     holder.senderRepliedContainer,
@@ -331,7 +330,7 @@ class GroupMsgRecyclerAdapter(
         MessageOptionsHelper.showMessageOptions(
             context = context,
             view = view,
-            canDelete = model.senderID == currentUserID(),
+            canDelete = model.senderID == FirebaseAuthentication.currentUserID(),
             messageData = messageData,
             onReply = { replyData ->
                 if (context is GroupChatActivity) {
@@ -347,7 +346,7 @@ class GroupMsgRecyclerAdapter(
         )
     }
 
-    // NEW: Show replied message preview
+    // Show replied message preview
     private fun showRepliedMessage(
         container: View,
         textView: TextView,
@@ -394,7 +393,7 @@ class GroupMsgRecyclerAdapter(
         }
     }
 
-    // NEW: Scroll to the replied message
+    // Scroll to the replied message
     private fun scrollToMessage(messageId: String?) {
         if (messageId == null) return
 
@@ -480,7 +479,7 @@ class GroupMsgRecyclerAdapter(
         holder.senderProfileImage.setImageResource(R.drawable.ic_profile)
 
         // Fetch from Firebase only if not cached
-        FireBase_utils.allUsersCollection().document(senderID).get()
+        FirebaseAuthentication.allUsersCollection().document(senderID).get()
             .addOnSuccessListener { document ->
                 val user = document.toObject(userModel::class.java)
                 val profileImage = user?.profileImage

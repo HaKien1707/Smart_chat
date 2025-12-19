@@ -6,7 +6,7 @@ import android.util.Log
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
-import java.io.File
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 
 object CloudinaryHelper {
 
@@ -93,7 +93,7 @@ object CloudinaryHelper {
             initCloudinary(context)
 
             MediaManager.get().upload(imageUri)
-                .option("folder", "chat_images/${FireBase_utils.currentUserID()}")
+                .option("folder", "chat_images/${FirebaseAuthentication.currentUserID()}")
                 .option("resource_type", "image")
                 .option("public_id", publicId) // Use hash as public_id
                 .option("resource_type", "image")
@@ -136,7 +136,7 @@ object CloudinaryHelper {
             Log.d("Cloudinary", "Starting file upload: $fileName")
 
             MediaManager.get().upload(fileUri)
-                .option("folder", "chat_files/${FireBase_utils.currentUserID()}")
+                .option("folder", "chat_files/${FirebaseAuthentication.currentUserID()}")
                 .option("resource_type", "auto") // Auto-detect file type
                 .option("public_id", System.currentTimeMillis().toString() + "_" + fileName)
                 .callback(object : UploadCallback {

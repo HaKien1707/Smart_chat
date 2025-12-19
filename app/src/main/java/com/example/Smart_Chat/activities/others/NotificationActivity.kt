@@ -12,12 +12,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.NotificationAdapter
 import com.example.Smart_Chat.models.NotificationItemModel
-import com.example.Smart_Chat.models.NotificationModel
 import com.example.Smart_Chat.models.NotificationType
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.firebase.*
 
 class NotificationActivity : AppCompatActivity() {
 
@@ -100,7 +99,7 @@ class NotificationActivity : AppCompatActivity() {
         }
 
         // Load friend requests
-        FireBase_utils.getPendingFriendRequests(
+        FirebaseFriends.getPendingFriendRequests(
             onSuccess = { requests ->
                 var loadedCount = 0
 
@@ -110,7 +109,7 @@ class NotificationActivity : AppCompatActivity() {
                 }
 
                 requests.forEach { request ->
-                    FireBase_utils.allUsersCollection()
+                    FirebaseAuthentication.allUsersCollection()
                         .document(request.senderID ?: "")
                         .get()
                         .addOnSuccessListener { userDoc ->
@@ -145,7 +144,7 @@ class NotificationActivity : AppCompatActivity() {
         )
 
         // Load group join requests
-        FireBase_utils.getAllPendingGroupJoinRequestsForAdmin(
+        FirebaseGroups.getAllPendingGroupJoinRequestsForAdmin(
             onSuccess = { requests ->
                 var loadedCount = 0
 
@@ -155,7 +154,7 @@ class NotificationActivity : AppCompatActivity() {
                 }
 
                 requests.forEach { request ->
-                    FireBase_utils.allUsersCollection()
+                    FirebaseAuthentication.allUsersCollection()
                         .document(request.senderID ?: "")
                         .get()
                         .addOnSuccessListener { userDoc ->
@@ -190,8 +189,8 @@ class NotificationActivity : AppCompatActivity() {
         )
 
         // Load other notifications (SAFE - handles if collection doesn't exist)
-        FireBase_utils.getUserNotifications(
-            FireBase_utils.currentUserID() ?: "",
+        FirebaseNotifications.getUserNotifications(
+            FirebaseAuthentication.currentUserID() ?: "",
             onSuccess = { notifications ->
                 var loadedCount = 0
 
@@ -212,7 +211,7 @@ class NotificationActivity : AppCompatActivity() {
                     if (type != null) {
                         // Load sender user info if available
                         if (!notif.senderID.isNullOrEmpty()) {
-                            FireBase_utils.allUsersCollection()
+                            FirebaseAuthentication.allUsersCollection()
                                 .document(notif.senderID ?: "")
                                 .get()
                                 .addOnSuccessListener { userDoc ->

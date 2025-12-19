@@ -5,7 +5,7 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 
-object FirebaseAuth {
+object FirebaseAuthentication {
     @JvmStatic
     fun currentUserID(): String? {
         return FirebaseAuth.getInstance().currentUser?.uid

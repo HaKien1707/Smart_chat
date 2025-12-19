@@ -13,9 +13,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.GroupBlockedMemberAdapter
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
+import com.example.Smart_Chat.utils.firebase.FirebaseBlocking
 
 class BlockedMembersActivity : AppCompatActivity() {
 
@@ -66,7 +67,7 @@ class BlockedMembersActivity : AppCompatActivity() {
     }
 
     private fun loadBlockedMembers() {
-        FireBase_utils.getBlockedUsersFromGroup(
+        FirebaseBlocking.getBlockedUsersFromGroup(
             groupID!!,
             onSuccess = { blockedIDs ->
                 if (blockedIDs.isEmpty()) {
@@ -77,7 +78,7 @@ class BlockedMembersActivity : AppCompatActivity() {
                 var loadedCount = 0
                 blockedIDs.forEach { userID ->
                     if (userID != null) {
-                        FireBase_utils.allUsersCollection().document(userID).get()
+                        FirebaseAuthentication.allUsersCollection().document(userID).get()
                             .addOnSuccessListener { userDoc ->
                                 val user = userDoc.toObject(userModel::class.java)
                                 if (user != null) {
@@ -118,7 +119,7 @@ class BlockedMembersActivity : AppCompatActivity() {
     }
 
     private fun unblockMember(userID: String) {
-        FireBase_utils.unblockUserFromGroup(
+        FirebaseBlocking.unblockUserFromGroup(
             groupID!!,
             userID,
             onSuccess = {

@@ -14,8 +14,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.user_chat.ChatActivity
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.firebase.*
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 
@@ -39,7 +39,7 @@ class SearchUserRecyclerAdapter(
         holder.usernameText.text = model.username
         holder.usernamePhone.text = model.phoneNumber
 
-        val isCurrentUser = model.userID == FireBase_utils.currentUserID()
+        val isCurrentUser = model.userID == FirebaseAuthentication.currentUserID()
 
         if (isCurrentUser) {
             // Current user
@@ -54,7 +54,7 @@ class SearchUserRecyclerAdapter(
             holder.itemView.alpha = 1.0f
 
             // Check if blocked by other user
-            FireBase_utils.isBlockedByUser(model.userID ?: "") { isBlockedBy ->
+            FirebaseBlocking.isBlockedByUser(model.userID ?: "") { isBlockedBy ->
                 if (isBlockedBy) {
                     // Blocked by them
                     activity.runOnUiThread {
@@ -69,12 +69,12 @@ class SearchUserRecyclerAdapter(
                 }
 
                 // Check friendship status
-                FireBase_utils.checkFriendshipStatus(model.userID ?: "") { status ->
+                FirebaseFriends.checkFriendshipStatus(model.userID ?: "") { status ->
                     activity.runOnUiThread {
                         holder.statusText.visibility = View.GONE
 
                         when (status) {
-                            FireBase_utils.FriendshipStatus.FRIENDS -> {
+                            FirebaseFriends.FriendshipStatus.FRIENDS -> {
                                 // Friends - show remove friend and block
                                 holder.addFriendBtn.visibility = View.GONE
                                 holder.removeFriendBtn.visibility = View.VISIBLE
@@ -86,7 +86,7 @@ class SearchUserRecyclerAdapter(
                                     activity.startActivity(intent)
                                 }
                             }
-                            FireBase_utils.FriendshipStatus.REQUEST_SENT -> {
+                            FirebaseFriends.FriendshipStatus.REQUEST_SENT -> {
                                 // Request sent - HIDE add friend button
                                 holder.addFriendBtn.visibility = View.GONE
                                 holder.removeFriendBtn.visibility = View.GONE
@@ -96,7 +96,7 @@ class SearchUserRecyclerAdapter(
 
                                 holder.itemView.setOnClickListener(null)
                             }
-                            FireBase_utils.FriendshipStatus.REQUEST_RECEIVED -> {
+                            FirebaseFriends.FriendshipStatus.REQUEST_RECEIVED -> {
                                 // Request received - show accept option
                                 holder.addFriendBtn.visibility = View.VISIBLE
                                 holder.addFriendBtn.setImageResource(R.drawable.ic_check) // Change to checkmark icon
@@ -107,7 +107,7 @@ class SearchUserRecyclerAdapter(
 
                                 holder.itemView.setOnClickListener(null)
                             }
-                            FireBase_utils.FriendshipStatus.NOT_FRIENDS -> {
+                            FirebaseFriends.FriendshipStatus.NOT_FRIENDS -> {
                                 // Not friends - show add friend and block
                                 holder.addFriendBtn.visibility = View.VISIBLE
                                 holder.addFriendBtn.setImageResource(R.drawable.ic_person_add) // Reset icon
@@ -141,7 +141,7 @@ class SearchUserRecyclerAdapter(
     }
 
     private fun sendFriendRequest(model: userModel, holder: UserModelViewHolder) {
-        FireBase_utils.sendFriendRequest(
+        FirebaseFriends.sendFriendRequest(
             model.userID ?: "",
             model.username ?: "",
             onSuccess = {
@@ -166,7 +166,7 @@ class SearchUserRecyclerAdapter(
             .setTitle("Remove Friend")
             .setMessage("Remove ${model.username} from friends?")
             .setPositiveButton("Remove") { _, _ ->
-                FireBase_utils.removeFriend(
+                FirebaseFriends.removeFriend(
                     model.userID ?: "",
                     onSuccess = {
                         activity.runOnUiThread {
@@ -191,7 +191,7 @@ class SearchUserRecyclerAdapter(
             .setTitle("Block User")
             .setMessage("Block ${model.username}? They won't be able to send you friend requests.")
             .setPositiveButton("Block") { _, _ ->
-                FireBase_utils.blockUser(
+                FirebaseBlocking.blockUser(
                     model.userID ?: "",
                     onSuccess = {
                         activity.runOnUiThread {

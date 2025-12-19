@@ -14,11 +14,11 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.PasswordUtils
 import com.example.Smart_Chat.utils.ThemeManager
 import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.hbb20.CountryCodePicker
 
@@ -135,7 +135,7 @@ class SignUpActivity : AppCompatActivity() {
 
         val phoneNumber = codePicker.fullNumberWithPlus
 
-        FireBase_utils.allUsersCollection()
+        FirebaseAuthentication.allUsersCollection()
             .whereEqualTo("phoneNumber", phoneNumber)
             .limit(1)
             .get()
@@ -163,7 +163,7 @@ class SignUpActivity : AppCompatActivity() {
     private fun checkUsernameAvailability() {
         val username = inputUsername.text.toString().trim()
 
-        FireBase_utils.allUsersCollection()
+        FirebaseAuthentication.allUsersCollection()
             .whereEqualTo("username", username)
             .limit(1)
             .get()

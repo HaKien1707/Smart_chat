@@ -9,9 +9,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.groupModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.firebase.*
 
 class GroupJoinRequestActivity : AppCompatActivity() {
 
@@ -48,7 +48,7 @@ class GroupJoinRequestActivity : AppCompatActivity() {
     }
 
     private fun loadGroupAndCheckStatus() {
-        FireBase_utils.getGroupReference(groupID!!).get()
+        FirebaseGroups.getGroupReference(groupID!!).get()
             .addOnSuccessListener { document ->
                 group = document.toObject(groupModel::class.java)
 
@@ -68,10 +68,10 @@ class GroupJoinRequestActivity : AppCompatActivity() {
     }
 
     private fun checkMembershipStatus() {
-        val currentUserID = FireBase_utils.currentUserID()
+        val currentUserID = FirebaseAuthentication.currentUserID()
 
         // Check if blocked
-        FireBase_utils.isBlockedFromGroup(groupID!!, currentUserID!!) { isBlocked ->
+        FirebaseBlocking.isBlockedFromGroup(groupID!!, currentUserID!!) { isBlocked ->
             runOnUiThread {
                 if (isBlocked) {
                     statusText.text = "You are blocked from this group"
@@ -94,7 +94,7 @@ class GroupJoinRequestActivity : AppCompatActivity() {
 
                 // Check if already sent request
                 val requestID = "${groupID}_${currentUserID}"
-                FireBase_utils.getGroupJoinRequestReference(requestID).get()
+                FirebaseGroups.getGroupJoinRequestReference(requestID).get()
                     .addOnSuccessListener { doc ->
                         if (doc.exists() && doc.getString("status") == "pending") {
                             statusText.text = "Request sent. Waiting for admin approval."
@@ -116,13 +116,13 @@ class GroupJoinRequestActivity : AppCompatActivity() {
     private fun sendJoinRequest() {
         joinButton.isEnabled = false
 
-        val currentUserID = FireBase_utils.currentUserID()
+        val currentUserID = FirebaseAuthentication.currentUserID()
         Log.d("GROUP_JOIN", "=== Attempting to send join request ===")
         Log.d("GROUP_JOIN", "Current User ID: $currentUserID")
         Log.d("GROUP_JOIN", "Group ID: $groupID")
         Log.d("GROUP_JOIN", "Request ID will be: ${groupID}_${currentUserID}")
 
-        FireBase_utils.sendGroupJoinRequest(
+        FirebaseGroups.sendGroupJoinRequest(
             groupID!!,
             group?.groupName ?: "",
             onSuccess = {

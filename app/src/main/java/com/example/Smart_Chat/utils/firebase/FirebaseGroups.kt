@@ -30,7 +30,7 @@ object FirebaseGroups {
     @JvmStatic
     fun getUserGroupsQuery(): Query {
         return allGroupsCollection()
-            .whereArrayContains("memberIDs", FirebaseAuth.currentUserID()!!)
+            .whereArrayContains("memberIDs", FirebaseAuthentication.currentUserID()!!)
             .orderBy("lastMsgTimestamp", Query.Direction.DESCENDING)
     }
 
@@ -53,7 +53,7 @@ object FirebaseGroups {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
         Log.d("GROUP_JOIN", "=== sendGroupJoinRequest called ===")
         Log.d("GROUP_JOIN", "Current User ID: $currentUserID")
@@ -148,7 +148,7 @@ object FirebaseGroups {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        FirebaseAuth.currentUserDetails().get().addOnSuccessListener { userDoc ->
+        FirebaseAuthentication.currentUserDetails().get().addOnSuccessListener { userDoc ->
             val currentUser = userDoc.toObject(userModel::class.java)
             Log.d("GROUP_JOIN", "Current user name: ${currentUser?.username}")
 
@@ -197,7 +197,7 @@ object FirebaseGroups {
                             FirebaseNotifications.createNotification(
                                 type = "GROUP_JOIN_REQUEST_ACCEPTED",
                                 recipientID = userID,
-                                senderID = FirebaseAuth.currentUserID() ?: "",
+                                senderID = FirebaseAuthentication.currentUserID() ?: "",
                                 senderName = "Admin",
                                 groupID = groupID,
                                 groupName = group?.groupName,
@@ -223,30 +223,11 @@ object FirebaseGroups {
     }
 
     @JvmStatic
-    fun getPendingGroupJoinRequests(
-        groupID: String,
-        onSuccess: (List<GroupJoinRequestModel>) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        groupJoinRequestsCollection()
-            .whereEqualTo("groupID", groupID)
-            .whereEqualTo("status", "pending")
-            .get()
-            .addOnSuccessListener { documents ->
-                val requests = documents.mapNotNull {
-                    it.toObject(GroupJoinRequestModel::class.java)
-                }
-                onSuccess(requests)
-            }
-            .addOnFailureListener { onFailure(it) }
-    }
-
-    @JvmStatic
     fun getAllPendingGroupJoinRequestsForAdmin(
         onSuccess: (List<GroupJoinRequestModel>) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
         allGroupsCollection()
             .whereArrayContains("adminIDs", currentUserID)

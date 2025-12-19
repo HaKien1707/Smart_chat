@@ -15,8 +15,8 @@ import com.example.Smart_Chat.activities.community.CommunityChatActivity
 import com.example.Smart_Chat.activities.group_chat.GroupChatActivity
 import com.example.Smart_Chat.models.NotificationItemModel
 import com.example.Smart_Chat.models.NotificationType
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.firebase.*
 
 class NotificationAdapter(
     private val context: Context,
@@ -82,14 +82,14 @@ class NotificationAdapter(
 
         // Load profile image
         if (!user?.profileImage.isNullOrBlank()) {
-            androidUtils.setProfileImageFromBase64(context, user?.profileImage, holder.profileImage)
+            androidUtils.setProfileImageFromBase64(context, user.profileImage, holder.profileImage)
         } else {
             holder.profileImage.setImageResource(R.drawable.ic_profile)
         }
 
         // Accept button
         holder.acceptBtn.setOnClickListener {
-            FireBase_utils.acceptFriendRequest(
+            FirebaseFriends.acceptFriendRequest(
                 request.senderID ?: "",
                 onSuccess = {
                     Toast.makeText(context, "Friend request accepted", Toast.LENGTH_SHORT).show()
@@ -106,7 +106,7 @@ class NotificationAdapter(
 
         // Reject button
         holder.rejectBtn.setOnClickListener {
-            FireBase_utils.rejectFriendRequest(
+            FirebaseFriends.rejectFriendRequest(
                 request.senderID ?: "",
                 onSuccess = {
                     Toast.makeText(context, "Friend request rejected", Toast.LENGTH_SHORT).show()
@@ -136,14 +136,14 @@ class NotificationAdapter(
 
         // Load profile image
         if (!user?.profileImage.isNullOrBlank()) {
-            androidUtils.setProfileImageFromBase64(context, user?.profileImage, holder.profileImage)
+            androidUtils.setProfileImageFromBase64(context, user.profileImage, holder.profileImage)
         } else {
             holder.profileImage.setImageResource(R.drawable.ic_profile)
         }
 
         // Accept button
         holder.acceptBtn.setOnClickListener {
-            FireBase_utils.acceptGroupJoinRequest(
+            FirebaseGroups.acceptGroupJoinRequest(
                 request.requestID ?: "",
                 request.groupID ?: "",
                 request.senderID ?: "",
@@ -162,7 +162,7 @@ class NotificationAdapter(
 
         // Reject button
         holder.rejectBtn.setOnClickListener {
-            FireBase_utils.rejectGroupJoinRequest(
+            FirebaseGroups.rejectGroupJoinRequest(
                 request.requestID ?: "",
                 onSuccess = {
                     Toast.makeText(context, "Request rejected", Toast.LENGTH_SHORT).show()
@@ -184,7 +184,6 @@ class NotificationAdapter(
         position: Int
     ) {
         val notif = notification.notification!!
-        val user = notification.user
 
         // Set icon based on notification type
         when (notification.type) {
@@ -238,7 +237,7 @@ class NotificationAdapter(
 
         // Dismiss button
         holder.dismissBtn.setOnClickListener {
-            FireBase_utils.deleteNotification(
+            FirebaseNotifications.deleteNotification(
                 notif.notificationID ?: "",
                 onSuccess = {
                     notifications.removeAt(position)
@@ -265,7 +264,7 @@ class NotificationAdapter(
                         context.startActivity(intent)
 
                         // Mark as read
-                        FireBase_utils.markNotificationAsRead(notif.notificationID ?: "")
+                        FirebaseNotifications.markNotificationAsRead(notif.notificationID ?: "")
                     }
                 }
                 NotificationType.UNBANNED_FROM_COMMUNITY -> {
@@ -277,12 +276,12 @@ class NotificationAdapter(
                         context.startActivity(intent)
 
                         // Mark as read
-                        FireBase_utils.markNotificationAsRead(notif.notificationID ?: "")
+                        FirebaseNotifications.markNotificationAsRead(notif.notificationID ?: "")
                     }
                 }
                 else -> {
                     // Just mark as read
-                    FireBase_utils.markNotificationAsRead(notif.notificationID ?: "")
+                    FirebaseNotifications.markNotificationAsRead(notif.notificationID ?: "")
                 }
             }
         }

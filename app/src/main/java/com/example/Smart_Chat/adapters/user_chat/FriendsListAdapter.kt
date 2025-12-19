@@ -14,8 +14,9 @@ import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.user_chat.ChatActivity
 import com.example.Smart_Chat.activities.video_call.OutgoingCallActivity
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.firebase.FirebaseBlocking
+import com.example.Smart_Chat.utils.firebase.FirebaseFriends
 
 class FriendsListAdapter(
     private val context: Context,
@@ -84,7 +85,7 @@ class FriendsListAdapter(
     }
 
     private fun blockUser(friend: userModel, position: Int) {
-        FireBase_utils.blockUser(
+        FirebaseBlocking.blockUser(
             friend.userID ?: "",
             onSuccess = {
                 Toast.makeText(context, "${friend.username} has been blocked", Toast.LENGTH_SHORT).show()
@@ -110,7 +111,7 @@ class FriendsListAdapter(
     }
 
     private fun removeFriend(friend: userModel, position: Int) {
-        FireBase_utils.removeFriend(
+        FirebaseFriends.removeFriend(
             friend.userID ?: "",
             onSuccess = {
                 Toast.makeText(context, "${friend.username} removed from friends", Toast.LENGTH_SHORT).show()

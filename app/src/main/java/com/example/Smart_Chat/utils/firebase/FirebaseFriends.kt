@@ -34,9 +34,9 @@ object FirebaseFriends {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
-        FirebaseAuth.currentUserDetails().get().addOnSuccessListener { document ->
+        FirebaseAuthentication.currentUserDetails().get().addOnSuccessListener { document ->
             val currentUser = document.toObject(userModel::class.java)
             val requestID = generateFriendRequestID(currentUserID, receiverID)
 
@@ -62,13 +62,13 @@ object FirebaseFriends {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
         val requestID = generateFriendRequestID(currentUserID, senderID)
 
         getFriendRequestReference(requestID).update("status", "accepted")
             .addOnSuccessListener {
                 // Send notification
-                FirebaseAuth.currentUserDetails().get().addOnSuccessListener { doc ->
+                FirebaseAuthentication.currentUserDetails().get().addOnSuccessListener { doc ->
                     val currentUser = doc.toObject(userModel::class.java)
                     FirebaseNotifications.createNotification(
                         type = "FRIEND_REQUEST_ACCEPTED",
@@ -89,7 +89,7 @@ object FirebaseFriends {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
         val requestID = generateFriendRequestID(currentUserID, senderID)
 
         getFriendRequestReference(requestID).update("status", "rejected")
@@ -103,7 +103,7 @@ object FirebaseFriends {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
         val requestID = generateFriendRequestID(currentUserID, receiverID)
 
         getFriendRequestReference(requestID).delete()
@@ -116,7 +116,7 @@ object FirebaseFriends {
         otherUserID: String,
         onResult: (FriendshipStatus) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
         val requestID = generateFriendRequestID(currentUserID, otherUserID)
 
         getFriendRequestReference(requestID).get()
@@ -150,7 +150,7 @@ object FirebaseFriends {
         onSuccess: (List<FriendRequestModel>) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
         friendRequestsCollection()
             .whereEqualTo("receiverID", currentUserID)
@@ -170,7 +170,7 @@ object FirebaseFriends {
         onSuccess: (List<String>) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
         val friendIDs = mutableSetOf<String>()
         var completedQueries = 0
 
@@ -217,7 +217,7 @@ object FirebaseFriends {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
         val requestID = generateFriendRequestID(currentUserID, friendID)
 
         getFriendRequestReference(requestID).delete()

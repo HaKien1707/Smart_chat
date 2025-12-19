@@ -11,6 +11,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
 import android.content.Context
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 
 object UserChatNotificationHelper {
     private const val TAG = "USER_CHAT_NOTIF"
@@ -24,7 +25,7 @@ object UserChatNotificationHelper {
         Log.d(TAG, "Preparing to send notification to: $receiverID")
 
         // Get receiver's FCM token
-        FireBase_utils.allUsersCollection().document(receiverID).get()
+        FirebaseAuthentication.allUsersCollection().document(receiverID).get()
             .addOnSuccessListener { document ->
                 val receiver = document.toObject(userModel::class.java)
                 val fcmToken = receiver?.fcmToken
@@ -45,7 +46,7 @@ object UserChatNotificationHelper {
                                 put("body", message)
                             })
                             put("data", JSONObject().apply {
-                                put("userID", FireBase_utils.currentUserID())
+                                put("userID", FirebaseAuthentication.currentUserID())
                                 put("type", "private")
                             })
                         })
@@ -86,7 +87,7 @@ object UserChatNotificationHelper {
                     }
 
                     override fun onResponse(call: Call, response: Response) {
-                        val responseBody = response.body?.string() ?: ""
+                        val responseBody = response.body.string()
                         if (response.isSuccessful) {
                             Log.d(TAG, "Notification sent successfully to $receiverID")
                         } else {

@@ -28,14 +28,8 @@ import com.example.Smart_Chat.models.CommunityModel
 import com.example.Smart_Chat.models.CommunityMsgModel
 import com.example.Smart_Chat.models.ReplyMessageData
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.BotMessageHelper
-import com.example.Smart_Chat.utils.CloudinaryHelper
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.GeminiHelper
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.MediaMessageHelper
-import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.*
+import com.example.Smart_Chat.utils.firebase.*
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.Timestamp
@@ -58,7 +52,7 @@ class CommunityChatActivity : AppCompatActivity() {
 
     private var isAnnouncementExpanded = false
 
-    // NEW: Reply preview views
+    // Reply preview views
     private lateinit var replyPreviewContainer: View
     private lateinit var replyText: TextView
     private lateinit var replyImage: ImageView
@@ -139,7 +133,7 @@ class CommunityChatActivity : AppCompatActivity() {
         val profileContainer = findViewById<View>(R.id.profile_image_container)
         communityImage = profileContainer.findViewById(R.id.profile_image)
 
-        // NEW: Reply preview views
+        // Reply preview views
         replyPreviewContainer = findViewById(R.id.reply_preview)
         replyText = replyPreviewContainer.findViewById(R.id.reply_text)
         replyImage = replyPreviewContainer.findViewById(R.id.reply_image)
@@ -225,9 +219,9 @@ class CommunityChatActivity : AppCompatActivity() {
         MediaMessageHelper.uploadAndSendImage(
             this,
             imageUri,
-            FireBase_utils.getCommunityReference(communityID),
-            FireBase_utils.getCommunityMessagesReference(communityID),
-            FireBase_utils.currentUserID()!!,
+            FirebaseCommunity.getCommunityReference(communityID),
+            FirebaseCommunity.getCommunityMessagesReference(communityID),
+            FirebaseAuthentication.currentUserID()!!,
             currentUserName,
             MediaMessageHelper.MessageType.COMMUNITY,
             null,
@@ -250,9 +244,9 @@ class CommunityChatActivity : AppCompatActivity() {
         MediaMessageHelper.uploadAndSendFile(
             this,
             fileUri,
-            FireBase_utils.getCommunityReference(communityID),
-            FireBase_utils.getCommunityMessagesReference(communityID),
-            FireBase_utils.currentUserID()!!,
+            FirebaseCommunity.getCommunityReference(communityID),
+            FirebaseCommunity.getCommunityMessagesReference(communityID),
+            FirebaseAuthentication.currentUserID()!!,
             currentUserName,
             MediaMessageHelper.MessageType.COMMUNITY,
             null,
@@ -359,7 +353,7 @@ class CommunityChatActivity : AppCompatActivity() {
     }
 
     private fun handleAnnouncementAction() {
-        val isAdmin = community?.adminID == FireBase_utils.currentUserID()
+        val isAdmin = community?.adminID == FirebaseAuthentication.currentUserID()
         if (!isAdmin) return
 
         if (community?.announcement.isNullOrEmpty()) {
@@ -402,7 +396,7 @@ class CommunityChatActivity : AppCompatActivity() {
     }
 
     private fun updateAnnouncement(announcement: String?) {
-        FireBase_utils.getCommunityReference(communityID)
+        FirebaseCommunity.getCommunityReference(communityID)
             .update("announcement", announcement)
             .addOnSuccessListener {
                 community?.announcement = announcement
@@ -421,7 +415,7 @@ class CommunityChatActivity : AppCompatActivity() {
 
     private fun updateAnnouncementUI() {
         val announcement = community?.announcement
-        val isAdmin = community?.adminID == FireBase_utils.currentUserID()
+        val isAdmin = community?.adminID == FirebaseAuthentication.currentUserID()
 
         if (announcement.isNullOrEmpty()) {
             announcementText.text = "No announcement"
@@ -448,9 +442,9 @@ class CommunityChatActivity : AppCompatActivity() {
     }
 
     private fun checkBanStatus() {
-        val currentUserID = FireBase_utils.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
-        FireBase_utils.isBannedFromCommunity(communityID, currentUserID) { isBanned ->
+        FirebaseCommunity.isBannedFromCommunity(communityID, currentUserID) { isBanned ->
             runOnUiThread {
                 if (isBanned) {
                     Toast.makeText(
@@ -465,7 +459,7 @@ class CommunityChatActivity : AppCompatActivity() {
     }
 
     private fun getCurrentUserName() {
-        FireBase_utils.currentUserDetails().get()
+        FirebaseAuthentication.currentUserDetails().get()
             .addOnSuccessListener { document ->
                 val user = document.toObject(userModel::class.java)
                 currentUserName = user?.username
@@ -476,7 +470,7 @@ class CommunityChatActivity : AppCompatActivity() {
     }
 
     private fun loadCommunityDetails() {
-        FireBase_utils.getCommunityReference(communityID).get()
+        FirebaseCommunity.getCommunityReference(communityID).get()
             .addOnSuccessListener { document ->
                 community = document.toObject(CommunityModel::class.java)
 
@@ -491,7 +485,7 @@ class CommunityChatActivity : AppCompatActivity() {
                 }
 
                 // Show/hide settings button based on admin status
-                val isAdmin = community?.adminID == FireBase_utils.currentUserID()
+                val isAdmin = community?.adminID == FirebaseAuthentication.currentUserID()
                 communitySettingsBtn.visibility = if (isAdmin) View.VISIBLE else View.GONE
 
                 // Update announcement UI
@@ -509,18 +503,18 @@ class CommunityChatActivity : AppCompatActivity() {
             return
         }
 
-        FireBase_utils.getCommunityReference(communityID)
+        FirebaseCommunity.getCommunityReference(communityID)
             .update(
                 mapOf(
                     "lastMsg" to msg,
-                    "lastMsgSenderID" to FireBase_utils.currentUserID(),
+                    "lastMsgSenderID" to FirebaseAuthentication.currentUserID(),
                     "lastMsgTimestamp" to Timestamp.now()
                 )
             )
 
         val msgModel = if (currentReplyData != null) {
             CommunityMsgModel(
-                FireBase_utils.currentUserID(),
+                FirebaseAuthentication.currentUserID(),
                 currentUserName ?: "Unknown",
                 msg,
                 Timestamp.now(),
@@ -535,14 +529,14 @@ class CommunityChatActivity : AppCompatActivity() {
             )
         } else {
             CommunityMsgModel(
-                FireBase_utils.currentUserID(),
+                FirebaseAuthentication.currentUserID(),
                 currentUserName ?: "Unknown",
                 msg,
                 Timestamp.now()
             )
         }
 
-        FireBase_utils.getCommunityMessagesReference(communityID)
+        FirebaseCommunity.getCommunityMessagesReference(communityID)
             .add(msgModel)
             .addOnSuccessListener {
                 chatBox.setText("")
@@ -555,7 +549,7 @@ class CommunityChatActivity : AppCompatActivity() {
     }
 
     private fun setupChatRecycler() {
-        val query = FireBase_utils.getCommunityMessagesReference(communityID)
+        val query = FirebaseCommunity.getCommunityMessagesReference(communityID)
             .orderBy("timestamp", Query.Direction.ASCENDING)
 
         val options = FirestoreRecyclerOptions.Builder<CommunityMsgModel>()
@@ -620,13 +614,13 @@ class CommunityChatActivity : AppCompatActivity() {
 
         // Show user's command as a message
         val userCommandMsg = CommunityMsgModel(
-            FireBase_utils.currentUserID(),
+            FirebaseAuthentication.currentUserID(),
             currentUserName ?: "Unknown",
             command,
             Timestamp.now()
         )
 
-        FireBase_utils.getCommunityMessagesReference(communityID)
+        FirebaseCommunity.getCommunityMessagesReference(communityID)
             .add(userCommandMsg)
             .addOnSuccessListener {
                 chatBox.setText("")
@@ -652,8 +646,8 @@ class CommunityChatActivity : AppCompatActivity() {
             try {
                 // Fetch and format messages
                 val messages = BotMessageHelper.fetchAndFormatMessages(
-                    messagesRef = FireBase_utils.getCommunityMessagesReference(communityID),
-                    currentUserId = FireBase_utils.currentUserID()!!,
+                    messagesRef = FirebaseCommunity.getCommunityMessagesReference(communityID),
+                    currentUserId = FirebaseAuthentication.currentUserID()!!,
                     chatType = BotMessageHelper.ChatType.COMMUNITY_CHAT
                 )
 
@@ -673,18 +667,18 @@ class CommunityChatActivity : AppCompatActivity() {
                 result.onSuccess { response ->
                     // Send bot response
                     BotMessageHelper.sendBotResponse(
-                        messagesRef = FireBase_utils.getCommunityMessagesReference(communityID),
-                        chatRef = FireBase_utils.getCommunityReference(communityID),
+                        messagesRef = FirebaseCommunity.getCommunityMessagesReference(communityID),
+                        chatRef = FirebaseCommunity.getCommunityReference(communityID),
                         response = response,
                         chatType = BotMessageHelper.ChatType.COMMUNITY_CHAT,
-                        currentUserId = FireBase_utils.currentUserID()!!,
+                        currentUserId = FirebaseAuthentication.currentUserID()!!,
                         currentUserName = currentUserName
                     )
 
                     // Send usage info message
                     BotMessageHelper.sendUsageMessage(
                         context = this@CommunityChatActivity,
-                        messagesRef = FireBase_utils.getCommunityMessagesReference(communityID),
+                        messagesRef = FirebaseCommunity.getCommunityMessagesReference(communityID),
                         chatType = BotMessageHelper.ChatType.COMMUNITY_CHAT
                     )
 
