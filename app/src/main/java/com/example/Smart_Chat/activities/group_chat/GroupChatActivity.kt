@@ -27,6 +27,7 @@ import com.example.Smart_Chat.models.groupModel
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.BotMessageHelper
 import com.example.Smart_Chat.utils.CloudinaryHelper
+import com.example.Smart_Chat.utils.FCMTokenManager
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.GeminiHelper
 import com.example.Smart_Chat.utils.LanguageManager
@@ -343,25 +344,50 @@ class GroupChatActivity : AppCompatActivity() {
         replyPreviewContainer.visibility = View.GONE
     }
 
-    // NEW: Scroll to specific position
+    // Scroll to specific position
     fun scrollToPosition(position: Int) {
-        chatList.smoothScrollToPosition(position)
+        try {
+            // Stop any ongoing scroll first
+            chatList.stopScroll()
 
-        chatList.postDelayed({
-            val viewHolder = chatList.findViewHolderForAdapterPosition(position)
-            viewHolder?.itemView?.let { view ->
-                view.animate()
-                    .alpha(0.3f)
-                    .setDuration(200)
-                    .withEndAction {
-                        view.animate()
-                            .alpha(1f)
-                            .setDuration(200)
-                            .start()
+            // Use post to ensure adapter is ready
+            chatList.post {
+                try {
+                    // Validate position is within bounds
+                    if (position >= 0 && position < adapter.itemCount) {
+                        // Use scrollToPosition instead of smoothScrollToPosition
+                        chatList.scrollToPosition(position)
+
+                        // Optional: Highlight the message briefly
+                        chatList.postDelayed({
+                            try {
+                                val viewHolder = chatList.findViewHolderForAdapterPosition(position)
+                                viewHolder?.itemView?.let { view ->
+                                    view.animate()
+                                        .alpha(0.3f)
+                                        .setDuration(200)
+                                        .withEndAction {
+                                            view.animate()
+                                                .alpha(1f)
+                                                .setDuration(200)
+                                                .start()
+                                        }
+                                        .start()
+                                }
+                            } catch (e: Exception) {
+                                Log.e("GroupChatActivity", "Error highlighting message", e)
+                            }
+                        }, 300)
+                    } else {
+                        Log.w("GroupChatActivity", "Invalid scroll position: $position, itemCount: ${adapter.itemCount}")
                     }
-                    .start()
+                } catch (e: Exception) {
+                    Log.e("GroupChatActivity", "Error scrolling to position", e)
+                }
             }
-        }, 300)
+        } catch (e: Exception) {
+            Log.e("GroupChatActivity", "Error in scrollToPosition", e)
+        }
     }
 
     private fun formatFileSize(size: Long): String {
@@ -655,7 +681,7 @@ class GroupChatActivity : AppCompatActivity() {
                 val fcmToken = member?.fcmToken
 
                 if (fcmToken.isNullOrEmpty()) {
-                    Log.e("GROUP_NOTIFICATION", "Member $memberID has no FCM token")
+                    Log.w("GROUP_NOTIFICATION", "Member $memberID has no FCM token")
                     return@addOnSuccessListener
                 }
 
@@ -674,7 +700,7 @@ class GroupChatActivity : AppCompatActivity() {
                         })
                     }
 
-                    callAPI(jsonObject)
+                    callAPI(jsonObject, memberID) // Pass memberID to handle errors
                 } catch (e: Exception) {
                     Log.e("GROUP_NOTIFICATION", "Error creating notification", e)
                 }
@@ -684,7 +710,7 @@ class GroupChatActivity : AppCompatActivity() {
             }
     }
 
-    private fun callAPI(jsonObject: JSONObject) {
+    private fun callAPI(jsonObject: JSONObject, memberID: String) {
         Thread {
             try {
                 val accessToken = getAccessToken()
@@ -709,9 +735,15 @@ class GroupChatActivity : AppCompatActivity() {
                     override fun onResponse(call: Call, response: Response) {
                         val responseBody = response.body?.string() ?: ""
                         if (response.isSuccessful) {
-                            Log.d("GROUP_NOTIFICATION", "Notification sent successfully")
+                            Log.d("GROUP_NOTIFICATION", "Notification sent successfully to $memberID")
                         } else {
                             Log.e("GROUP_NOTIFICATION", "Failed: ${response.code} - $responseBody")
+
+                            // Handle UNREGISTERED token error
+                            if (responseBody.contains("UNREGISTERED") || responseBody.contains("NotRegistered")) {
+                                Log.w("GROUP_NOTIFICATION", "Token is invalid, removing from user $memberID")
+                                FCMTokenManager.removeInvalidToken(memberID)
+                            }
                         }
                     }
                 })

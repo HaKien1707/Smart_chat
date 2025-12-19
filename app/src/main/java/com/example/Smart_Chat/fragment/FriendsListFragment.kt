@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.FriendsListAdapter
+import com.example.Smart_Chat.adapters.user_chat.FriendsListAdapter
 import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.FireBase_utils
 import com.example.Smart_Chat.utils.androidUtils
@@ -56,6 +56,8 @@ class FriendsListFragment : Fragment() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_blocked_user, null)
         val recyclerView = dialogView.findViewById<RecyclerView>(R.id.blocked_users_recycler)
         val unblockButton = dialogView.findViewById<Button>(R.id.unblock_button)
+        val emptyState = dialogView.findViewById<TextView>(R.id.empty_blocked_state)
+        val selectAllCheckbox = dialogView.findViewById<CheckBox>(R.id.select_all_checkbox)
 
         val blockedUsers = mutableListOf<userModel>()
         val selectedUsers = mutableSetOf<String>()
@@ -64,19 +66,31 @@ class FriendsListFragment : Fragment() {
         val adapter = BlockedUsersCheckboxAdapter(
             blockedUsers,
             onCheckChanged = { userId, isChecked ->
-                if (isChecked) selectedUsers.add(userId)
-                else selectedUsers.remove(userId)
+                if (isChecked) {
+                    selectedUsers.add(userId)
+                } else {
+                    selectedUsers.remove(userId)
+                }
+
+                // Update select all checkbox state
+                selectAllCheckbox.isChecked = selectedUsers.size == blockedUsers.size
+
+                // Enable/disable button based on selection
+                updateUnblockButton(unblockButton, selectedUsers.isNotEmpty())
             }
         )
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
 
-        // Load blocked users
-        loadBlockedUsers { users ->
-            blockedUsers.clear()
-            blockedUsers.addAll(users)
-            adapter.notifyDataSetChanged()
+        // Select All functionality
+        selectAllCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            adapter.selectAll(isChecked)
+            selectedUsers.clear()
+            if (isChecked) {
+                selectedUsers.addAll(blockedUsers.mapNotNull { it.userID })
+            }
+            updateUnblockButton(unblockButton, selectedUsers.isNotEmpty())
         }
 
         val dialog = AlertDialog.Builder(requireContext())
@@ -84,20 +98,61 @@ class FriendsListFragment : Fragment() {
             .setCancelable(true)
             .create()
 
+        // Load blocked users
+        loadBlockedUsers { users ->
+            blockedUsers.clear()
+            blockedUsers.addAll(users)
+            adapter.notifyDataSetChanged()
+
+            // Show/hide views based on blocked users
+            if (users.isEmpty()) {
+                emptyState.visibility = View.VISIBLE
+                recyclerView.visibility = View.GONE
+                unblockButton.visibility = View.GONE
+                selectAllCheckbox.visibility = View.GONE
+            } else {
+                emptyState.visibility = View.GONE
+                recyclerView.visibility = View.VISIBLE
+                unblockButton.visibility = View.VISIBLE
+                selectAllCheckbox.visibility = View.VISIBLE
+            }
+        }
+
         unblockButton.setOnClickListener {
             if (selectedUsers.isEmpty()) {
                 Toast.makeText(requireContext(), "No users selected", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Unblock selected users
-            unblockMultipleUsers(selectedUsers.toList()) {
-                Toast.makeText(requireContext(), "Users unblocked", Toast.LENGTH_SHORT).show()
-                dialog.dismiss()
-            }
+            // Show confirmation dialog
+            AlertDialog.Builder(requireContext())
+                .setTitle("Unblock Users")
+                .setMessage("Are you sure you want to unblock ${selectedUsers.size} user(s)?")
+                .setPositiveButton("Unblock") { _, _ ->
+                    unblockMultipleUsers(selectedUsers.toList()) {
+                        Toast.makeText(requireContext(), "Users unblocked", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                        loadFriends()
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
         }
 
         dialog.show()
+    }
+
+    // Helper function to enable/disable unblock button with visual feedback
+    private fun updateUnblockButton(button: Button, enabled: Boolean) {
+        button.isEnabled = enabled
+        button.alpha = if (enabled) 1.0f else 0.5f
+
+        // Optional: Change background tint
+        if (enabled) {
+            button.backgroundTintList = requireContext().getColorStateList(R.color.violet)
+        } else {
+            button.backgroundTintList = requireContext().getColorStateList(android.R.color.darker_gray)
+        }
     }
 
     private fun loadBlockedUsers(onComplete: (List<userModel>) -> Unit) {
@@ -157,16 +212,22 @@ class FriendsListFragment : Fragment() {
                 // Remove all selected users
                 currentBlocked.removeAll(userIDs)
 
-                // Update Firestore
+                // Update Firestore with correct field name
                 FireBase_utils.allUsersCollection()
                     .document(currentUserID)
-                    .update("blockedUserIDs", currentBlocked)
+                    .update("blockedUsers", currentBlocked) // Changed from blockedUserIDs
                     .addOnSuccessListener {
+                        Log.d("FriendsListFragment", "Successfully unblocked ${userIDs.size} users")
                         onComplete()
                     }
                     .addOnFailureListener { e ->
+                        Log.e("FriendsListFragment", "Failed to unblock users", e)
                         Toast.makeText(requireContext(), "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
+            }
+            .addOnFailureListener { e ->
+                Log.e("FriendsListFragment", "Failed to get user data", e)
+                Toast.makeText(requireContext(), "Failed to load user data", Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -193,9 +254,14 @@ class FriendsListFragment : Fragment() {
                     user.profileImage,
                     holder.profileImage
                 )
+            } else {
+                holder.profileImage.setImageResource(R.drawable.ic_profile)
             }
 
+            // Remove listener before setting state to avoid triggering callback
+            holder.checkbox.setOnCheckedChangeListener(null)
             holder.checkbox.isChecked = checkedStates[user.userID] ?: false
+
             holder.checkbox.setOnCheckedChangeListener { _, isChecked ->
                 checkedStates[user.userID ?: ""] = isChecked
                 onCheckChanged(user.userID ?: "", isChecked)
@@ -203,6 +269,14 @@ class FriendsListFragment : Fragment() {
         }
 
         override fun getItemCount() = users.size
+
+        // NEW: Select/deselect all users
+        fun selectAll(select: Boolean) {
+            users.forEach { user ->
+                checkedStates[user.userID ?: ""] = select
+            }
+            notifyDataSetChanged()
+        }
 
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val profileImage: ImageView = view.findViewById(R.id.profile_image)

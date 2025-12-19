@@ -1,4 +1,4 @@
-package com.example.Smart_Chat.adapters
+package com.example.Smart_Chat.adapters.user_chat
 
 import android.app.Activity
 import android.content.Context
@@ -22,6 +22,7 @@ import com.example.Smart_Chat.utils.androidUtils
 import com.example.Smart_Chat.utils.firebase.FirebaseFriends
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
+import com.google.firebase.firestore.ListenerRegistration
 
 class RecentChatRecyclerAdapter(
     options: FirestoreRecyclerOptions<UserChatModel>,
@@ -33,7 +34,7 @@ class RecentChatRecyclerAdapter(
     private val filteredItems = mutableListOf<UserChatModel>()
     private val currentUserID = FireBase_utils.currentUserID()
 
-    private val unreadListeners = mutableMapOf<String, com.google.firebase.firestore.ListenerRegistration>()
+    private val unreadListeners = mutableMapOf<String, ListenerRegistration>()
 
     override fun onDataChanged() {
         super.onDataChanged()

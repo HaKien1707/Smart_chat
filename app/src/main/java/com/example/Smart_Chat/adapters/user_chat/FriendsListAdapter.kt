@@ -1,4 +1,4 @@
-package com.example.Smart_Chat.adapters
+package com.example.Smart_Chat.adapters.user_chat
 
 import android.content.Context
 import android.content.Intent

@@ -16,29 +16,47 @@ import com.google.firebase.messaging.RemoteMessage
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
-    // Inside MyFirebaseMessagingService.kt
+    companion object {
+        private const val CHANNEL_ID = "chat_notifications"
+        private const val TAG = "FCM_SERVICE"
+    }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
-        // 1. Extract Title and Body (from either notification or data payload)
+        Log.d(TAG, "Message received from: ${remoteMessage.from}")
+
+        // Extract notification data
         val title = remoteMessage.notification?.title ?: remoteMessage.data["title"]
         val body = remoteMessage.notification?.body ?: remoteMessage.data["body"]
 
-        // 2. Extract Navigation Data
+        // Extract navigation data
         val userID = remoteMessage.data["userID"]
         val groupID = remoteMessage.data["groupID"]
         val chatType = remoteMessage.data["type"] // "group" or "private"
 
+        Log.d(TAG, "Title: $title, Body: $body, UserID: $userID, GroupID: $groupID, Type: $chatType")
+
         if (title != null && body != null) {
             showNotification(title, body, userID, groupID, chatType)
+        } else {
+            Log.w(TAG, "Notification title or body is null")
         }
     }
 
-    private fun showNotification(title: String, body: String, userID: String?, groupID: String?, chatType: String?) {
-        val channelId = "chat_notifications"
+    private fun showNotification(
+        title: String,
+        body: String,
+        userID: String?,
+        groupID: String?,
+        chatType: String?
+    ) {
+        Log.d(TAG, "Showing notification - Title: $title")
 
-        // Create Intent to Splash (or an intermediate Dispatcher)
+        // Create notification channel (required for Android 8.0+)
+        createNotificationChannel()
+
+        // Create intent to open chat when notification is clicked
         val intent = Intent(this, splashScreenActivity::class.java).apply {
             putExtra("userID", userID)
             putExtra("groupID", groupID)
@@ -48,12 +66,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val pendingIntent = PendingIntent.getActivity(
             this,
-            System.currentTimeMillis().toInt(), // Unique ID so notifications don't overwrite each other
+            System.currentTimeMillis().toInt(), // Unique ID for each notification
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val builder = NotificationCompat.Builder(this, channelId)
+        // Build notification
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notifications)
             .setContentTitle(title)
             .setContentText(body)
@@ -66,69 +85,52 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         // Use unique ID so multiple messages show multiple notifications
         val notificationId = System.currentTimeMillis().toInt()
         notificationManager.notify(notificationId, builder.build())
+
+        Log.d(TAG, "Notification displayed with ID: $notificationId")
     }
 
-    private fun showNotification(title: String?, body: String?, userID: String?) {
-        Log.d("FCM", "showNotification called - Title: $title, Body: $body")
-
-        val channelId = "chat_notifications"
-
-        // Create notification channel (required for Android 8.0+)
+    private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                channelId,
+                CHANNEL_ID,
                 "Chat Notifications",
                 NotificationManager.IMPORTANCE_HIGH
-            )
+            ).apply {
+                description = "Notifications for chat messages"
+                enableLights(true)
+                enableVibration(true)
+            }
+
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
+
+            Log.d(TAG, "Notification channel created")
         }
-
-        // Create intent to open chat when notification is clicked
-        val intent = Intent(this, splashScreenActivity::class.java).apply {
-            putExtra("userID", userID)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        // Build notification
-        val builder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_notifications)
-            .setContentTitle(title)
-            .setContentText(body)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
-
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(0, builder.build())
-
-        Log.d("FCM", "Notification displayed")
     }
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.d("FCM", "New token: $token")
+        Log.d(TAG, "New FCM token generated: $token")
 
         // Update token in Firestore if user is logged in
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId != null) {
-            FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(userId)
-                .update("fcmToken", token)
-                .addOnSuccessListener {
-                    Log.d("FCM", "Token updated in Firestore")
-                }
-                .addOnFailureListener { e ->
-                    Log.e("FCM", "Failed to update token: ${e.message}")
-                }
+            updateTokenInFirestore(userId, token)
+        } else {
+            Log.w(TAG, "User not logged in, token not saved")
         }
+    }
+
+    private fun updateTokenInFirestore(userId: String, token: String) {
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(userId)
+            .update("fcmToken", token)
+            .addOnSuccessListener {
+                Log.d(TAG, "FCM token updated in Firestore for user: $userId")
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Failed to update token in Firestore: ${e.message}")
+            }
     }
 }

@@ -3,6 +3,7 @@ package com.example.Smart_Chat.activities
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -10,8 +11,11 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import com.example.Smart_Chat.R
@@ -41,8 +45,13 @@ import com.example.Smart_Chat.utils.LanguageManager
 import com.example.Smart_Chat.utils.ThemeManager
 import com.example.Smart_Chat.utils.firebase.FirebaseVideoCalls
 import com.google.firebase.firestore.ListenerRegistration
+import android.Manifest
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+    companion object {
+        private const val NOTIFICATION_PERMISSION_CODE = 123
+    }
+
     private lateinit var binding: ActivityMainBinding
     private var currentTab = "chat"
     private lateinit var notificationBadge: TextView
@@ -61,6 +70,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        requestNotificationPermission()
 
         if (savedInstanceState == null) {
             replaceFragment(ChatFragment())
@@ -150,6 +161,42 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         getFCMtoken()
         loadUserDataIntoDrawer()
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_CODE
+                )
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == NOTIFICATION_PERMISSION_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d("FCM", "Notification permission granted")
+            } else {
+                Log.w("FCM", "Notification permission denied")
+                Toast.makeText(
+                    this,
+                    "Notification permission is required for chat notifications",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
     }
 
     private fun startListeningForIncomingCalls() {

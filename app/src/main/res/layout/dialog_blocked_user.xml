@@ -11,7 +11,28 @@
         android:text="Blocked Users"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Select All Checkbox -->
+    <CheckBox
+        android:id="@+id/select_all_checkbox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Select All"
+        android:textStyle="bold"
+        android:visibility="gone"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Empty State for No Blocked Users -->
+    <TextView
+        android:id="@+id/empty_blocked_state"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:text="No user blocked"
+        android:textSize="16sp"
+        android:textColor="@android:color/darker_gray"
+        android:gravity="center"
+        android:visibility="gone"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/blocked_users_recycler"
@@ -24,6 +45,7 @@
         android:layout_height="wrap_content"
         android:text="Unblock Selected Users"
         android:background="@drawable/round_corner_button"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp"
+        android:enabled="false"/>
 
 </LinearLayout>

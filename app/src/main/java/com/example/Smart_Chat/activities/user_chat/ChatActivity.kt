@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.MsgRecyclerAdapter
+import com.example.Smart_Chat.adapters.user_chat.MsgRecyclerAdapter
 import com.example.Smart_Chat.models.*
 import com.example.Smart_Chat.utils.*
 import com.example.Smart_Chat.utils.CloudinaryHelper
@@ -250,25 +250,48 @@ class ChatActivity : AppCompatActivity() {
 
     // Scroll to specific position
     fun scrollToPosition(position: Int) {
-        msgRecycler.smoothScrollToPosition(position)
+        try {
+            // Stop any ongoing scroll first
+            msgRecycler.stopScroll()
 
-        // Optional: Highlight the message briefly
-        msgRecycler.postDelayed({
-            val viewHolder = msgRecycler.findViewHolderForAdapterPosition(position)
-            viewHolder?.itemView?.let { view ->
-                // Flash animation
-                view.animate()
-                    .alpha(0.3f)
-                    .setDuration(200)
-                    .withEndAction {
-                        view.animate()
-                            .alpha(1f)
-                            .setDuration(200)
-                            .start()
+            // Use post to ensure adapter is ready
+            msgRecycler.post {
+                try {
+                    // Validate position is within bounds
+                    if (position >= 0 && position < adapter.itemCount) {
+                        // Use scrollToPosition instead of smoothScrollToPosition
+                        msgRecycler.scrollToPosition(position)
+
+                        // Optional: Highlight the message briefly
+                        msgRecycler.postDelayed({
+                            try {
+                                val viewHolder = msgRecycler.findViewHolderForAdapterPosition(position)
+                                viewHolder?.itemView?.let { view ->
+                                    view.animate()
+                                        .alpha(0.3f)
+                                        .setDuration(200)
+                                        .withEndAction {
+                                            view.animate()
+                                                .alpha(1f)
+                                                .setDuration(200)
+                                                .start()
+                                        }
+                                        .start()
+                                }
+                            } catch (e: Exception) {
+                                Log.e("ChatActivity", "Error highlighting message", e)
+                            }
+                        }, 300)
+                    } else {
+                        Log.w("ChatActivity", "Invalid scroll position: $position, itemCount: ${adapter.itemCount}")
                     }
-                    .start()
+                } catch (e: Exception) {
+                    Log.e("ChatActivity", "Error scrolling to position", e)
+                }
             }
-        }, 300)
+        } catch (e: Exception) {
+            Log.e("ChatActivity", "Error in scrollToPosition", e)
+        }
     }
 
     private fun sendMessage() {
@@ -279,22 +302,13 @@ class ChatActivity : AppCompatActivity() {
             return
         }
 
-        // Check if it's a bot command using helper
+        // Check if it's a bot command
         if (BotMessageHelper.isBotCommand(messageText)) {
             handleBotCommand(messageText)
             return
         }
 
-        // Check if it's a bot command
-        if (messageText.startsWith("@Bot", ignoreCase = true) ||
-            messageText.startsWith("@bot", ignoreCase = true) ||
-            messageText.startsWith("@BOT")) {
-
-            handleBotCommand(messageText)
-            return
-        }
-
-        // Normal message sending (existing code)
+        // Normal message sending
         val msgModel = if (currentReplyData != null) {
             MsgModel(
                 senderID = FireBase_utils.currentUserID(),
@@ -323,10 +337,36 @@ class ChatActivity : AppCompatActivity() {
                 msgInput.setText("")
                 cancelReply()
                 updateChatRoom(messageText, "text")
+
+                // NEW: Send notification to receiver
+                sendNotificationToReceiver(messageText)
             }
             .addOnFailureListener { e ->
                 Log.e("CHAT", "Failed to send message", e)
                 Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    // NEW: Send notification to the other user
+    private fun sendNotificationToReceiver(message: String) {
+        val receiverID = otherUser?.userID ?: return
+
+        // Get current user's name
+        FireBase_utils.currentUserDetails().get()
+            .addOnSuccessListener { document ->
+                val currentUser = document.toObject(userModel::class.java)
+                val senderName = currentUser?.username ?: "Someone"
+
+                // Send notification
+                UserChatNotificationHelper.sendMessageNotification(
+                    this,
+                    receiverID,
+                    senderName,
+                    message
+                )
+            }
+            .addOnFailureListener { e ->
+                Log.e("CHAT", "Failed to get sender name", e)
             }
     }
 
@@ -373,6 +413,7 @@ class ChatActivity : AppCompatActivity() {
                 runOnUiThread {
                     attachBtn.isEnabled = true
                     cancelReply()
+                    sendNotificationToReceiver("📷 Photo")
                 }
             },
             onError = {
@@ -399,6 +440,8 @@ class ChatActivity : AppCompatActivity() {
                 runOnUiThread {
                     attachBtn.isEnabled = true
                     cancelReply()
+                    val fileInfo = androidUtils.getFileInfo(this, fileUri)
+                    sendNotificationToReceiver("📎 ${fileInfo.name}")
                 }
             },
             onError = {
