@@ -1,6 +1,6 @@
 package com.example.Smart_Chat.utils.firebase
 
-import com.example.Smart_Chat.models.CommunityModel
+import com.example.Smart_Chat.models.community.CommunityModel
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
@@ -31,7 +31,7 @@ object FirebaseCommunity {
         onSuccess: (String) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
         val communityID = allCommunitiesCollection().document().id
 
         val community = CommunityModel(

@@ -15,17 +15,17 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.user_chat.FriendsListAdapter
+import com.example.Smart_Chat.adapters.social.FriendsListAdapter
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.others.androidUtils
+import com.example.Smart_Chat.utils.firebase.*
 
 class FriendsListFragment : Fragment() {
 
     private lateinit var friendsRecycler: RecyclerView
     private lateinit var emptyState: View
     private lateinit var emptyText: TextView
-    private lateinit var viewBlockedUsersBtn: Button // NEW
+    private lateinit var viewBlockedUsersBtn: Button
     private lateinit var adapter: FriendsListAdapter
     private val friendsList = mutableListOf<userModel>()
 
@@ -156,9 +156,9 @@ class FriendsListFragment : Fragment() {
     }
 
     private fun loadBlockedUsers(onComplete: (List<userModel>) -> Unit) {
-        val currentUserID = FireBase_utils.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
-        FireBase_utils.allUsersCollection()
+        FirebaseAuthentication.allUsersCollection()
             .document(currentUserID)
             .get()
             .addOnSuccessListener { doc ->
@@ -175,7 +175,7 @@ class FriendsListFragment : Fragment() {
                 var loadedCount = 0
 
                 blockedIDs.forEach { blockedID ->
-                    FireBase_utils.allUsersCollection()
+                    FirebaseAuthentication.allUsersCollection()
                         .document(blockedID.toString())
                         .get()
                         .addOnSuccessListener { userDoc ->
@@ -200,9 +200,9 @@ class FriendsListFragment : Fragment() {
     }
 
     private fun unblockMultipleUsers(userIDs: List<String>, onComplete: () -> Unit) {
-        val currentUserID = FireBase_utils.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
-        FireBase_utils.allUsersCollection()
+        FirebaseAuthentication.allUsersCollection()
             .document(currentUserID)
             .get()
             .addOnSuccessListener { doc ->
@@ -213,7 +213,7 @@ class FriendsListFragment : Fragment() {
                 currentBlocked.removeAll(userIDs)
 
                 // Update Firestore with correct field name
-                FireBase_utils.allUsersCollection()
+                FirebaseAuthentication.allUsersCollection()
                     .document(currentUserID)
                     .update("blockedUsers", currentBlocked) // Changed from blockedUserIDs
                     .addOnSuccessListener {
@@ -270,7 +270,7 @@ class FriendsListFragment : Fragment() {
 
         override fun getItemCount() = users.size
 
-        // NEW: Select/deselect all users
+        // Select/deselect all users
         fun selectAll(select: Boolean) {
             users.forEach { user ->
                 checkedStates[user.userID ?: ""] = select
@@ -294,7 +294,7 @@ class FriendsListFragment : Fragment() {
     private fun loadFriends() {
         friendsList.clear()
 
-        FireBase_utils.getAllFriends(
+        FirebaseFriends.getAllFriends(
             onSuccess = { friendIds ->
                 if (friendIds.isEmpty()) {
                     showEmptyState()
@@ -305,7 +305,7 @@ class FriendsListFragment : Fragment() {
                 val totalFriends = friendIds.size
 
                 friendIds.forEach { friendId ->
-                    FireBase_utils.allUsersCollection().document(friendId).get()
+                    FirebaseAuthentication.allUsersCollection().document(friendId).get()
                         .addOnSuccessListener { friendDoc ->
                             val friend = friendDoc.toObject(userModel::class.java)
                             if (friend != null) {

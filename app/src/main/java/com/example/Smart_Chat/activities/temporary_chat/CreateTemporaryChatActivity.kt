@@ -11,12 +11,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.SelectUserAdapter
+import com.example.Smart_Chat.adapters.social.SelectUserAdapter
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.others.androidUtils
+import com.example.Smart_Chat.utils.firebase.*
 
 class CreateTemporaryChatActivity : AppCompatActivity() {
 
@@ -56,7 +56,7 @@ class CreateTemporaryChatActivity : AppCompatActivity() {
     }
 
     private fun loadFriends() {
-        FireBase_utils.getAllFriends(
+        FirebaseFriends.getAllFriends(
             onSuccess = { friendIDs ->
                 if (friendIDs.isEmpty()) {
                     showEmptyState()
@@ -65,7 +65,7 @@ class CreateTemporaryChatActivity : AppCompatActivity() {
 
                 var loadedCount = 0
                 friendIDs.forEach { friendID ->
-                    FireBase_utils.allUsersCollection().document(friendID).get()
+                    FirebaseAuthentication.allUsersCollection().document(friendID).get()
                         .addOnSuccessListener { userDoc ->
                             val user = userDoc.toObject(userModel::class.java)
                             if (user != null) {
@@ -95,7 +95,7 @@ class CreateTemporaryChatActivity : AppCompatActivity() {
         // Show loading state
         Toast.makeText(this, "Creating encrypted chat...", Toast.LENGTH_SHORT).show()
 
-        FireBase_utils.createTemporaryChat(
+        FirebaseTemporaryChat.createTemporaryChat(
             user.userID ?: "",
             onSuccess = { chatID, encryptionKey ->
                 // Chat created successfully with encryption key

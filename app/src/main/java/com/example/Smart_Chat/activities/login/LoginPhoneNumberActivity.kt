@@ -12,10 +12,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.PasswordUtils
-import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.security.PasswordUtils
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.hbb20.CountryCodePicker
 
 class LoginPhoneNumberActivity : AppCompatActivity() {
@@ -69,7 +69,7 @@ class LoginPhoneNumberActivity : AppCompatActivity() {
     private fun verifyPasswordAndSendOTP(phoneNumber: String, password: String, countryCode: String) {
         setInProgress(true)
 
-        FireBase_utils.allUsersCollection()
+        FirebaseAuthentication.allUsersCollection()
             .whereEqualTo("phoneNumber", phoneNumber)
             .limit(1)
             .get()
@@ -104,7 +104,7 @@ class LoginPhoneNumberActivity : AppCompatActivity() {
 
                         documents.documents[0].reference.update(updates)
                             .addOnSuccessListener {
-                                setInProgress(false)  // ✅ Move here
+                                setInProgress(false)
                                 Log.d("LoginPhone", "Default password and nationality set successfully")
 
                                 if (password == "000000") {
@@ -119,13 +119,13 @@ class LoginPhoneNumberActivity : AppCompatActivity() {
                                 }
                             }
                             .addOnFailureListener { e ->
-                                setInProgress(false)  // ✅ Move here
+                                setInProgress(false)
                                 Log.e("LoginPhone", "Failed to set default password", e)
                                 Toast.makeText(this, "Failed to set default password: ${e.message}", Toast.LENGTH_LONG).show()
                             }
                     } else {
                         // User has password - verify it
-                        setInProgress(false)  // ✅ Add here too
+                        setInProgress(false)
                         Log.d("LoginPhone", "Verifying password...")
 
                         val isPasswordCorrect = PasswordUtils.verifyPassword(password, storedPasswordHash)

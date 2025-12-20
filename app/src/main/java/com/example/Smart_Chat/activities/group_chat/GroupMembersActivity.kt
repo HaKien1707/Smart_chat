@@ -12,13 +12,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.user_chat.ChatActivity
-import com.example.Smart_Chat.adapters.GroupMemberClickableAdapter
-import com.example.Smart_Chat.models.groupModel
+import com.example.Smart_Chat.adapters.group.GroupMemberAdapter
+import com.example.Smart_Chat.models.group.groupModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.others.androidUtils
+import com.example.Smart_Chat.utils.firebase.*
 
 class GroupMembersActivity : AppCompatActivity() {
 
@@ -26,7 +26,7 @@ class GroupMembersActivity : AppCompatActivity() {
     private lateinit var titleText: TextView
     private lateinit var membersRecycler: RecyclerView
     private lateinit var emptyState: LinearLayout
-    private lateinit var adapter: GroupMemberClickableAdapter
+    private lateinit var adapter: GroupMemberAdapter
 
     private var groupID: String? = null
     private var group: groupModel? = null
@@ -67,7 +67,7 @@ class GroupMembersActivity : AppCompatActivity() {
     }
 
     private fun loadGroupDetails() {
-        FireBase_utils.getGroupReference(groupID!!).get()
+        FirebaseGroups.getGroupReference(groupID!!).get()
             .addOnSuccessListener { document ->
                 group = document.toObject(groupModel::class.java)
 
@@ -76,7 +76,7 @@ class GroupMembersActivity : AppCompatActivity() {
                     return@addOnSuccessListener
                 }
 
-                isAdmin = group?.adminIDs?.contains(FireBase_utils.currentUserID()) == true
+                isAdmin = group?.adminIDs?.contains(FirebaseAuthentication.currentUserID()) == true
                 loadMembers()
             }
             .addOnFailureListener {
@@ -98,7 +98,7 @@ class GroupMembersActivity : AppCompatActivity() {
 
         memberIDs.forEach { memberID ->
             if (memberID != null) {
-                FireBase_utils.allUsersCollection().document(memberID).get()
+                FirebaseAuthentication.allUsersCollection().document(memberID).get()
                     .addOnSuccessListener { doc ->
                         val user = doc.toObject(userModel::class.java)
                         if (user != null) {
@@ -122,11 +122,11 @@ class GroupMembersActivity : AppCompatActivity() {
     }
 
     private fun setupAdapter() {
-        adapter = GroupMemberClickableAdapter(
+        adapter = GroupMemberAdapter(
             membersList,
             this,
             isAdmin,
-            FireBase_utils.currentUserID(),
+            FirebaseAuthentication.currentUserID(),
             onMemberClick = { user ->
                 openChatWithMember(user)
             },
@@ -156,15 +156,15 @@ class GroupMembersActivity : AppCompatActivity() {
                 val updatedMembers = group?.memberIDs?.toMutableList()
                 updatedMembers?.remove(userID)
 
-                FireBase_utils.getGroupReference(groupID!!)
+                FirebaseGroups.getGroupReference(groupID!!)
                     .update("memberIDs", updatedMembers)
                     .addOnSuccessListener {
                         android.widget.Toast.makeText(this, "Member removed", android.widget.Toast.LENGTH_SHORT).show()
 
-                        FireBase_utils.createNotification(
+                        FirebaseNotifications.createNotification(
                             type = "REMOVED_FROM_GROUP",
                             recipientID = userID,
-                            senderID = FireBase_utils.currentUserID() ?: "",
+                            senderID = FirebaseAuthentication.currentUserID() ?: "",
                             senderName = "Admin",
                             groupID = groupID,
                             groupName = group?.groupName,
@@ -188,7 +188,7 @@ class GroupMembersActivity : AppCompatActivity() {
             .setTitle("Block Member")
             .setMessage("Block ${member?.username}? They will be removed from the group and won't be able to rejoin.")
             .setPositiveButton("Block & Remove") { _, _ ->
-                FireBase_utils.blockUserFromGroup(
+                FirebaseBlocking.blockUserFromGroup(
                     groupID!!,
                     userID,
                     onSuccess = {

@@ -12,9 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.MainActivity
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.google.firebase.FirebaseException
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -177,22 +177,22 @@ class otpActivity : AppCompatActivity() {
     }
 
     private fun createUserAccount() {
-        val userId = FireBase_utils.currentUserID()
+        val userId = FirebaseAuthentication.currentUserID()
 
         val user = userModel(
             userId,
             username,
             phoneNumber,
             hashedPassword,
-            null, // email (can be added later)
-            countryCode, // nationality - THIS IS CORRECT
+            null,
+            countryCode,
             Timestamp.now()
         )
 
         // Set profile image if provided
         user.profileImage = profileImageBase64
 
-        FireBase_utils.currentUserDetails().set(user)
+        FirebaseAuthentication.currentUserDetails().set(user)
             .addOnSuccessListener {
                 Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show()
 

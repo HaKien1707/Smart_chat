@@ -17,22 +17,16 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.GroupMemberAdapter
-import com.example.Smart_Chat.models.groupModel
+import com.example.Smart_Chat.models.group.groupModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.FireBase_utils.createNotification
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.others.androidUtils
+import com.example.Smart_Chat.utils.firebase.*
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.firestore.FirebaseFirestore
 import java.io.ByteArrayOutputStream
-
-// TODO("Revamp friend list to a button")
 
 class GroupChatSettingsActivity : AppCompatActivity() {
 
@@ -48,7 +42,6 @@ class GroupChatSettingsActivity : AppCompatActivity() {
     private var groupID: String? = null
     private var group: groupModel? = null
     private var isAdmin = false
-    private lateinit var memberAdapter: GroupMemberAdapter
 
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -83,10 +76,6 @@ class GroupChatSettingsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Only reload if group data might have changed (after add members)
-        if (::memberAdapter.isInitialized) {
-            loadGroupDetails()
-        }
     }
 
     private lateinit var blockedListBtn: Button
@@ -154,7 +143,7 @@ class GroupChatSettingsActivity : AppCompatActivity() {
     }
 
     private fun loadGroupDetails() {
-        FireBase_utils.getGroupReference(groupID!!).get()
+        FirebaseGroups.getGroupReference(groupID!!).get()
             .addOnSuccessListener { document ->
                 group = document.toObject(groupModel::class.java)
 
@@ -164,7 +153,7 @@ class GroupChatSettingsActivity : AppCompatActivity() {
                     return@addOnSuccessListener
                 }
 
-                isAdmin = group?.adminIDs?.contains(FireBase_utils.currentUserID()) == true
+                isAdmin = group?.adminIDs?.contains(FirebaseAuthentication.currentUserID()) == true
 
                 // Load group image
                 if (!group?.groupImage.isNullOrEmpty()) {
@@ -179,14 +168,14 @@ class GroupChatSettingsActivity : AppCompatActivity() {
 
                 if (isAdmin) {
                     addMemberBtn.visibility = View.VISIBLE
-                    blockedListBtn.visibility = View.VISIBLE  // NEW: Show for admins
+                    blockedListBtn.visibility = View.VISIBLE  // Show for admins
                     deleteGroupBtn.visibility = View.VISIBLE
                     leaveGroupBtn.visibility = View.GONE
                     groupImage.isClickable = true
                     saveNameBtn.visibility = View.VISIBLE
                 } else {
                     addMemberBtn.visibility = View.GONE
-                    blockedListBtn.visibility = View.GONE  // NEW: Hide for members
+                    blockedListBtn.visibility = View.GONE  // Hide for members
                     deleteGroupBtn.visibility = View.GONE
                     leaveGroupBtn.visibility = View.VISIBLE
                     groupImage.isClickable = false
@@ -201,37 +190,13 @@ class GroupChatSettingsActivity : AppCompatActivity() {
             }
     }
 
-    // Update blockMember function to use the new Firebase function
-    private fun blockMember(userID: String) {
-        val member = memberAdapter.members.find { it.first.userID == userID }?.first
-
-        AlertDialog.Builder(this)
-            .setTitle("Block Member")
-            .setMessage("Block ${member?.username}? They will be removed from the group and won't be able to rejoin.")
-            .setPositiveButton("Block & Remove") { _, _ ->
-                FireBase_utils.blockUserFromGroup(
-                    groupID!!,
-                    userID,
-                    onSuccess = {
-                        Toast.makeText(this, "Member blocked and removed", Toast.LENGTH_SHORT).show()
-                        loadGroupDetails()
-                    },
-                    onFailure = { e ->
-                        Toast.makeText(this, "Failed to block: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-                )
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
     private fun loadMembers() {
         val memberIDs = group?.memberIDs ?: return
         val members = mutableListOf<Pair<userModel, Boolean>>() // Pair<user, isAdmin>
 
         memberIDs.forEach { memberID ->
             if (memberID != null) {
-                FireBase_utils.allUsersCollection().document(memberID).get()
+                FirebaseAuthentication.allUsersCollection().document(memberID).get()
                     .addOnSuccessListener { doc ->
                         val user = doc.toObject(userModel::class.java)
                         if (user != null) {
@@ -253,7 +218,7 @@ class GroupChatSettingsActivity : AppCompatActivity() {
 
         saveNameBtn.isEnabled = false
 
-        FireBase_utils.getGroupReference(groupID!!)
+        FirebaseGroups.getGroupReference(groupID!!)
             .update("groupName", newName)
             .addOnSuccessListener {
                 Toast.makeText(this, "Group name updated", Toast.LENGTH_SHORT).show()
@@ -274,7 +239,7 @@ class GroupChatSettingsActivity : AppCompatActivity() {
             resized.compress(Bitmap.CompressFormat.JPEG, 40, baos)
             val base64 = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
 
-            FireBase_utils.getGroupReference(groupID!!)
+            FirebaseGroups.getGroupReference(groupID!!)
                 .update("groupImage", base64)
                 .addOnSuccessListener {
                     groupImage.setImageURI(uri)
@@ -296,14 +261,14 @@ class GroupChatSettingsActivity : AppCompatActivity() {
                 val updatedMembers = group?.memberIDs?.toMutableList()
                 updatedMembers?.remove(userID)
 
-                FireBase_utils.getGroupReference(groupID!!)
+                FirebaseGroups.getGroupReference(groupID!!)
                     .update("memberIDs", updatedMembers)
                     .addOnSuccessListener {
                         Toast.makeText(this, "Member removed", Toast.LENGTH_SHORT).show()
-                        createNotification(
+                        FirebaseNotifications.createNotification(
                             type = "REMOVED_FROM_GROUP",
-                            recipientID = userID ?: "",
-                            senderID = FireBase_utils.currentUserID() ?: "",
+                            recipientID = userID,
+                            senderID = FirebaseAuthentication.currentUserID() ?: "",
                             senderName = "Admin",
                             groupID = groupID,
                             groupName = group?.groupName,
@@ -331,14 +296,14 @@ class GroupChatSettingsActivity : AppCompatActivity() {
     }
 
     private fun leaveGroup() {
-        val currentUserID = FireBase_utils.currentUserID()
+        val currentUserID = FirebaseAuthentication.currentUserID()
         val updatedMembers = group?.memberIDs?.toMutableList()
         val updatedAdmins = group?.adminIDs?.toMutableList()
 
         updatedMembers?.remove(currentUserID)
         updatedAdmins?.remove(currentUserID)
 
-        FireBase_utils.getGroupReference(groupID!!)
+        FirebaseGroups.getGroupReference(groupID!!)
             .update(
                 mapOf(
                     "memberIDs" to updatedMembers,
@@ -366,7 +331,7 @@ class GroupChatSettingsActivity : AppCompatActivity() {
     }
 
     private fun deleteGroup() {
-        val groupRef = FireBase_utils.getGroupReference(groupID!!)
+        val groupRef = FirebaseGroups.getGroupReference(groupID!!)
 
         // First delete all messages in the group
         groupRef.collection("messages").get()

@@ -36,13 +36,13 @@ object FirebaseChat {
     @JvmStatic
     fun get2ndUserInChatRoom(userID: MutableList<String?>?): DocumentReference? {
         if (userID != null && userID.size >= 2) {
-            val currentUserID = FirebaseAuth.currentUserID()
+            val currentUserID = FirebaseAuthentication.currentUserID()
             val otherUserId = if (userID[0] == currentUserID) {
                 userID[1]
             } else {
                 userID[0]
             }
-            return otherUserId?.let { FirebaseAuth.allUsersCollection().document(it) }
+            return otherUserId?.let { FirebaseAuthentication.allUsersCollection().document(it) }
         }
         return null
     }
@@ -55,7 +55,7 @@ object FirebaseChat {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
         getChatRoomReference(chatRoomID)
             .update("deletedBy", FieldValue.arrayUnion(currentUserID))
@@ -69,7 +69,7 @@ object FirebaseChat {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
         getChatRoomReference(chatRoomID)
             .update("deletedBy", FieldValue.arrayRemove(currentUserID))
@@ -105,7 +105,7 @@ object FirebaseChat {
 
     @JvmStatic
     fun getActiveChatRoomsQuery(): Query {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return allChatRoomsCollection()
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return allChatRoomsCollection()
             .whereArrayContains("userID", "")
 
         return allChatRoomsCollection()
@@ -115,7 +115,7 @@ object FirebaseChat {
 
     @JvmStatic
     fun getDeletedChatRoomsQuery(): Query {
-        val currentUserID = FirebaseAuth.currentUserID() ?: return allChatRoomsCollection()
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return allChatRoomsCollection()
             .whereArrayContains("userID", "")
 
         return allChatRoomsCollection()

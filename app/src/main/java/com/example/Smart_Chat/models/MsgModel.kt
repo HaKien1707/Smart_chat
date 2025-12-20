@@ -15,13 +15,13 @@ class MsgModel {
     var imageUrl: String? = null
 
     @JvmField
-    var fileUrl: String? = null // NEW: For file attachments
+    var fileUrl: String? = null // For file attachments
 
     @JvmField
-    var fileName: String? = null // NEW: Original file name
+    var fileName: String? = null // Original file name
 
     @JvmField
-    var fileSize: Long? = null // NEW: File size in bytes
+    var fileSize: Long? = null // File size in bytes
 
     @JvmField
     var messageType: String? = "text" // "text", "image", "file"

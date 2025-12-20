@@ -6,7 +6,7 @@
     android:background="@drawable/popup_background"
     android:padding="8dp">
 
-    <!-- NEW: Reply Option -->
+    <!-- Reply Option -->
     <TextView
         android:id="@+id/option_reply"
         android:layout_width="match_parent"

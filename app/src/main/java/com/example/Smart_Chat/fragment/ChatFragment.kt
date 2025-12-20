@@ -10,7 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.adapters.user_chat.RecentChatRecyclerAdapter
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.models.UserChatModel
-import com.example.Smart_Chat.utils.FireBase_utils
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
+import com.example.Smart_Chat.utils.firebase.FirebaseChat
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.firebase.firestore.Query
 
@@ -33,10 +34,10 @@ class ChatFragment : Fragment() {
     }
 
     private fun setupRecentChatRecyclerView() {
-        val currentUserID = FireBase_utils.currentUserID() ?: return
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
         // Query excludes chats where current user has soft-deleted them
-        val query = FireBase_utils.allChatRoomsCollectionReference()
+        val query = FirebaseChat.allChatRoomsCollection()
             .whereArrayContains("userID", currentUserID)
             .orderBy("lastMsgTimestamp", Query.Direction.DESCENDING)
 

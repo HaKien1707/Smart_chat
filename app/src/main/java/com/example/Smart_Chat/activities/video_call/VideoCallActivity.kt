@@ -14,17 +14,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.models.IceCandidateModel
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.WebRTCClient
-import com.example.Smart_Chat.utils.androidUtils
-import com.example.Smart_Chat.utils.firebase.FirebaseAuth
+import com.example.Smart_Chat.models.video_call.IceCandidateModel
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.others.WebRTCClient
+import com.example.Smart_Chat.utils.others.androidUtils
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.example.Smart_Chat.utils.firebase.FirebaseVideoCalls
 import com.google.firebase.firestore.ListenerRegistration
+import org.webrtc.DataChannel
 import org.webrtc.IceCandidate
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
+import org.webrtc.RtpReceiver
 import org.webrtc.SessionDescription
 import org.webrtc.SurfaceViewRenderer
 
@@ -234,7 +236,7 @@ class VideoCallActivity : AppCompatActivity() {
                 Log.d(TAG, "Remote stream removed")
             }
 
-            override fun onDataChannel(dataChannel: org.webrtc.DataChannel?) {
+            override fun onDataChannel(dataChannel: DataChannel?) {
                 Log.d(TAG, "Data channel: $dataChannel")
             }
 
@@ -243,7 +245,7 @@ class VideoCallActivity : AppCompatActivity() {
             }
 
             override fun onAddTrack(
-                receiver: org.webrtc.RtpReceiver?,
+                receiver: RtpReceiver?,
                 mediaStreams: Array<out MediaStream>?
             ) {
                 Log.d(TAG, "Track added")
@@ -358,7 +360,7 @@ class VideoCallActivity : AppCompatActivity() {
             iceCandidate.sdpMid,
             iceCandidate.sdpMLineIndex,
             iceCandidate.sdp,
-            FirebaseAuth.currentUserID()
+            FirebaseAuthentication.currentUserID()
         )
 
         FirebaseVideoCalls.addIceCandidate(
@@ -376,7 +378,7 @@ class VideoCallActivity : AppCompatActivity() {
     private fun listenForIceCandidates() {
         iceCandidateListener = FirebaseVideoCalls.listenForIceCandidates(callId!!) { candidate ->
             // Only process candidates from the other user
-            if (candidate.userId != FirebaseAuth.currentUserID()) {
+            if (candidate.userId != FirebaseAuthentication.currentUserID()) {
                 Log.d(TAG, "Remote ICE candidate received")
                 val iceCandidate = IceCandidate(
                     candidate.sdpMid,

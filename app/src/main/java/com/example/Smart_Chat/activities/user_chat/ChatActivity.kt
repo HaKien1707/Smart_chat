@@ -16,10 +16,19 @@ import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.user_chat.MsgRecyclerAdapter
 import com.example.Smart_Chat.models.*
-import com.example.Smart_Chat.utils.*
-import com.example.Smart_Chat.utils.CloudinaryHelper
-import com.example.Smart_Chat.utils.MediaMessageHelper
+import com.example.Smart_Chat.models.msg_action.ReplyMessageData
+import com.example.Smart_Chat.utils.AI.BotMessageHelper
+import com.example.Smart_Chat.utils.AI.GeminiHelper
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.media.CloudinaryHelper
+import com.example.Smart_Chat.utils.media.MediaMessageHelper
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
+import com.example.Smart_Chat.utils.firebase.FirebaseChat
 import com.example.Smart_Chat.utils.firebase.FirebaseFriends
+import com.example.Smart_Chat.utils.notification.UserChatNotificationHelper
+import com.example.Smart_Chat.utils.others.ChatStateManager
+import com.example.Smart_Chat.utils.others.androidUtils
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.Timestamp
@@ -93,8 +102,8 @@ class ChatActivity : AppCompatActivity() {
             return
         }
 
-        chatRoomID = FireBase_utils.getChatRoomID(
-            FireBase_utils.currentUserID(),
+        chatRoomID = FirebaseChat.getChatRoomID(
+            FirebaseAuthentication.currentUserID(),
             otherUser?.userID
         )
 
@@ -170,7 +179,7 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun setupRecycler() {
-        val query = FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!)
+        val query = FirebaseChat.getChatRoomMessagesReference(chatRoomID!!)
             .orderBy("timestamp", Query.Direction.ASCENDING)
 
         val options = FirestoreRecyclerOptions.Builder<MsgModel>()
@@ -311,7 +320,7 @@ class ChatActivity : AppCompatActivity() {
         // Normal message sending
         val msgModel = if (currentReplyData != null) {
             MsgModel(
-                senderID = FireBase_utils.currentUserID(),
+                senderID = FirebaseAuthentication.currentUserID(),
                 msg = messageText,
                 timestamp = Timestamp.now(),
                 messageType = "text",
@@ -324,14 +333,14 @@ class ChatActivity : AppCompatActivity() {
             )
         } else {
             MsgModel(
-                senderID = FireBase_utils.currentUserID(),
+                senderID = FirebaseAuthentication.currentUserID(),
                 msg = messageText,
                 timestamp = Timestamp.now(),
                 messageType = "text"
             )
         }
 
-        FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!)
+        FirebaseChat.getChatRoomMessagesReference(chatRoomID!!)
             .add(msgModel)
             .addOnSuccessListener {
                 msgInput.setText("")
@@ -352,7 +361,7 @@ class ChatActivity : AppCompatActivity() {
         val receiverID = otherUser?.userID ?: return
 
         // Get current user's name
-        FireBase_utils.currentUserDetails().get()
+        FirebaseAuthentication.currentUserDetails().get()
             .addOnSuccessListener { document ->
                 val currentUser = document.toObject(userModel::class.java)
                 val senderName = currentUser?.username ?: "Someone"
@@ -403,9 +412,9 @@ class ChatActivity : AppCompatActivity() {
         MediaMessageHelper.uploadAndSendImage(
             this,
             imageUri,
-            FireBase_utils.getChatRoomReferences(chatRoomID!!),
-            FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!),
-            FireBase_utils.currentUserID()!!,
+            FirebaseChat.getChatRoomReference(chatRoomID!!),
+            FirebaseChat.getChatRoomMessagesReference(chatRoomID!!),
+            FirebaseAuthentication.currentUserID()!!,
             null,
             MediaMessageHelper.MessageType.ONE_TO_ONE,
             null,
@@ -430,9 +439,9 @@ class ChatActivity : AppCompatActivity() {
         MediaMessageHelper.uploadAndSendFile(
             this,
             fileUri,
-            FireBase_utils.getChatRoomReferences(chatRoomID!!),
-            FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!),
-            FireBase_utils.currentUserID()!!,
+            FirebaseChat.getChatRoomReference(chatRoomID!!),
+            FirebaseChat.getChatRoomMessagesReference(chatRoomID!!),
+            FirebaseAuthentication.currentUserID()!!,
             null, // No sender name for 1-on-1
             MediaMessageHelper.MessageType.ONE_TO_ONE,
             null, // No encryption for regular chat
@@ -478,13 +487,13 @@ class ChatActivity : AppCompatActivity() {
 
         // Show user's command as a message
         val userCommandMsg = MsgModel(
-            senderID = FireBase_utils.currentUserID(),
+            senderID = FirebaseAuthentication.currentUserID(),
             msg = command,
             timestamp = Timestamp.now(),
             messageType = "text"
         )
 
-        FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!)
+        FirebaseChat.getChatRoomMessagesReference(chatRoomID!!)
             .add(userCommandMsg)
             .addOnSuccessListener {
                 msgInput.setText("")
@@ -500,8 +509,8 @@ class ChatActivity : AppCompatActivity() {
             try {
                 // Fetch and format messages
                 val messages = BotMessageHelper.fetchAndFormatMessages(
-                    messagesRef = FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!),
-                    currentUserId = FireBase_utils.currentUserID()!!,
+                    messagesRef = FirebaseChat.getChatRoomMessagesReference(chatRoomID!!),
+                    currentUserId = FirebaseAuthentication.currentUserID()!!,
                     chatType = BotMessageHelper.ChatType.USER_CHAT,
                     otherUserName = otherUser?.username
                 )
@@ -512,17 +521,17 @@ class ChatActivity : AppCompatActivity() {
                 result.onSuccess { response ->
                     // Send bot response
                     BotMessageHelper.sendBotResponse(
-                        messagesRef = FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!),
-                        chatRef = FireBase_utils.getChatRoomReferences(chatRoomID!!),
+                        messagesRef = FirebaseChat.getChatRoomMessagesReference(chatRoomID!!),
+                        chatRef = FirebaseChat.getChatRoomReference(chatRoomID!!),
                         response = response,
                         chatType = BotMessageHelper.ChatType.USER_CHAT,
-                        currentUserId = FireBase_utils.currentUserID()!!
+                        currentUserId = FirebaseAuthentication.currentUserID()!!
                     )
 
                     // Send usage info message
                     BotMessageHelper.sendUsageMessage(
                         context = this@ChatActivity,
-                        messagesRef = FireBase_utils.getChatRoomMessagesReferences(chatRoomID!!),
+                        messagesRef = FirebaseChat.getChatRoomMessagesReference(chatRoomID!!),
                         chatType = BotMessageHelper.ChatType.USER_CHAT
                     )
 
@@ -567,7 +576,7 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun updateChatRoom(lastMsg: String, messageType: String) {
-        val currentId = FireBase_utils.currentUserID()
+        val currentId = FirebaseAuthentication.currentUserID()
         val otherId = otherUser?.userID
 
         if (currentId == null || otherId == null) return
@@ -578,12 +587,12 @@ class ChatActivity : AppCompatActivity() {
             "userID" to listOf(currentId, otherId),
             "lastMsg" to lastMsg,
             "lastMsgSenderID" to currentId,
-            "lastMsgTimestamp" to com.google.firebase.Timestamp.now(),
+            "lastMsgTimestamp" to Timestamp.now(),
             "deletedBy" to emptyList<String>(),
             "chatRoomID" to chatRoomID
         )
 
-        FireBase_utils.getChatRoomReferences(chatRoomID!!)
+        FirebaseChat.getChatRoomReference(chatRoomID!!)
             .set(roomData, com.google.firebase.firestore.SetOptions.merge())
             .addOnFailureListener { e ->
                 Log.e("CHAT", "Failed to initialize/update room", e)
@@ -606,8 +615,21 @@ class ChatActivity : AppCompatActivity() {
         adapter.startListening()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Track that user is in this chat
+        ChatStateManager.setCurrentChat(chatRoomID!!)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Clear when leaving chat
+        ChatStateManager.clearCurrentChat()
+    }
+
     override fun onStop() {
         super.onStop()
         adapter.stopListening()
+        ChatStateManager.clearCurrentChat()
     }
 }

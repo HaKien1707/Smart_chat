@@ -10,12 +10,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.SelectMemberAdapter
-import com.example.Smart_Chat.models.groupModel
+import com.example.Smart_Chat.adapters.group.SelectGroupMemberAdapter
+import com.example.Smart_Chat.models.group.groupModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.firebase.*
 
 class AddMembersActivity : AppCompatActivity() {
 
@@ -27,7 +27,7 @@ class AddMembersActivity : AppCompatActivity() {
     private var groupID: String? = null
     private var group: groupModel? = null
     private val selectedMembers = mutableListOf<String>()
-    private lateinit var memberAdapter: SelectMemberAdapter
+    private lateinit var memberAdapter: SelectGroupMemberAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Apply theme and language
@@ -61,7 +61,7 @@ class AddMembersActivity : AppCompatActivity() {
 
     private fun loadGroupAndUsers() {
         // Load group first to get existing members
-        FireBase_utils.getGroupReference(groupID!!).get()
+        FirebaseGroups.getGroupReference(groupID!!).get()
             .addOnSuccessListener { document ->
                 group = document.toObject(groupModel::class.java)
 
@@ -83,7 +83,7 @@ class AddMembersActivity : AppCompatActivity() {
     private fun loadAvailableUsers() {
         val existingMemberIDs = group?.memberIDs ?: listOf()
 
-        FireBase_utils.allUsersCollection()
+        FirebaseAuthentication.allUsersCollection()
             .get()
             .addOnSuccessListener { documents ->
                 val availableUsers = mutableListOf<userModel>()
@@ -92,7 +92,7 @@ class AddMembersActivity : AppCompatActivity() {
                     val user = doc.toObject(userModel::class.java)
                     // Add user if they're not already in the group and not the current user
                     if (user.userID !in existingMemberIDs &&
-                        user.userID != FireBase_utils.currentUserID()) {
+                        user.userID != FirebaseAuthentication.currentUserID()) {
                         availableUsers.add(user)
                     }
                 }
@@ -110,7 +110,7 @@ class AddMembersActivity : AppCompatActivity() {
     }
 
     private fun setupMemberRecycler(users: List<userModel>) {
-        memberAdapter = SelectMemberAdapter(users, this) { userID, isSelected ->
+        memberAdapter = SelectGroupMemberAdapter(users, this) { userID, isSelected ->
             if (isSelected) {
                 selectedMembers.add(userID)
             } else {
@@ -141,15 +141,15 @@ class AddMembersActivity : AppCompatActivity() {
         val updatedMembers = group?.memberIDs?.toMutableList() ?: mutableListOf()
         updatedMembers.addAll(selectedMembers)
 
-        FireBase_utils.getGroupReference(groupID!!)
+        FirebaseGroups.getGroupReference(groupID!!)
             .update("memberIDs", updatedMembers)
             .addOnSuccessListener {
                 // Send notification to each added member
                 selectedMembers.forEach { memberID ->
-                    FireBase_utils.createNotification(
+                    FirebaseNotifications.createNotification(
                         type = "ADDED_TO_GROUP",
                         recipientID = memberID,
-                        senderID = FireBase_utils.currentUserID() ?: "",
+                        senderID = FirebaseAuthentication.currentUserID() ?: "",
                         senderName = "Admin",
                         groupID = groupID,
                         groupName = group?.groupName,

@@ -1,14 +1,13 @@
 package com.example.Smart_Chat.utils.firebase
 
 import android.util.Log
-import com.example.Smart_Chat.models.NotificationModel
+import com.example.Smart_Chat.models.notification.NotificationModel
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
 object FirebaseNotifications {
-
     @JvmStatic
     fun notificationsCollection(): CollectionReference {
         return FirebaseFirestore.getInstance().collection("notifications")

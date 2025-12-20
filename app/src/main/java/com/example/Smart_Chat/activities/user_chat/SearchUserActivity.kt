@@ -9,11 +9,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.user_chat.SearchUserRecyclerAdapter
+import com.example.Smart_Chat.adapters.social.SearchUserRecyclerAdapter
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 
 class SearchUserActivity : AppCompatActivity() {
@@ -61,7 +61,7 @@ class SearchUserActivity : AppCompatActivity() {
         emptyStateText.visibility = View.GONE
         userList.visibility = View.VISIBLE
 
-        val query = FireBase_utils.allUsersCollection()
+        val query = FirebaseAuthentication.allUsersCollection()
             .whereGreaterThanOrEqualTo("username", searchQuery)
             .whereLessThanOrEqualTo("username", searchQuery + "\uf8ff")
 

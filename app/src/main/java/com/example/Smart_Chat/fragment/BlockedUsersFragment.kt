@@ -5,14 +5,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.user_chat.BlockedUsersAdapter
+import com.example.Smart_Chat.adapters.social.BlockedUsersAdapter
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
+import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 
 class BlockedUsersFragment : Fragment() {
 
@@ -46,7 +45,7 @@ class BlockedUsersFragment : Fragment() {
     private fun loadBlockedUsers() {
         blockedUsersList.clear()
 
-        FireBase_utils.currentUserDetails().get()
+        FirebaseAuthentication.currentUserDetails().get()
             .addOnSuccessListener { document ->
                 val currentUser = document.toObject(userModel::class.java)
                 val blockedIds = currentUser?.blockedUsers?.filterNotNull() ?: emptyList()
@@ -60,7 +59,7 @@ class BlockedUsersFragment : Fragment() {
                 val totalBlocked = blockedIds.size
 
                 blockedIds.forEach { blockedId ->
-                    FireBase_utils.allUsersCollection().document(blockedId).get()
+                    FirebaseAuthentication.allUsersCollection().document(blockedId).get()
                         .addOnSuccessListener { userDoc ->
                             val user = userDoc.toObject(userModel::class.java)
                             if (user != null) {

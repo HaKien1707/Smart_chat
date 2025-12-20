@@ -1,9 +1,7 @@
 package com.example.Smart_Chat.activities.group_chat
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -15,13 +13,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.adapters.SelectMemberAdapter
-import com.example.Smart_Chat.models.groupModel
+import com.example.Smart_Chat.adapters.group.SelectGroupMemberAdapter
+import com.example.Smart_Chat.models.group.groupModel
 import com.example.Smart_Chat.models.userModel
-import com.example.Smart_Chat.utils.FireBase_utils
-import com.example.Smart_Chat.utils.LanguageManager
-import com.example.Smart_Chat.utils.ThemeManager
-import com.example.Smart_Chat.utils.androidUtils
+import com.example.Smart_Chat.utils.UI.LanguageManager
+import com.example.Smart_Chat.utils.UI.ThemeManager
+import com.example.Smart_Chat.utils.firebase.*
+import com.example.Smart_Chat.utils.others.androidUtils
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.Timestamp
 import java.util.UUID
@@ -36,7 +34,7 @@ class CreateGroupActivity : AppCompatActivity() {
 
     private var selectedImageBase64: String? = null
     private val selectedMembers = mutableListOf<String>()
-    private lateinit var memberAdapter: SelectMemberAdapter
+    private lateinit var memberAdapter: SelectGroupMemberAdapter
 
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -84,18 +82,18 @@ class CreateGroupActivity : AppCompatActivity() {
 
     private fun setupMemberRecycler() {
         // Load all users except current user
-        FireBase_utils.allUsersCollection()
+        FirebaseAuthentication.allUsersCollection()
             .get()
             .addOnSuccessListener { documents ->
                 val users = mutableListOf<userModel>()
                 for (doc in documents) {
                     val user = doc.toObject(userModel::class.java)
-                    if (user.userID != FireBase_utils.currentUserID()) {
+                    if (user.userID != FirebaseAuthentication.currentUserID()) {
                         users.add(user)
                     }
                 }
 
-                memberAdapter = SelectMemberAdapter(users, this) { userID, isSelected ->
+                memberAdapter = SelectGroupMemberAdapter(users, this) { userID, isSelected ->
                     if (isSelected) {
                         selectedMembers.add(userID)
                     } else {
@@ -115,14 +113,6 @@ class CreateGroupActivity : AppCompatActivity() {
             "Create Group (${selectedMembers.size} members)"
         } else {
             "Select at least 2 members"
-        }
-    }
-
-    private fun convertImageToBase64(uri: Uri) {
-        try {
-            selectedImageBase64 = androidUtils.convertImageToBase64(this, uri)
-        } catch (e: Exception) {
-            Log.e("CreateGroup", "Failed to convert image", e)
         }
     }
 
@@ -147,11 +137,11 @@ class CreateGroupActivity : AppCompatActivity() {
         val groupID = UUID.randomUUID().toString()
 
         // Add current user to members
-        val allMembers = mutableListOf(FireBase_utils.currentUserID())
+        val allMembers = mutableListOf(FirebaseAuthentication.currentUserID())
         allMembers.addAll(selectedMembers)
 
         // Creator is admin
-        val adminIDs = mutableListOf(FireBase_utils.currentUserID())
+        val adminIDs = mutableListOf(FirebaseAuthentication.currentUserID())
 
         // Create group model
         val group = groupModel(
@@ -161,11 +151,11 @@ class CreateGroupActivity : AppCompatActivity() {
             allMembers,
             adminIDs,
             Timestamp.now(),
-            FireBase_utils.currentUserID()
+            FirebaseAuthentication.currentUserID()
         )
 
         // Save to Firestore
-        FireBase_utils.getGroupReference(groupID)
+        FirebaseGroups.getGroupReference(groupID)
             .set(group)
             .addOnSuccessListener {
                 Toast.makeText(this, "Group created!", Toast.LENGTH_SHORT).show()
