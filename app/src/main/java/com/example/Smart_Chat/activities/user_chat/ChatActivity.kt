@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 class ChatActivity : AppCompatActivity() {
 
     private lateinit var backBtn: ImageButton
+    private lateinit var moreBtn: ImageButton
     private lateinit var profileImage: ImageView
     private lateinit var userName: TextView
     private lateinit var msgInput: EditText
@@ -115,6 +116,7 @@ class ChatActivity : AppCompatActivity() {
 
     private fun initViews() {
         backBtn = findViewById(R.id.back_btn)
+        moreBtn = findViewById(R.id.more_btn)
         profileImage = findViewById(R.id.profile_image)
         userName = findViewById(R.id.user_name)
         msgInput = findViewById(R.id.chatBox)
@@ -135,6 +137,11 @@ class ChatActivity : AppCompatActivity() {
         sendBtn.setOnClickListener { sendMessage() }
         sendImageBtn.setOnClickListener { pickImage() }
         attachBtn.setOnClickListener { pickFile() }
+        moreBtn.setOnClickListener {
+            val intent = Intent(this, UserInfoActivity::class.java)
+            androidUtils.passUserModelAsIntent(intent, otherUser)
+            startActivity(intent)
+        }
 
         // NEW: Cancel reply button
         cancelReplyBtn.setOnClickListener {
