@@ -6,7 +6,7 @@
     <string name="next">Tiếp</string>
     <string name="previous">Trước</string>
     <string name="enter_phone_num">Nhập số điện thoại của bạn</string>
-    <string name="sendOTP">Gửi OTP</string>
+    <string name="sendOTP">Tiếp tục</string>
     <string name="enterOTP">Nhập OTP</string>
     <string name="resend_otp_text">Gửi lại OTP trong %1$d giây</string>
     <string name="resendOTP">Gửi lại OTP</string>
@@ -54,7 +54,7 @@
     <string name="unblock">Unblock</string>
     <string name="UsersBlockAppearHere">Users you block will appear here</string>
 
-    <string name="loginPhoneNumber">Login with phone number</string>
+    <string name="loginPhoneNumber">Số điện thoại của bạn</string>
 
     <string name="searchUser">Tìm người dùng</string>
     <string name="createGroup">Tạo nhóm</string>
@@ -85,6 +85,15 @@
     <string name="friendRequest">Lời mời kết bạn</string>
     <string name="youAreBlocked">Bạn đã bị chặn bởi người dùng này</string>
     <string name="tapToChange">Tap to change</string>
+
+    <!-- Legal -->
+    <string name="welcome_legal_text">Bằng việc nhấn vào “Bắt đầu nhắn tin”, bạn đồng ý với &lt;b>Điều khoản dịch vụ&lt;/b> và xác nhận đã đọc &lt;b>Chính sách bảo mật&lt;/b> của chúng tôi.</string>
+    <string name="terms_of_service_title">Điều khoản dịch vụ</string>
+    <string name="terms_of_service_content">Đây là nội dung mẫu cho Điều khoản dịch vụ của bạn. Vui lòng thay thế bằng điều khoản thực tế.</string>
+    <string name="privacy_policy_title">Chính sách bảo mật</string>
+    <string name="privacy_policy_content">Đây là nội dung mẫu cho Chính sách bảo mật của bạn. Vui lòng thay thế bằng chính sách thực tế.</string>
+
+    <string name="you_prefix">Bạn: </string>
 
     <!-- Placeholder -->
     <string name="chat_screen">Màn hình chat</string>
