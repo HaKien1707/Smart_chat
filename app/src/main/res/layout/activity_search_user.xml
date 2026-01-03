@@ -5,27 +5,16 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context="com.example.Smart_Chat.activities.user_chat.SearchUserActivity">
 
+    <!-- Corrected Header -->
     <RelativeLayout
         android:id="@+id/panel"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/lazuli"
-        android:padding="10dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/searchUser"
-            android:textStyle="bold"
-            android:textSize="30sp"
-            android:textColor="@color/black"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_alignParentEnd="true">
-        </TextView>
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/header_green"
+        android:elevation="4dp">
 
         <ImageButton
             android:id="@+id/back_btn"
@@ -33,11 +22,22 @@
             android:layout_height="48dp"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:background="@drawable/ic_back"
-            android:layout_marginStart="10dp"
-            android:contentDescription="@string/backBTN">
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="6dp"
+            android:src="@drawable/ic_arrow_back_24"
+            android:contentDescription="@string/backBTN"
+            app:tint="@color/white" />
 
-        </ImageButton>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/back_btn"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:text="@string/searchUser"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
     </RelativeLayout>
 

@@ -2,15 +2,16 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
-    <!-- Top Bar -->
+    <!-- Corrected Header -->
     <RelativeLayout
         android:id="@+id/top_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/lazuli"
-        android:padding="16dp">
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/header_green"
+        android:elevation="4dp">
 
         <ImageButton
             android:id="@+id/back_btn"
@@ -19,19 +20,22 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_back"
+            android:padding="6dp"
+            android:src="@drawable/ic_arrow_back_24"
             android:contentDescription="@string/backBTN"
-            app:tint="@color/black" />
+            app:tint="@color/white" />
 
         <TextView
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
+            android:layout_toEndOf="@id/back_btn"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
             android:text="@string/notification"
-            android:textSize="22sp"
+            android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="@color/black" />
+            android:textColor="@color/white" />
 
     </RelativeLayout>
 
