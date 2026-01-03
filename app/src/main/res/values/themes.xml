@@ -1,39 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base Light Theme -->
-    <style name="Theme.SmartChat" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.SmartChat" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Primary brand color -->
-        <item name="colorPrimary">@color/lazuli</item>
-        <item name="colorPrimaryVariant">@color/lazuli</item>
-        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorPrimary">@color/header_green</item>
+        <item name="colorOnPrimary">@color/white</item>
 
-        <!-- Background colors -->
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+
+        <!-- Other theme attributes -->
         <item name="android:windowBackground">@color/background_light</item>
         <item name="backgroundColor">@color/background_light</item>
         <item name="cardBackgroundColor">@color/card_background_light</item>
-
-        <!-- Text colors -->
         <item name="android:textColorPrimary">@color/text_primary_light</item>
         <item name="android:textColorSecondary">@color/text_secondary_light</item>
-
-        <!-- EditText colors -->
         <item name="editTextColor">@color/text_primary_light</item>
         <item name="android:editTextColor">@color/text_primary_light</item>
         <item name="android:textColorHint">@color/text_secondary_light</item>
-
-        <!-- Status bar -->
-        <item name="android:statusBarColor">@color/lazuli</item>
-
-        <!-- Custom attributes -->
         <item name="inputBoxBackground">@drawable/input_box_light</item>
 
-        <!-- Button style -->
-        <item name="materialButtonStyle">@style/Widget.App.Button</item>
     </style>
 
-    <!-- Button Style for Light Theme -->
-    <style name="Widget.App.Button" parent="Widget.MaterialComponents.Button">
-        <item name="backgroundTint">@color/lazuli</item>
-        <item name="android:textColor">@color/black</item>
+    <style name="App.BottomNavigationView.NoActiveIndicator" parent="">
+        <item name="android:background">@android:color/transparent</item>
     </style>
+
 </resources>

@@ -1,39 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base Dark Theme -->
-    <style name="Theme.SmartChat" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.SmartChat" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Primary brand color -->
-        <item name="colorPrimary">@color/lazuli</item>
-        <item name="colorPrimaryVariant">@color/lazuli</item>
+        <item name="colorPrimary">@color/header_green</item>
         <item name="colorOnPrimary">@color/white</item>
 
-        <!-- Background colors -->
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@color/header_green</item>
+
+        <!-- Other theme attributes -->
         <item name="android:windowBackground">@color/background_dark</item>
         <item name="backgroundColor">@color/background_dark</item>
         <item name="cardBackgroundColor">@color/card_background_dark</item>
-
-        <!-- Text colors -->
         <item name="android:textColorPrimary">@color/text_primary_dark</item>
         <item name="android:textColorSecondary">@color/text_secondary_dark</item>
-
-        <!-- EditText colors -->
         <item name="editTextColor">@color/text_primary_dark</item>
         <item name="android:editTextColor">@color/text_primary_dark</item>
         <item name="android:textColorHint">@color/text_secondary_dark</item>
-
-        <!-- Status bar -->
-        <item name="android:statusBarColor">@color/lazuli</item>
-
-        <!-- Custom attributes -->
         <item name="inputBoxBackground">@drawable/input_box_dark</item>
-
-        <!-- Button style -->
-        <item name="materialButtonStyle">@style/Widget.App.Button.Dark</item>
-    </style>
-
-    <!-- Button Style for Dark Theme -->
-    <style name="Widget.App.Button.Dark" parent="Widget.MaterialComponents.Button">
-        <item name="backgroundTint">@color/dark_blue</item>
-        <item name="android:textColor">@color/white</item>
     </style>
 </resources>

@@ -4,7 +4,7 @@
     <color name="my_primary">#0034c3</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="lazuli">#53abff</color>
+    <color name="lazuli">#F8F9FA</color>
     <color name="gray">#5e5a5a</color>
     <color name="dark_blue">#0034c3</color>
     <color name="blue">#0000ff</color>
@@ -21,6 +21,8 @@
     <color name="orange">#FF7F00</color>
     <color name="light_gray">#d3d3d3</color>
     <color name="cyan">#00BCD4</color>
+    <color name="button_green">#25D366</color>
+    <color name="header_green">#075E54</color>
 
     <color name="announcement_bg">#FFF3E0</color>
 
