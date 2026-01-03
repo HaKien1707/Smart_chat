@@ -51,42 +51,6 @@
 
         </RelativeLayout>
 
-        <!-- Phone Number -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Phone Number"
-            android:textSize="14sp"
-            android:textColor="@color/black"
-            android:layout_marginTop="30dp"
-            android:layout_marginStart="5dp"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="5dp">
-
-            <com.hbb20.CountryCodePicker
-                android:id="@+id/codePicker"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:ccp_showNameCode="false"
-                app:ccp_showFlag="true"/>
-
-            <EditText
-                android:id="@+id/inputPhoneNumber"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/inputBoxBackground"
-                android:textColor="?attr/editTextColor"
-                android:inputType="phone"
-                android:hint="Phone number"
-                android:padding="15dp"
-                android:textSize="16sp"/>
-        </LinearLayout>
-
         <!-- Username -->
         <TextView
             android:layout_width="match_parent"
@@ -160,15 +124,14 @@
             android:layout_marginTop="20dp"
             android:visibility="gone"/>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/next_btn"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/round_corner_button"
             android:layout_marginTop="30dp"
             android:text="Next"
-            android:textSize="16sp"
-            android:padding="12dp"/>
+            android:paddingHorizontal="32dp"
+            android:paddingVertical="12dp"/>
 
         <TextView
             android:layout_width="wrap_content"

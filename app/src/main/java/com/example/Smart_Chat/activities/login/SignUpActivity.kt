@@ -20,19 +20,18 @@ import com.example.Smart_Chat.utils.UI.ThemeManager
 import com.example.Smart_Chat.utils.others.androidUtils
 import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.github.dhaval2404.imagepicker.ImagePicker
-import com.hbb20.CountryCodePicker
 
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var profileImage: ImageView
-    private lateinit var codePicker: CountryCodePicker
-    private lateinit var inputPhoneNumber: EditText
     private lateinit var inputUsername: EditText
     private lateinit var inputPassword: EditText
     private lateinit var inputConfirmPassword: EditText
     private lateinit var nextBtn: Button
     private lateinit var progressBar: ProgressBar
 
+    private var phoneNumber: String? = null
+    private var countryCode: String? = null
     private var selectedImageUri: Uri? = null
     private var profileImageBase64: String? = null
 
@@ -57,16 +56,16 @@ class SignUpActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
 
+        // Get phone number from previous activity
+        phoneNumber = intent.getStringExtra("phoneNumber")
+        countryCode = intent.getStringExtra("countryCode")
+
         profileImage = findViewById(R.id.profile_image)
-        codePicker = findViewById(R.id.codePicker)
-        inputPhoneNumber = findViewById(R.id.inputPhoneNumber)
         inputUsername = findViewById(R.id.inputUsername)
         inputPassword = findViewById(R.id.inputPassword)
         inputConfirmPassword = findViewById(R.id.inputConfirmPassword)
         nextBtn = findViewById(R.id.next_btn)
         progressBar = findViewById(R.id.progressBar)
-
-        codePicker.registerCarrierNumberEditText(inputPhoneNumber)
 
         profileImage.setOnClickListener {
             ImagePicker.with(this)
@@ -82,13 +81,6 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun validateAndProceed() {
-        // Validate phone number
-        if (!codePicker.isValidFullNumber) {
-            inputPhoneNumber.error = "Invalid phone number"
-            inputPhoneNumber.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake))
-            return
-        }
-
         // Validate username
         val username = inputUsername.text.toString().trim()
         if (username.isEmpty()) {
@@ -126,41 +118,12 @@ class SignUpActivity : AppCompatActivity() {
             return
         }
 
-        // Check if phone number already exists
-        checkPhoneNumberAvailability()
-    }
-
-    private fun checkPhoneNumberAvailability() {
-        setInProgress(true)
-
-        val phoneNumber = codePicker.fullNumberWithPlus
-
-        FirebaseAuthentication.allUsersCollection()
-            .whereEqualTo("phoneNumber", phoneNumber)
-            .limit(1)
-            .get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
-                    // Phone number already registered
-                    setInProgress(false)
-                    inputPhoneNumber.error = "Phone number already registered"
-                    Toast.makeText(
-                        this,
-                        "Phone number already registered. Please log in.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                } else {
-                    // Phone number available, check username
-                    checkUsernameAvailability()
-                }
-            }
-            .addOnFailureListener { e ->
-                setInProgress(false)
-                Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-            }
+        // All fields are valid, check username availability
+        checkUsernameAvailability()
     }
 
     private fun checkUsernameAvailability() {
+        setInProgress(true)
         val username = inputUsername.text.toString().trim()
 
         FirebaseAuthentication.allUsersCollection()
@@ -190,8 +153,6 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun proceedToOTP() {
-        val phoneNumber = codePicker.fullNumberWithPlus
-        val countryCode = codePicker.selectedCountryNameCode
         val username = inputUsername.text.toString().trim()
         val password = inputPassword.text.toString().trim()
 

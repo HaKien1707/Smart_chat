@@ -29,14 +29,9 @@ class otpActivity : AppCompatActivity() {
     private var countryCode: String? = null
     private var isSignUp: Boolean = false
 
-    // Sign up data
-    private var username: String? = null
-    private var hashedPassword: String? = null
-    private var profileImageBase64: String? = null
-
-    private val timeoutSeconds = 30L
+    private val timeoutSeconds = 60L
     private var verificationId: String? = null
-    private var token: PhoneAuthProvider.ForceResendingToken? = null
+    private var resendToken: PhoneAuthProvider.ForceResendingToken? = null
 
     private lateinit var inputOTP: EditText
     private lateinit var confirmOtpBTN: Button
@@ -45,7 +40,7 @@ class otpActivity : AppCompatActivity() {
     private val mAuth = FirebaseAuth.getInstance()
 
     private var resendTimer: CountDownTimer? = null
-    private val resendIntervalMs = 30_000L
+    private val resendIntervalMs = 60_000L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         ThemeManager.applySavedTheme(this)
@@ -58,12 +53,6 @@ class otpActivity : AppCompatActivity() {
         countryCode = intent.getStringExtra("countryCode")
         isSignUp = intent.getBooleanExtra("isSignUp", false)
 
-        if (isSignUp) {
-            username = intent.getStringExtra("username")
-            hashedPassword = intent.getStringExtra("password")
-            profileImageBase64 = intent.getStringExtra("profileImage")
-        }
-
         inputOTP = findViewById(R.id.inputOTP)
         confirmOtpBTN = findViewById(R.id.confirm_OTP_btn)
         textResendOTP = findViewById(R.id.resendOTP)
@@ -73,24 +62,19 @@ class otpActivity : AppCompatActivity() {
         confirmOtpBTN.setOnClickListener {
             val otp = inputOTP.text.toString().trim()
 
-            if (otp.isEmpty()) {
-                inputOTP.error = "Enter OTP"
+            if (otp.isEmpty() || otp.length < 6) {
+                inputOTP.error = "Enter valid OTP"
+                inputOTP.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake))
                 return@setOnClickListener
             }
 
             if (verificationId == null) {
-                inputOTP.error = "OTP hasn't been sent yet"
-                inputOTP.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake))
-                Toast.makeText(
-                    this,
-                    "Please wait, OTP is being sent...",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this, "Please wait for the OTP to be sent.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             val credential = PhoneAuthProvider.getCredential(verificationId!!, otp)
-            signIn(credential)
+            signInWithCredential(credential)
         }
 
         textResendOTP.setOnClickListener {
@@ -107,63 +91,54 @@ class otpActivity : AppCompatActivity() {
 
         startResendTimer()
 
-        val builder = PhoneAuthOptions.newBuilder(mAuth)
+        val optionsBuilder = PhoneAuthOptions.newBuilder(mAuth)
             .setPhoneNumber(phoneNumber)
             .setTimeout(timeoutSeconds, TimeUnit.SECONDS)
             .setActivity(this)
             .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-                override fun onVerificationCompleted(phoneAuthCredential: PhoneAuthCredential) {
-                    signIn(phoneAuthCredential)
+                override fun onVerificationCompleted(credential: PhoneAuthCredential) {
+                    signInWithCredential(credential)
                 }
 
                 override fun onVerificationFailed(e: FirebaseException) {
-                    Toast.makeText(
-                        this@otpActivity,
-                        "Verification failed: ${e.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(this@otpActivity, "Verification failed: ${e.message}", Toast.LENGTH_LONG).show()
                 }
 
-                override fun onCodeSent(
-                    s: String,
-                    forceResendingToken: PhoneAuthProvider.ForceResendingToken
-                ) {
-                    super.onCodeSent(s, forceResendingToken)
-                    verificationId = s
-                    token = forceResendingToken
-                    Toast.makeText(
-                        this@otpActivity,
-                        "OTP sent successfully",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
+                    this@otpActivity.verificationId = verificationId
+                    this@otpActivity.resendToken = token
+                    Toast.makeText(this@otpActivity, "OTP sent successfully", Toast.LENGTH_SHORT).show()
                 }
             })
 
-        if (isResend && token != null) {
-            PhoneAuthProvider.verifyPhoneNumber(builder.setForceResendingToken(token!!).build())
+        if (isResend && resendToken != null) {
+            PhoneAuthProvider.verifyPhoneNumber(optionsBuilder.setForceResendingToken(resendToken!!).build())
         } else {
-            PhoneAuthProvider.verifyPhoneNumber(builder.build())
+            PhoneAuthProvider.verifyPhoneNumber(optionsBuilder.build())
         }
     }
 
-    private fun signIn(phoneAuthCredential: PhoneAuthCredential) {
+    private fun signInWithCredential(credential: PhoneAuthCredential) {
         confirmOtpBTN.isEnabled = false
 
-        mAuth.signInWithCredential(phoneAuthCredential).addOnCompleteListener { task ->
+        mAuth.signInWithCredential(credential).addOnCompleteListener { task ->
             confirmOtpBTN.isEnabled = true
 
             if (task.isSuccessful) {
                 if (isSignUp) {
-                    // Create new user account
-                    createUserAccount()
-                } else {
-                    // Existing user - go to username display screen
-                    val intent = Intent(this, UsernameSignInActivity::class.java).apply {
+                    // OTP verified for a new user, now go to SignUpActivity to create the account
+                    val intent = Intent(this, SignUpActivity::class.java).apply {
                         putExtra("phoneNumber", phoneNumber)
-                        putExtra("isLogin", true)
+                        putExtra("countryCode", countryCode)
+                        // We carry the verified credential's info implicitly by having the user signed in
                     }
                     startActivity(intent)
-                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    finish()
+                } else {
+                    // Existing user logged in, go to MainActivity
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
                     finish()
                 }
             } else {
@@ -174,36 +149,6 @@ class otpActivity : AppCompatActivity() {
                 Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    private fun createUserAccount() {
-        val userId = FirebaseAuthentication.currentUserID()
-
-        val user = userModel(
-            userId,
-            username,
-            phoneNumber,
-            hashedPassword,
-            null,
-            countryCode,
-            Timestamp.now()
-        )
-
-        // Set profile image if provided
-        user.profileImage = profileImageBase64
-
-        FirebaseAuthentication.currentUserDetails().set(user)
-            .addOnSuccessListener {
-                Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show()
-
-                val intent = Intent(this, MainActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(intent)
-                finish()
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(this, "Failed to create account: ${e.message}", Toast.LENGTH_LONG).show()
-            }
     }
 
     private fun startResendTimer() {
@@ -226,6 +171,5 @@ class otpActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         resendTimer?.cancel()
-        resendTimer = null
     }
 }

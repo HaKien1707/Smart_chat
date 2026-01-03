@@ -11,9 +11,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.Smart_Chat.R
-import com.example.Smart_Chat.models.userModel
 import com.example.Smart_Chat.utils.UI.LanguageManager
-import com.example.Smart_Chat.utils.security.PasswordUtils
 import com.example.Smart_Chat.utils.UI.ThemeManager
 import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
 import com.hbb20.CountryCodePicker
@@ -22,7 +20,6 @@ class LoginPhoneNumberActivity : AppCompatActivity() {
 
     private lateinit var codePicker: CountryCodePicker
     private lateinit var inputPhoneNumber: EditText
-    private lateinit var inputPassword: EditText
     private lateinit var sendOTPBtn: Button
     private lateinit var progressBar: ProgressBar
 
@@ -35,10 +32,11 @@ class LoginPhoneNumberActivity : AppCompatActivity() {
 
         codePicker = findViewById(R.id.codePicker)
         inputPhoneNumber = findViewById(R.id.inputPhoneNumber)
-        inputPassword = findViewById(R.id.inputPassword)
         sendOTPBtn = findViewById(R.id.send_OTP_btn)
         progressBar = findViewById(R.id.progressBar)
 
+        // Set default country to Vietnam
+        codePicker.setDefaultCountryUsingNameCode("VN")
         codePicker.registerCarrierNumberEditText(inputPhoneNumber)
 
         sendOTPBtn.setOnClickListener {
@@ -49,24 +47,16 @@ class LoginPhoneNumberActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Validate password
-            val password = inputPassword.text.toString().trim()
-            if (password.isEmpty()) {
-                inputPassword.error = "Enter password"
-                inputPassword.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake))
-                return@setOnClickListener
-            }
-
             // Get phone number and country code
             val phoneNumber = codePicker.fullNumberWithPlus
             val countryCode = codePicker.selectedCountryNameCode
 
-            // Verify password before sending OTP
-            verifyPasswordAndSendOTP(phoneNumber, password, countryCode)
+            // Check if user is registered, then proceed to OTP
+            checkUserAndProceed(phoneNumber, countryCode)
         }
     }
 
-    private fun verifyPasswordAndSendOTP(phoneNumber: String, password: String, countryCode: String) {
+    private fun checkUserAndProceed(phoneNumber: String, countryCode: String) {
         setInProgress(true)
 
         FirebaseAuthentication.allUsersCollection()
@@ -74,74 +64,13 @@ class LoginPhoneNumberActivity : AppCompatActivity() {
             .limit(1)
             .get()
             .addOnSuccessListener { documents ->
+                setInProgress(false)
                 if (documents.isEmpty) {
-                    setInProgress(false)
-                    Toast.makeText(
-                        this,
-                        "Phone number not registered. Please sign up first.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    inputPhoneNumber.error = "Not registered"
-                    inputPhoneNumber.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake))
+                    // Phone number not registered, proceed to OTP for Sign Up
+                    proceedToOTP(phoneNumber, countryCode, true)
                 } else {
-                    val user = documents.documents[0].toObject(userModel::class.java)
-                    val storedPasswordHash = user?.password
-
-                    Log.d("LoginPhone", "Phone: $phoneNumber")
-                    Log.d("LoginPhone", "Stored hash exists: ${storedPasswordHash != null}")
-                    Log.d("LoginPhone", "Entered password: $password")
-
-                    if (storedPasswordHash == null) {
-                        // OLD USER WITHOUT PASSWORD - Set default password "000000"
-                        Log.d("LoginPhone", "Old user detected, setting default password")
-
-                        val defaultPassword = PasswordUtils.hashPassword("000000")
-
-                        val updates = hashMapOf<String, Any>(
-                            "password" to defaultPassword,
-                            "nationality" to countryCode
-                        )
-
-                        documents.documents[0].reference.update(updates)
-                            .addOnSuccessListener {
-                                setInProgress(false)
-                                Log.d("LoginPhone", "Default password and nationality set successfully")
-
-                                if (password == "000000") {
-                                    proceedToOTP(phoneNumber, countryCode)
-                                } else {
-                                    inputPassword.error = "Use default password: 000000"
-                                    Toast.makeText(
-                                        this,
-                                        "Your default password is: 000000\nChange it in settings after login.",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            }
-                            .addOnFailureListener { e ->
-                                setInProgress(false)
-                                Log.e("LoginPhone", "Failed to set default password", e)
-                                Toast.makeText(this, "Failed to set default password: ${e.message}", Toast.LENGTH_LONG).show()
-                            }
-                    } else {
-                        // User has password - verify it
-                        setInProgress(false)
-                        Log.d("LoginPhone", "Verifying password...")
-
-                        val isPasswordCorrect = PasswordUtils.verifyPassword(password, storedPasswordHash)
-                        Log.d("LoginPhone", "Password verification result: $isPasswordCorrect")
-
-                        if (isPasswordCorrect) {
-                            Log.d("LoginPhone", "Password correct, proceeding to OTP")
-                            proceedToOTP(phoneNumber, countryCode)
-                        } else {
-                            Log.d("LoginPhone", "Password incorrect")
-                            inputPassword.error = "Incorrect password"
-                            inputPassword.setText("")
-                            inputPassword.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake))
-                            Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                    // User exists, proceed to OTP for Login
+                    proceedToOTP(phoneNumber, countryCode, false)
                 }
             }
             .addOnFailureListener { e ->
@@ -151,11 +80,11 @@ class LoginPhoneNumberActivity : AppCompatActivity() {
             }
     }
 
-    private fun proceedToOTP(phoneNumber: String, countryCode: String) {
+    private fun proceedToOTP(phoneNumber: String, countryCode: String, isSignUp: Boolean) {
         val intent = Intent(this, otpActivity::class.java).apply {
             putExtra("phoneNumber", phoneNumber)
             putExtra("countryCode", countryCode)
-            putExtra("isSignUp", false)
+            putExtra("isSignUp", isSignUp)
         }
         startActivity(intent)
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
