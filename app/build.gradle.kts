@@ -83,6 +83,9 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
+    // Splash Screen API
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
     implementation("com.hbb20:ccp:2.7.3")
 
     // FirebaseUI for Firebase Realtime Database
