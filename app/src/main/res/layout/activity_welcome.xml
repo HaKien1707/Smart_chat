@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
     android:background="@color/lazuli"
-    android:padding="20dp">
+    android:padding="20dp"
+    tools:context=".activities.login.WelcomeActivity">
 
     <ImageView
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:src="@drawable/ic_chat"
+        android:src="@mipmap/ic_launcher"
         android:layout_marginTop="100dp"
         android:contentDescription="App Logo"/>
 
@@ -36,25 +38,23 @@
         android:layout_height="0dp"
         android:layout_weight="1"/>
 
-    <Button
-        android:id="@+id/login_btn"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/legal_text"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/round_corner_button"
-        android:text="Log In"
-        android:textSize="18sp"
-        android:padding="15dp"
-        android:layout_marginBottom="15dp"/>
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:text="@string/welcome_legal_text"
+        android:textColor="@color/gray"
+        android:textSize="12sp" />
 
-    <Button
-        android:id="@+id/signup_btn"
-        android:layout_width="match_parent"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/start_messaging_btn"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/round_corner_button"
-        android:backgroundTint="@color/gray"
-        android:text="Sign Up"
-        android:textSize="18sp"
-        android:padding="15dp"
+        android:text="START MESSAGING"
+        android:paddingHorizontal="32dp"
+        android:paddingVertical="12dp"
         android:layout_marginBottom="40dp"/>
 
 </LinearLayout>
