@@ -23,6 +23,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartChat">
+
+        <activity android:name=".activities.user_chat.UserInfoActivity" android:exported="false" />
+        <activity android:name=".activities.others.BlockedUsersActivity" android:exported="false" />
+
         <activity
             android:name=".activities.group_chat.GroupMembersActivity"
             android:exported="false" />

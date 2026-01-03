@@ -1,8 +1,10 @@
 package com.example.Smart_Chat.utils.firebase
 
+import com.example.Smart_Chat.models.userModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 object FirebaseAuthentication {
@@ -31,4 +33,34 @@ object FirebaseAuthentication {
     @JvmStatic
     val isLoggedIn: Boolean
         get() = currentUserID() != null
+
+    @JvmStatic
+    fun getBlockedUsers(onComplete: (List<userModel>) -> Unit) {
+        val currentUserID = currentUserID() ?: return
+
+        currentUserDetails().get().addOnSuccessListener {
+            val user = it.toObject(userModel::class.java)
+            val blockedIDs = user?.blockedUsers ?: emptyList<String>()
+
+            if (blockedIDs.isEmpty()) {
+                onComplete(emptyList())
+                return@addOnSuccessListener
+            }
+
+            allUsersCollection().whereIn("userID", blockedIDs).get()
+                .addOnSuccessListener { documents ->
+                    val blockedUsers = documents.toObjects(userModel::class.java)
+                    onComplete(blockedUsers)
+                }
+                .addOnFailureListener {
+                    onComplete(emptyList())
+                }
+        }
+    }
+
+    @JvmStatic
+    fun unblockUser(userID: String, onComplete: () -> Unit) {
+        currentUserDetails().update("blockedUsers", FieldValue.arrayRemove(userID))
+            .addOnSuccessListener { onComplete() }
+    }
 }

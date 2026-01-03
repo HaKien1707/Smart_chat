@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.MainActivity
+import com.example.Smart_Chat.activities.others.BlockedUsersActivity
 import com.example.Smart_Chat.utils.UI.LanguageManager
 import com.example.Smart_Chat.utils.UI.ThemeManager
 
@@ -17,6 +18,7 @@ class SettingsFragment : Fragment() {
 
     private lateinit var themeOption: View
     private lateinit var languageOption: View
+    private lateinit var blockedUsersOption: View
     private lateinit var themeValue: TextView
     private lateinit var languageValue: TextView
 
@@ -29,6 +31,7 @@ class SettingsFragment : Fragment() {
 
         themeOption = view.findViewById(R.id.theme_option)
         languageOption = view.findViewById(R.id.language_option)
+        blockedUsersOption = view.findViewById(R.id.blocked_users_option)
         themeValue = view.findViewById(R.id.theme_value)
         languageValue = view.findViewById(R.id.language_value)
 
@@ -41,6 +44,11 @@ class SettingsFragment : Fragment() {
 
         languageOption.setOnClickListener {
             showLanguageDialog()
+        }
+
+        blockedUsersOption.setOnClickListener {
+            val intent = Intent(requireContext(), BlockedUsersActivity::class.java)
+            startActivity(intent)
         }
 
         return view

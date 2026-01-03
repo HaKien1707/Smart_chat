@@ -12,17 +12,6 @@
         android:layout_weight="1"
         android:padding="8dp" />
 
-    <Button
-        android:id="@+id/view_blocked_users_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Blocked Users"
-        android:background="@drawable/round_corner_button"
-        android:backgroundTint="@color/orange"
-        android:textColor="@color/white"
-        android:layout_margin="16dp"
-        android:padding="12dp" />
-
     <!-- Empty State -->
     <LinearLayout
         android:id="@+id/empty_state"
