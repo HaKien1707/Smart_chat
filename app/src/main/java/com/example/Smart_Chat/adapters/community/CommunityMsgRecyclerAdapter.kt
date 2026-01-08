@@ -17,7 +17,8 @@ import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.others.ForwardMessageActivity
 import com.example.Smart_Chat.activities.others.FullScreenImageActivity
-import com.example.Smart_Chat.activities.community.CommunityChatActivity
+import androidx.fragment.app.FragmentActivity
+import com.example.Smart_Chat.fragment.CommunityChatFragment
 import com.example.Smart_Chat.models.community.CommunityMsgModel
 import com.example.Smart_Chat.models.msg_action.ReplyMessageData
 import com.example.Smart_Chat.models.userModel
@@ -331,8 +332,11 @@ class CommunityMsgRecyclerAdapter(
             canDelete = model.senderID == FirebaseAuthentication.currentUserID(),
             messageData = messageData,
             onReply = { replyData ->
-                if (context is CommunityChatActivity) {
-                    context.setReplyMessage(replyData)
+                if (context is FragmentActivity) {
+                    val fragment = context.supportFragmentManager.findFragmentById(R.id.fragment_container)
+                    if (fragment is CommunityChatFragment) {
+                        fragment.setReplyMessage(replyData)
+                    }
                 }
             },
             onForward = {
@@ -399,8 +403,11 @@ class CommunityMsgRecyclerAdapter(
             try {
                 val snapshot = snapshots.getSnapshot(i)
                 if (snapshot.id == messageId) {
-                    if (context is CommunityChatActivity) {
-                        context.scrollToPosition(i)
+                    if (context is FragmentActivity) {
+                        val fragment = context.supportFragmentManager.findFragmentById(R.id.fragment_container)
+                        if (fragment is CommunityChatFragment) {
+                            fragment.scrollToPosition(i)
+                        }
                     }
                     break
                 }
@@ -417,9 +424,12 @@ class CommunityMsgRecyclerAdapter(
         intent.putExtra("messageType", model.messageType)
         intent.putExtra("isFromGroup", true)
 
-        if (context is CommunityChatActivity) {
-            val communityID = context.getCommunityID()
-            intent.putExtra("currentChatId", communityID)
+        if (context is FragmentActivity) {
+            val fragment = context.supportFragmentManager.findFragmentById(R.id.fragment_container)
+            if (fragment is CommunityChatFragment) {
+                val communityID = fragment.getCommunityID()
+                intent.putExtra("currentChatId", communityID)
+            }
         }
 
         context.startActivity(intent)
