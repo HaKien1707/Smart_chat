@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
-    <!-- Corrected Header -->
+    <!-- Header -->
     <RelativeLayout
         android:id="@+id/panel"
         android:layout_width="match_parent"
@@ -38,11 +38,11 @@
 
     </RelativeLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/deleted_chats_recycler"
+    <!-- Fragment Container -->
+    <FrameLayout
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/panel"
-        android:padding="10dp" />
+        android:layout_below="@id/panel" />
 
 </RelativeLayout>

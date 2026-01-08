@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.Smart_Chat"
+    namespace = "com.example.smart_chat"
     compileSdk = 36
 
     defaultConfig {

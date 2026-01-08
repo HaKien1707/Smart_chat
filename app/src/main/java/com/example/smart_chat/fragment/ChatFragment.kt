@@ -1,0 +1,68 @@
+package com.example.smart_chat.fragment
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.smart_chat.adapters.user_chat.RecentChatRecyclerAdapter
+import com.example.smart_chat.R
+import com.example.smart_chat.models.UserChatModel
+import com.example.smart_chat.utils.firebase.FirebaseAuthentication
+import com.example.smart_chat.utils.firebase.FirebaseChat
+import com.firebase.ui.firestore.FirestoreRecyclerOptions
+import com.google.firebase.firestore.Query
+
+class ChatFragment : Fragment() {
+
+    private lateinit var chatRecycler: RecyclerView
+    private var adapter: RecentChatRecyclerAdapter? = null
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val view = inflater.inflate(R.layout.fragment_chat, container, false)
+
+        chatRecycler = view.findViewById(R.id.chatRecycler)
+
+        setupRecentChatRecyclerView()
+
+        return view
+    }
+
+    private fun setupRecentChatRecyclerView() {
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
+
+        // Query excludes chats where current user has soft-deleted them
+        val query = FirebaseChat.allChatRoomsCollection()
+            .whereArrayContains("userID", currentUserID)
+            .orderBy("lastMsgTimestamp", Query.Direction.DESCENDING)
+
+        val options = FirestoreRecyclerOptions.Builder<UserChatModel>()
+            .setQuery(query, UserChatModel::class.java)
+            .setLifecycleOwner(viewLifecycleOwner)  // Important: use viewLifecycleOwner for fragments
+            .build()
+
+        adapter = RecentChatRecyclerAdapter(options, requireContext(), isDeletedView = false)
+        chatRecycler.layoutManager = LinearLayoutManager(requireContext())
+        chatRecycler.adapter = adapter
+    }
+
+    override fun onStart() {
+        super.onStart()
+        adapter?.startListening()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        adapter?.stopListening()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adapter?.notifyDataSetChanged()
+    }
+}

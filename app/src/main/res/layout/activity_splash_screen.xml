@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/lazuli"
-    tools:context="com.example.Smart_Chat.activities.login.splashScreenActivity">
+    tools:context="com.example.smart_chat.activities.login.splashScreenActivity">
 
     <ImageView
         android:layout_width="150dp"

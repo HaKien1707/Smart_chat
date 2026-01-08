@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.example.Smart_Chat.activities.user_chat.SearchUserActivity">
+    tools:context="com.example.smart_chat.activities.user_chat.SearchUserActivity">
 
     <!-- Corrected Header -->
     <RelativeLayout
