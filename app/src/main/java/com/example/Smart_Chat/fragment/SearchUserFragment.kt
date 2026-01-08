@@ -117,9 +117,20 @@ class SearchUserFragment : Fragment() {
             return
         }
 
-        val query = FirebaseAuthentication.allUsersCollection()
-            .whereGreaterThanOrEqualTo("username", searchQuery)
-            .whereLessThanOrEqualTo("username", searchQuery + "\uf8ff")
+        // Detect if search query is a phone number (contains only digits and possibly +, -, spaces)
+        val isPhoneSearch = searchQuery.matches(Regex("^[+\\-\\d\\s]+$"))
+
+        val query = if (isPhoneSearch) {
+            // Search by phone number - keep original format for matching
+            FirebaseAuthentication.allUsersCollection()
+                .whereGreaterThanOrEqualTo("phoneNumber", searchQuery)
+                .whereLessThanOrEqualTo("phoneNumber", searchQuery + "\uf8ff")
+        } else {
+            // Search by username
+            FirebaseAuthentication.allUsersCollection()
+                .whereGreaterThanOrEqualTo("username", searchQuery)
+                .whereLessThanOrEqualTo("username", searchQuery + "\uf8ff")
+        }
 
         val options = FirestoreRecyclerOptions.Builder<userModel>()
             .setQuery(query, userModel::class.java)
