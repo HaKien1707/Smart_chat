@@ -14,8 +14,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.adapters.social.SearchUserRecyclerAdapter
+import com.example.Smart_Chat.adapters.community.SearchCommunityAdapter
+import com.example.Smart_Chat.adapters.group.SearchGroupAdapter
 import com.example.Smart_Chat.models.userModel
+import com.example.Smart_Chat.models.community.CommunityModel
+import com.example.Smart_Chat.models.group.groupModel
 import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
+import com.example.Smart_Chat.utils.firebase.FirebaseCommunity
+import com.example.Smart_Chat.utils.firebase.FirebaseGroups
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.firestore.Query
@@ -31,6 +37,8 @@ class SearchUserFragment : Fragment() {
     private lateinit var emptyStateText: TextView
 
     private var peopleAdapter: SearchUserRecyclerAdapter? = null
+    private var communitiesAdapter: SearchCommunityAdapter? = null
+    private var groupsAdapter: SearchGroupAdapter? = null
     private var currentTabPosition = 0
 
     override fun onCreateView(
@@ -129,33 +137,100 @@ class SearchUserFragment : Fragment() {
             }
             private fun checkEmpty() {
                 val isEmpty = peopleAdapter?.itemCount == 0
-                emptyStateText.visibility = if (isEmpty) View.VISIBLE else View.GONE
-                peopleList.visibility = if (isEmpty) View.GONE else View.VISIBLE
+                if (currentTabPosition == 0) {
+                    emptyStateText.visibility = if (isEmpty) View.VISIBLE else View.GONE
+                    emptyStateText.text = "No users found"
+                    peopleList.visibility = if (isEmpty) View.GONE else View.VISIBLE
+                }
             }
         })
     }
 
     private fun searchCommunities(searchQuery: String) {
-        // TODO: Implement communities search
-        communitiesList.adapter = null
-        emptyStateText.visibility = if (searchQuery.isNotEmpty()) View.VISIBLE else View.GONE
-        emptyStateText.text = "Communities search coming soon"
+        if (searchQuery.isEmpty()) {
+            communitiesAdapter?.stopListening()
+            communitiesList.adapter = null
+            emptyStateText.visibility = View.GONE
+            return
+        }
+
+        val query = FirebaseCommunity.allCommunitiesCollection()
+            .whereGreaterThanOrEqualTo("communityName", searchQuery)
+            .whereLessThanOrEqualTo("communityName", searchQuery + "\uf8ff")
+
+        val options = FirestoreRecyclerOptions.Builder<CommunityModel>()
+            .setQuery(query, CommunityModel::class.java)
+            .build()
+
+        communitiesAdapter = SearchCommunityAdapter(options, requireContext())
+        communitiesList.layoutManager = LinearLayoutManager(context)
+        communitiesList.adapter = communitiesAdapter
+        communitiesAdapter?.startListening()
+
+        communitiesAdapter?.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            override fun onChanged() {
+                super.onChanged()
+                checkEmpty()
+            }
+            private fun checkEmpty() {
+                val isEmpty = communitiesAdapter?.itemCount == 0
+                if (currentTabPosition == 1) {
+                    emptyStateText.visibility = if (isEmpty) View.VISIBLE else View.GONE
+                    emptyStateText.text = "No communities found"
+                    communitiesList.visibility = if (isEmpty) View.GONE else View.VISIBLE
+                }
+            }
+        })
     }
 
     private fun searchGroups(searchQuery: String) {
-        // TODO: Implement groups search
-        groupsList.adapter = null
-        emptyStateText.visibility = if (searchQuery.isNotEmpty()) View.VISIBLE else View.GONE
-        emptyStateText.text = "Groups search coming soon"
+        if (searchQuery.isEmpty()) {
+            groupsAdapter?.stopListening()
+            groupsList.adapter = null
+            emptyStateText.visibility = View.GONE
+            return
+        }
+
+        val query = FirebaseGroups.allGroupsCollection()
+            .whereGreaterThanOrEqualTo("groupName", searchQuery)
+            .whereLessThanOrEqualTo("groupName", searchQuery + "\uf8ff")
+
+        val options = FirestoreRecyclerOptions.Builder<groupModel>()
+            .setQuery(query, groupModel::class.java)
+            .build()
+
+        groupsAdapter = SearchGroupAdapter(options, requireContext())
+        groupsList.layoutManager = LinearLayoutManager(context)
+        groupsList.adapter = groupsAdapter
+        groupsAdapter?.startListening()
+
+        groupsAdapter?.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            override fun onChanged() {
+                super.onChanged()
+                checkEmpty()
+            }
+            private fun checkEmpty() {
+                val isEmpty = groupsAdapter?.itemCount == 0
+                if (currentTabPosition == 2) {
+                    emptyStateText.visibility = if (isEmpty) View.VISIBLE else View.GONE
+                    emptyStateText.text = "No groups found"
+                    groupsList.visibility = if (isEmpty) View.GONE else View.VISIBLE
+                }
+            }
+        })
     }
 
     override fun onStart() {
         super.onStart()
         peopleAdapter?.startListening()
+        communitiesAdapter?.startListening()
+        groupsAdapter?.startListening()
     }
 
     override fun onStop() {
         super.onStop()
         peopleAdapter?.stopListening()
+        communitiesAdapter?.stopListening()
+        groupsAdapter?.stopListening()
     }
 }
