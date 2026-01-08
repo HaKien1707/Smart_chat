@@ -119,17 +119,20 @@ class SearchUserFragment : Fragment() {
 
         // Detect if search query is a phone number (contains only digits and possibly +, -, spaces)
         val isPhoneSearch = searchQuery.matches(Regex("^[+\\-\\d\\s]+$"))
+        
+        // Convert to lowercase for case-insensitive search
+        val lowerQuery = searchQuery.lowercase()
 
         val query = if (isPhoneSearch) {
-            // Search by phone number - keep original format for matching
+            // Search by phone number
             FirebaseAuthentication.allUsersCollection()
                 .whereGreaterThanOrEqualTo("phoneNumber", searchQuery)
                 .whereLessThanOrEqualTo("phoneNumber", searchQuery + "\uf8ff")
         } else {
-            // Search by username
+            // Search by username (lowercase for case-insensitive)
             FirebaseAuthentication.allUsersCollection()
-                .whereGreaterThanOrEqualTo("username", searchQuery)
-                .whereLessThanOrEqualTo("username", searchQuery + "\uf8ff")
+                .whereGreaterThanOrEqualTo("username", lowerQuery)
+                .whereLessThanOrEqualTo("username", lowerQuery + "\uf8ff")
         }
 
         val options = FirestoreRecyclerOptions.Builder<userModel>()
@@ -165,9 +168,12 @@ class SearchUserFragment : Fragment() {
             return
         }
 
+        // Convert to lowercase for case-insensitive search
+        val lowerQuery = searchQuery.lowercase()
+
         val query = FirebaseCommunity.allCommunitiesCollection()
-            .whereGreaterThanOrEqualTo("communityName", searchQuery)
-            .whereLessThanOrEqualTo("communityName", searchQuery + "\uf8ff")
+            .whereGreaterThanOrEqualTo("communityName", lowerQuery)
+            .whereLessThanOrEqualTo("communityName", lowerQuery + "\uf8ff")
 
         val options = FirestoreRecyclerOptions.Builder<CommunityModel>()
             .setQuery(query, CommunityModel::class.java)
@@ -202,9 +208,12 @@ class SearchUserFragment : Fragment() {
             return
         }
 
+        // Convert to lowercase for case-insensitive search
+        val lowerQuery = searchQuery.lowercase()
+
         val query = FirebaseGroups.allGroupsCollection()
-            .whereGreaterThanOrEqualTo("groupName", searchQuery)
-            .whereLessThanOrEqualTo("groupName", searchQuery + "\uf8ff")
+            .whereGreaterThanOrEqualTo("groupName", lowerQuery)
+            .whereLessThanOrEqualTo("groupName", lowerQuery + "\uf8ff")
 
         val options = FirestoreRecyclerOptions.Builder<groupModel>()
             .setQuery(query, groupModel::class.java)
