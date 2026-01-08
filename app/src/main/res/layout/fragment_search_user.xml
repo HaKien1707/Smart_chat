@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:fitsSystemWindows="true"
     tools:context=".fragment.SearchUserFragment">
 
@@ -33,9 +34,10 @@
             android:layout_height="wrap_content"
             android:layout_toEndOf="@id/back_btn"
             android:layout_centerVertical="true"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
             android:background="@null"
-            android:hint="Search users..."
+            android:hint="Search"
             android:minHeight="48dp"
             android:textColor="@color/white"
             android:textColorHint="#A8FFFFFF"
@@ -43,22 +45,62 @@
 
     </RelativeLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/userList"
+    <!-- Tab Layout -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/searchTabs"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/panel"
-        android:padding="10dp" />
-
-    <TextView
-        android:id="@+id/emptyStateText"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="@string/noUserMatch"
-        android:textSize="24sp"
-        android:textColor="@android:color/darker_gray"
-        android:visibility="gone"
-        tools:visibility="visible" />
+        android:background="@color/header_green"
+        android:elevation="4dp"
+        app:tabIndicatorColor="@color/white"
+        app:tabSelectedTextColor="@color/white"
+        app:tabTextColor="#A8FFFFFF"
+        app:tabMode="fixed"
+        app:tabGravity="fill" />
 
-</RelativeLayout>
+    <!-- Content Container -->
+    <FrameLayout
+        android:id="@+id/contentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- People List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/peopleList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="10dp"
+            android:visibility="visible" />
+
+        <!-- Communities List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/communitiesList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="10dp"
+            android:visibility="gone" />
+
+        <!-- Groups List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/groupsList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="10dp"
+            android:visibility="gone" />
+
+        <!-- Empty State -->
+        <TextView
+            android:id="@+id/emptyStateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="No results"
+            android:textSize="24sp"
+            android:textColor="@android:color/darker_gray"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+    </FrameLayout>
+
+</LinearLayout>

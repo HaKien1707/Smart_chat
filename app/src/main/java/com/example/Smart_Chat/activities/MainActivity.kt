@@ -104,7 +104,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         updateTitle(currentItemId)
 
         binding.searchBtn.setOnClickListener {
-            setupDetailUI(getString(R.string.searchUser))
+            // Hide main UI elements, but don't show title - SearchUserFragment has its own header
+            binding.bottomNavigation.visibility = View.GONE
+            binding.searchBtn.visibility = View.GONE
+            binding.panel.visibility = View.GONE
             replaceFragment(SearchUserFragment(), true)
         }
 
