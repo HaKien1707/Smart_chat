@@ -1,6 +1,5 @@
 package com.example.Smart_Chat.adapters.user_chat
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
 import android.os.Handler
@@ -14,12 +13,13 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.Smart_Chat.R
 import com.example.Smart_Chat.activities.others.ForwardMessageActivity
 import com.example.Smart_Chat.activities.others.FullScreenImageActivity
-import com.example.Smart_Chat.activities.user_chat.ChatActivity
+import com.example.Smart_Chat.fragment.UserChatFragment
 import com.example.Smart_Chat.models.MsgModel
 import com.example.Smart_Chat.models.msg_action.ReplyMessageData
 import com.example.Smart_Chat.utils.firebase.FirebaseAuthentication
@@ -35,7 +35,7 @@ import java.util.Locale
 
 class MsgRecyclerAdapter(
     options: FirestoreRecyclerOptions<MsgModel>,
-    private val context: Context
+    private val context: FragmentActivity
 ) : FirestoreRecyclerAdapter<MsgModel, MsgRecyclerAdapter.MsgViewHolder>(options) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MsgViewHolder {
@@ -382,13 +382,16 @@ class MsgRecyclerAdapter(
                     val snapshot = snapshots.getSnapshot(i)
                     if (snapshot.id == messageId) {
                         // Use Handler.post to avoid conflicts
-                        if (context is ChatActivity) {
-                            Handler(Looper.getMainLooper()).post {
-                                try {
-                                    context.scrollToPosition(i)
-                                } catch (e: Exception) {
-                                    Log.e("MSG_SCROLL", "Error calling scrollToPosition", e)
+                        Handler(Looper.getMainLooper()).post {
+                            try {
+                                if (context is FragmentActivity) {
+                                    val fragment = context.supportFragmentManager.findFragmentById(R.id.fragment_container)
+                                    if (fragment is UserChatFragment) {
+                                        fragment.scrollToPosition(i)
+                                    }
                                 }
+                            } catch (e: Exception) {
+                                Log.e("MSG_SCROLL", "Error calling scrollToPosition", e)
                             }
                         }
                         break
@@ -420,8 +423,11 @@ class MsgRecyclerAdapter(
             canDelete = model.senderID == FirebaseAuthentication.currentUserID(),
             messageData = messageData,
             onReply = { replyData ->
-                if (context is ChatActivity) {
-                    context.setReplyMessage(replyData)
+                if (context is FragmentActivity) {
+                    val fragment = context.supportFragmentManager.findFragmentById(R.id.fragment_container)
+                    if (fragment is UserChatFragment) {
+                        fragment.setReplyMessage(replyData)
+                    }
                 }
             },
             onForward = {
@@ -440,9 +446,14 @@ class MsgRecyclerAdapter(
         intent.putExtra("messageType", model.messageType)
         intent.putExtra("isFromGroup", false)
 
-        if (context is ChatActivity) {
-            val chatRoomID = context.getChatRoomID()
-            intent.putExtra("currentChatId", chatRoomID)
+        if (context is FragmentActivity) {
+            val fragment = context.supportFragmentManager.findFragmentById(R.id.fragment_container)
+            if (fragment is UserChatFragment) {
+                val chatRoomID = fragment.getChatRoomID()
+                if (chatRoomID != null) {
+                    intent.putExtra("currentChatId", chatRoomID)
+                }
+            }
         }
 
         context.startActivity(intent)

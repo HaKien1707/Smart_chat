@@ -18,5 +18,34 @@
         <item name="android:editTextColor">@color/text_primary_dark</item>
         <item name="android:textColorHint">@color/text_secondary_dark</item>
         <item name="inputBoxBackground">@drawable/input_box_dark</item>
+
+        <!-- Image Picker Dialog Overrides -->
+        <item name="bottomSheetDialogTheme">@style/ImagePicker.BottomSheetDialog</item>
     </style>
+
+    <!-- Image Picker Dark Theme -->
+    <style name="ImagePicker.Theme" parent="Theme.AppCompat.DayNight.NoActionBar" />
+
+    <style name="ImagePicker.BottomSheetDialog" parent="Theme.MaterialComponents.DayNight.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/ImagePicker.Modal</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/bottom_sheet_bg_dark</item>
+    </style>
+
+    <style name="ImagePicker.Modal" parent="Widget.MaterialComponents.BottomSheet.Modal">
+        <item name="android:background">@color/bottom_sheet_bg_dark</item>
+    </style>
+
+    <style name="ImagePicker.Title" parent="Widget.AppCompat.TextView">
+        <item name="android:textColor">@color/text_primary_dark</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="ImagePicker.Subtitle" parent="Widget.AppCompat.TextView">
+        <item name="android:textColor">@color/text_secondary_dark</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
 </resources>

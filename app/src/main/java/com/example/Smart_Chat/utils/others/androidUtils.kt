@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Base64
@@ -42,6 +43,28 @@ object androidUtils {
         UserModel.profileImage = intent.getStringExtra("profileImage")
         UserModel.fcmToken = intent.getStringExtra("fcmToken")
         return UserModel
+    }
+
+    @JvmStatic
+    fun putUserModelInBundle(user: userModel?): Bundle {
+        val bundle = Bundle()
+        bundle.putString("userID", user?.userID)
+        bundle.putString("username", user?.username)
+        bundle.putString("phoneNumber", user?.phoneNumber)
+        bundle.putString("profileImage", user?.profileImage)
+        bundle.putString("fcmToken", user?.fcmToken)
+        return bundle
+    }
+
+    @JvmStatic
+    fun getUserModelFromBundle(bundle: Bundle): userModel {
+        val userModel = userModel()
+        userModel.userID = bundle.getString("userID")
+        userModel.username = bundle.getString("username")
+        userModel.phoneNumber = bundle.getString("phoneNumber")
+        userModel.profileImage = bundle.getString("profileImage")
+        userModel.fcmToken = bundle.getString("fcmToken")
+        return userModel
     }
 
     @JvmStatic
