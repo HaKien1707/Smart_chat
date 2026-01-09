@@ -10,7 +10,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.smart_chat.R
 import com.example.smart_chat.activities.MainActivity
-import com.example.smart_chat.activities.others.BlockedUsersActivity
 import com.example.smart_chat.utils.UI.LanguageManager
 import com.example.smart_chat.utils.UI.ThemeManager
 
@@ -47,8 +46,11 @@ class SettingsFragment : Fragment() {
         }
 
         blockedUsersOption.setOnClickListener {
-            val intent = Intent(requireContext(), BlockedUsersActivity::class.java)
-            startActivity(intent)
+            val mainActivity = activity as? MainActivity
+            mainActivity?.let {
+                it.replaceFragment(BlockedUsersFragment(), addToBackStack = true)
+                it.setupDetailUI("Blocked Users")
+            }
         }
 
         return view

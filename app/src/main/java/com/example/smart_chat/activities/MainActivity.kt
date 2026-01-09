@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         binding.navView.setNavigationItemSelectedListener(this) // Add this line back
     }
 
-    private fun setupDetailUI(title: String) {
+    fun setupDetailUI(title: String) {
         binding.panel.visibility = View.VISIBLE
         binding.bottomNavigation.visibility = View.GONE
         binding.searchBtn.visibility = View.GONE
@@ -238,7 +238,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Logout logic...
     }
 
-    private fun replaceFragment(fragment: Fragment, addToBackStack: Boolean = false) {
+    fun replaceFragment(fragment: Fragment, addToBackStack: Boolean = false) {
         val transaction = supportFragmentManager.beginTransaction()
         transaction.replace(R.id.main_frame, fragment)
         if (addToBackStack) {

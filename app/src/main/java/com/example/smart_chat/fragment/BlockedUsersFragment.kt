@@ -16,7 +16,6 @@ import com.example.smart_chat.utils.firebase.FirebaseAuthentication
 class BlockedUsersFragment : Fragment() {
 
     private lateinit var blockedRecycler: RecyclerView
-    private lateinit var emptyState: View
     private lateinit var adapter: BlockedUsersAdapter
     private val blockedUsersList = mutableListOf<userModel>()
 
@@ -28,7 +27,6 @@ class BlockedUsersFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_blocked_users, container, false)
 
         blockedRecycler = view.findViewById(R.id.blocked_recycler)
-        emptyState = view.findViewById(R.id.empty_state)
 
         setupRecyclerView()
         loadBlockedUsers()
@@ -51,7 +49,6 @@ class BlockedUsersFragment : Fragment() {
                 val blockedIds = currentUser?.blockedUsers?.filterNotNull() ?: emptyList()
 
                 if (blockedIds.isEmpty()) {
-                    showEmptyState()
                     return@addOnSuccessListener
                 }
 
@@ -71,7 +68,6 @@ class BlockedUsersFragment : Fragment() {
                             loadedCount++
                             if (loadedCount == totalBlocked) {
                                 adapter.notifyDataSetChanged()
-                                hideEmptyState()
                             }
                         }
                         .addOnFailureListener { e ->
@@ -79,28 +75,20 @@ class BlockedUsersFragment : Fragment() {
                             loadedCount++
                             if (loadedCount == totalBlocked) {
                                 adapter.notifyDataSetChanged()
-                                if (blockedUsersList.isEmpty()) {
-                                    showEmptyState()
-                                } else {
-                                    hideEmptyState()
-                                }
                             }
                         }
                 }
             }
             .addOnFailureListener { e ->
                 Log.e("BlockedUsersFragment", "Failed to load blocked users", e)
-                showEmptyState()
             }
     }
 
     private fun showEmptyState() {
-        emptyState.visibility = View.VISIBLE
         blockedRecycler.visibility = View.GONE
     }
 
     private fun hideEmptyState() {
-        emptyState.visibility = View.GONE
         blockedRecycler.visibility = View.VISIBLE
     }
 

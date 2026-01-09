@@ -5,26 +5,11 @@
     android:layout_height="match_parent"
     android:background="?attr/backgroundColor">
 
-    <!-- Header -->
-    <TextView
-        android:id="@+id/header"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/userBlocked"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="?android:textColorPrimary"
-        android:padding="16dp" />
-
     <!-- Blocked Users List -->
-
-    <!-- Empty State -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/blocked_recycler"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/header"
-        android:layout_marginTop="0dp"
         android:clipToPadding="false"
         android:padding="8dp" />
 
