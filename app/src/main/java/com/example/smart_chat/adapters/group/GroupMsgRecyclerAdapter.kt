@@ -20,6 +20,7 @@ import com.example.smart_chat.R
 import com.example.smart_chat.activities.others.ForwardMessageActivity
 import com.example.smart_chat.activities.others.FullScreenImageActivity
 import com.example.smart_chat.activities.group_chat.GroupChatActivity
+import com.example.smart_chat.fragment.GroupChatFragment
 import com.example.smart_chat.models.group.GroupMsgModel
 import com.example.smart_chat.models.msg_action.ReplyMessageData
 import com.example.smart_chat.models.userModel
@@ -34,10 +35,28 @@ import java.util.*
 
 class GroupMsgRecyclerAdapter(
     options: FirestoreRecyclerOptions<GroupMsgModel>,
-    private val context: Context
+    private val context: Context,
+    private val groupID: String? = null
 ) : FirestoreRecyclerAdapter<GroupMsgModel, GroupMsgRecyclerAdapter.GroupMsgViewHolder>(options) {
 
     private val profileImageCache = mutableMapOf<String, String?>()
+    
+    // Callbacks for reply and scroll actions
+    private var onReplyCallback: ((ReplyMessageData) -> Unit)? = null
+    private var onScrollCallback: ((Int) -> Unit)? = null
+    private var onGetGroupIDCallback: (() -> String)? = null
+
+    fun setOnReplyCallback(callback: (ReplyMessageData) -> Unit) {
+        onReplyCallback = callback
+    }
+
+    fun setOnScrollCallback(callback: (Int) -> Unit) {
+        onScrollCallback = callback
+    }
+
+    fun setOnGetGroupIDCallback(callback: () -> String) {
+        onGetGroupIDCallback = callback
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupMsgViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -335,9 +354,8 @@ class GroupMsgRecyclerAdapter(
             canDelete = model.senderID == FirebaseAuthentication.currentUserID(),
             messageData = messageData,
             onReply = { replyData ->
-                if (context is GroupChatActivity) {
-                    context.setReplyMessage(replyData)
-                }
+                // Use callback only (Fragment should always set callback)
+                onReplyCallback?.invoke(replyData)
             },
             onForward = {
                 openForwardActivity(model)
@@ -404,13 +422,12 @@ class GroupMsgRecyclerAdapter(
                 try {
                     val snapshot = snapshots.getSnapshot(i)
                     if (snapshot.id == messageId) {
-                        if (context is GroupChatActivity) {
-                            Handler(Looper.getMainLooper()).post {
-                                try {
-                                    context.scrollToPosition(i)
-                                } catch (e: Exception) {
-                                    Log.e("MSG_SCROLL", "Error calling scrollToPosition", e)
-                                }
+                        Handler(Looper.getMainLooper()).post {
+                            try {
+                                // Use callback only (Fragment should always set callback)
+                                onScrollCallback?.invoke(i)
+                            } catch (e: Exception) {
+                                Log.e("MSG_SCROLL", "Error calling scrollToPosition", e)
                             }
                         }
                         break
@@ -432,9 +449,10 @@ class GroupMsgRecyclerAdapter(
         intent.putExtra("messageType", model.messageType)
         intent.putExtra("isFromGroup", true)
 
-        if (context is GroupChatActivity) {
-            val groupID = context.getGroupID()
-            intent.putExtra("currentChatId", groupID)
+        val actualGroupID = groupID ?: onGetGroupIDCallback?.invoke() ?: ""
+
+        if (actualGroupID.isNotEmpty()) {
+            intent.putExtra("currentChatId", actualGroupID)
         }
 
         context.startActivity(intent)
