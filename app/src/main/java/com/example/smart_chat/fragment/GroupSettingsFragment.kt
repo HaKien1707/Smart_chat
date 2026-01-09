@@ -131,6 +131,9 @@ class GroupSettingsFragment : Fragment() {
         tabs.addTab(tabs.newTab().setText("Links"))
         tabs.addTab(tabs.newTab().setText("Voice"))
 
+        // Set default visibility for members tab
+        membersRecycler.visibility = View.VISIBLE
+
         tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 when (tab?.position) {
@@ -159,6 +162,11 @@ class GroupSettingsFragment : Fragment() {
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
+
+        // Select first tab (Members) by default
+        if (tabs.tabCount > 0) {
+            tabs.selectTab(tabs.getTabAt(0))
+        }
     }
 
     private fun setupRecycler() {
@@ -198,23 +206,6 @@ class GroupSettingsFragment : Fragment() {
 
                 // Check if current user is admin
                 currentUserIsAdmin = group?.adminIDs?.contains(FirebaseAuthentication.currentUserID()) == true
-                adapter?.let {
-                    membersRecycler.adapter = GroupMemberAdapter(
-                        members = membersList,
-                        context = requireContext(),
-                        currentUserIsAdmin = currentUserIsAdmin,
-                        currentUserID = FirebaseAuthentication.currentUserID(),
-                        onMemberClick = { user ->
-                            // TODO: Handle member click
-                        },
-                        onRemoveMember = { userID ->
-                            // TODO: Handle remove member
-                        },
-                        onBlockMember = { userID ->
-                            // TODO: Handle block member
-                        }
-                    )
-                }
             }
             .addOnFailureListener { e ->
                 Log.e("GroupSettings", "Failed to load group", e)
