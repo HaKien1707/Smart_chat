@@ -139,9 +139,8 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:src="@drawable/ic_send"
-            android:background="@drawable/circle_bg"
-            android:backgroundTint="@color/button_green"
-            app:tint="@color/white"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/button_green"
             android:contentDescription="send" />
 
     </RelativeLayout>

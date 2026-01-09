@@ -80,7 +80,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:padding="5dp">
+        android:padding="10dp">
 
         <ImageButton
             android:id="@+id/sendBtn"
@@ -88,7 +88,6 @@
             android:layout_height="48dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_marginStart="5dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_send"
             app:tint="@color/button_green" />
@@ -99,6 +98,7 @@
             android:layout_height="wrap_content"
             android:layout_toStartOf="@id/sendBtn"
             android:layout_centerVertical="true"
+            android:layout_margin="5dp"
             android:background="?attr/inputBoxBackground"
             android:elevation="5dp">
 
