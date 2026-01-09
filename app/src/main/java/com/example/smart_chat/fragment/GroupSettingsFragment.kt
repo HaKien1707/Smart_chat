@@ -1,7 +1,11 @@
 package com.example.smart_chat.fragment
 
+import android.graphics.Bitmap
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +16,8 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,7 +29,9 @@ import com.example.smart_chat.models.userModel
 import com.example.smart_chat.utils.firebase.FirebaseAuthentication
 import com.example.smart_chat.utils.firebase.FirebaseGroups
 import com.example.smart_chat.utils.others.androidUtils
+import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.tabs.TabLayout
+import java.io.ByteArrayOutputStream
 
 class GroupSettingsFragment : Fragment() {
 
@@ -45,6 +53,16 @@ class GroupSettingsFragment : Fragment() {
     private val membersList = mutableListOf<Pair<userModel, Boolean>>()
     private var adapter: GroupMemberAdapter? = null
     private var currentUserIsAdmin = false
+
+    private val imagePickerLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode == android.app.Activity.RESULT_OK) {
+                val uri = result.data?.data
+                if (uri != null) {
+                    updateGroupImage(uri)
+                }
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,6 +113,18 @@ class GroupSettingsFragment : Fragment() {
     private fun setupListeners() {
         backBtn.setOnClickListener {
             activity?.finish()
+        }
+
+        groupImage.setOnClickListener {
+            if (currentUserIsAdmin) {
+                ImagePicker.with(this)
+                    .cropSquare()
+                    .compress(512)
+                    .maxResultSize(512, 512)
+                    .createIntent { intent -> imagePickerLauncher.launch(intent) }
+            } else {
+                Toast.makeText(requireContext(), "Only admins can change group photo", Toast.LENGTH_SHORT).show()
+            }
         }
 
         editBtn.setOnClickListener {
@@ -288,5 +318,28 @@ class GroupSettingsFragment : Fragment() {
                 Log.e("GroupSettings", "Failed to update name", e)
                 Toast.makeText(requireContext(), "Failed to update name", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun updateGroupImage(uri: Uri) {
+        try {
+            val bitmap = MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, uri)
+            val resized = Bitmap.createScaledBitmap(bitmap, 200, 200, true)
+
+            val baos = ByteArrayOutputStream()
+            resized.compress(Bitmap.CompressFormat.JPEG, 40, baos)
+            val base64 = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
+
+            FirebaseGroups.getGroupReference(groupID!!).update("groupImage", base64)
+                .addOnSuccessListener {
+                    androidUtils.setProfileImageFromBase64(requireContext(), base64, groupImage)
+                    Toast.makeText(requireContext(), "Group photo updated", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(requireContext(), "Failed to update photo", Toast.LENGTH_SHORT).show()
+                }
+        } catch (e: Exception) {
+            Log.e("GroupSettings", "Failed to update image", e)
+            Toast.makeText(requireContext(), "Failed to update photo", Toast.LENGTH_SHORT).show()
+        }
     }
 }
