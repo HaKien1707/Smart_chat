@@ -1,15 +1,18 @@
 package com.example.smart_chat.fragment
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -94,8 +97,7 @@ class CommunitySettingsFragment : Fragment() {
         }
 
         editBtn.setOnClickListener {
-            // TODO: Implement edit community name dialog
-            Toast.makeText(requireContext(), "Edit community name", Toast.LENGTH_SHORT).show()
+            showEditCommunityNameDialog()
         }
 
         moreBtn.setOnClickListener {
@@ -216,6 +218,41 @@ class CommunitySettingsFragment : Fragment() {
             .addOnFailureListener { e ->
                 Log.e("CommunitySettings", "Failed to load members", e)
                 Toast.makeText(requireContext(), "Failed to load members", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun showEditCommunityNameDialog() {
+        val editText = EditText(requireContext()).apply {
+            setText(communityName.text)
+            setSingleLine()
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Edit Community Name")
+            .setView(editText)
+            .setPositiveButton("Save") { _, _ ->
+                val newName = editText.text.toString().trim()
+                if (newName.isNotEmpty() && newName != community?.communityName) {
+                    updateCommunityName(newName)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show().apply {
+                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+            }
+    }
+
+    private fun updateCommunityName(newName: String) {
+        FirebaseCommunity.getCommunityReference(communityID!!).update("communityName", newName)
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Community name updated", Toast.LENGTH_SHORT).show()
+                communityName.text = newName
+                community?.communityName = newName
+            }
+            .addOnFailureListener { e ->
+                Log.e("CommunitySettings", "Failed to update name", e)
+                Toast.makeText(requireContext(), "Failed to update name", Toast.LENGTH_SHORT).show()
             }
     }
 

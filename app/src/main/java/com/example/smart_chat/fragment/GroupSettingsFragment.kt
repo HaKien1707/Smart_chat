@@ -1,15 +1,18 @@
 package com.example.smart_chat.fragment
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -95,8 +98,7 @@ class GroupSettingsFragment : Fragment() {
         }
 
         editBtn.setOnClickListener {
-            // TODO: Implement edit group name dialog
-            Toast.makeText(requireContext(), "Edit group name", Toast.LENGTH_SHORT).show()
+            showEditGroupNameDialog()
         }
 
         moreBtn.setOnClickListener {
@@ -251,5 +253,40 @@ class GroupSettingsFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun showEditGroupNameDialog() {
+        val editText = EditText(requireContext()).apply {
+            setText(groupName.text)
+            setSingleLine()
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Edit Group Name")
+            .setView(editText)
+            .setPositiveButton("Save") { _, _ ->
+                val newName = editText.text.toString().trim()
+                if (newName.isNotEmpty() && newName != group?.groupName) {
+                    updateGroupName(newName)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show().apply {
+                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+            }
+    }
+
+    private fun updateGroupName(newName: String) {
+        FirebaseGroups.getGroupReference(groupID!!).update("groupName", newName)
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Group name updated", Toast.LENGTH_SHORT).show()
+                groupName.text = newName
+                group?.groupName = newName
+            }
+            .addOnFailureListener { e ->
+                Log.e("GroupSettings", "Failed to update name", e)
+                Toast.makeText(requireContext(), "Failed to update name", Toast.LENGTH_SHORT).show()
+            }
     }
 }
