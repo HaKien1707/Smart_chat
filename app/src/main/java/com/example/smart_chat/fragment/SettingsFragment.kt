@@ -1,6 +1,4 @@
 package com.example.smart_chat.fragment
-
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -125,15 +123,18 @@ class SettingsFragment : Fragment() {
             .setSingleChoiceItems(languages, checkedItem) { dialog, which ->
                 val selectedLang = languageCodes[which]
 
+                if (selectedLang == currentLang) {
+                    dialog.dismiss()
+                    return@setSingleChoiceItems
+                }
+
                 LanguageManager.setLanguage(requireContext(), selectedLang)
+                updateLanguageValue()
 
-                // Restart app to apply language
-                val intent = Intent(requireContext(), MainActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(intent)
-                requireActivity().finish()
-
+                // Recreate the activity so it re-loads resources and restores the current fragment.
+                // This keeps the user on Settings (same behavior as theme switching).
                 dialog.dismiss()
+                requireActivity().recreate()
             }
             .show()
     }

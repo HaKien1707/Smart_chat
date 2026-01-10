@@ -17,8 +17,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.example.smart_chat.R
 import com.example.smart_chat.databinding.ActivityMainBinding
+import com.example.smart_chat.fragment.BlockedUsersFragment
 import com.example.smart_chat.fragment.ChatFragment
 import com.example.smart_chat.fragment.GroupFragment
 import com.example.smart_chat.fragment.ProfileFragment
@@ -65,6 +67,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         createNotificationChannel()
 
+        // Keep header/bottom-nav state consistent even if fragments pop the back stack directly.
+        supportFragmentManager.addOnBackStackChangedListener {
+            syncUiWithCurrentFragment()
+        }
+
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -72,7 +79,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 } else {
                     if (supportFragmentManager.backStackEntryCount > 0) {
                         supportFragmentManager.popBackStack()
-                        setupMainUI() // Restore main UI when coming back
+                        syncUiWithCurrentFragment() // Restore correct UI for current fragment
                     } else {
                         finish()
                     }
@@ -81,10 +88,35 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         })
 
         setupMainUI()
+        // Theme changes can recreate the activity while keeping the current fragment.
+        // Ensure header/bottom-nav visibility matches the current fragment (e.g., Settings).
+        syncUiWithCurrentFragment()
 
         startListeningForIncomingCalls()
         getFCMtoken()
         loadUserDataIntoDrawer()
+    }
+
+    private fun syncUiWithCurrentFragment() {
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.main_frame)
+
+        when (currentFragment) {
+            null -> setupMainUI()
+
+            is SearchUserFragment -> {
+                binding.bottomNavigation.visibility = View.GONE
+                binding.searchBtn.visibility = View.GONE
+                binding.panel.visibility = View.GONE
+            }
+
+            is SettingsFragment -> setupDetailUI("Settings")
+            is ProfileFragment -> setupDetailUI("Profile")
+            is FriendsListFragment -> setupDetailUI("Contacts")
+            is DeletedChatsFragment -> setupDetailUI("Deleted Chats")
+            is BlockedUsersFragment -> setupDetailUI("Blocked Users")
+
+            else -> setupMainUI()
+        }
     }
 
     private fun setupMainUI() {
@@ -112,9 +144,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             updateTitle(item.itemId)
             when (item.itemId) {
-                R.id.menu_chat -> replaceFragment(ChatFragment())
-                R.id.menu_temporary_chat -> replaceFragment(TemporaryChatFragment())
-                R.id.menu_notifications -> replaceFragment(NotificationFragment())
+                R.id.menu_chat -> {
+                    clearBackStack()
+                    replaceFragment(ChatFragment())
+                }
+                R.id.menu_temporary_chat -> {
+                    clearBackStack()
+                    replaceFragment(TemporaryChatFragment())
+                }
+                R.id.menu_notifications -> {
+                    clearBackStack()
+                    replaceFragment(NotificationFragment())
+                }
             }
             true
         }
@@ -283,6 +324,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             transaction.addToBackStack(null)
         }
         transaction.commit()
+    }
+
+    private fun clearBackStack() {
+        supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
     }
 
     private fun getFCMtoken() {
