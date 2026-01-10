@@ -76,6 +76,9 @@
     <string name="menu_contact">Contacts</string>
     <string name="menu_account">Account</string>
 
+    <string name="add_to_contacts">Add to contacts</string>
+    <string name="remove_from_contacts">Remove from contacts</string>
+
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
     <string name="writeMSG">Write message here…</string>

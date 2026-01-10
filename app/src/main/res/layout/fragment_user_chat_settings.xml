@@ -245,15 +245,17 @@
                 android:background="?attr/selectableItemBackground">
 
                 <ImageView
+                    android:id="@+id/add_to_contacts_icon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_add_person"
                     android:tint="@color/button_green" />
 
                 <TextView
+                    android:id="@+id/add_to_contacts_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Add to contacts"
+                    android:text="@string/add_to_contacts"
                     android:textSize="16sp"
                     android:textColor="@color/button_green"
                     android:layout_marginStart="32dp" />

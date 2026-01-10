@@ -76,6 +76,9 @@
     <string name="menu_contact">Liên lạc</string>
     <string name="menu_account">Tài khoản</string>
 
+    <string name="add_to_contacts">Thêm vào danh bạ</string>
+    <string name="remove_from_contacts">Xóa khỏi danh bạ</string>
+
     <string name="confirm">Xác nhận</string>
     <string name="cancel">Hủy</string>
     <string name="writeMSG">Nhập tin nhắn ở đây…</string>

@@ -20,6 +20,7 @@ import com.example.smart_chat.models.userModel
 import com.example.smart_chat.utils.firebase.FirebaseAuthentication
 import com.example.smart_chat.utils.firebase.FirebaseBlocking
 import com.example.smart_chat.utils.firebase.FirebaseChat
+import com.example.smart_chat.utils.firebase.FirebaseFriends
 import com.example.smart_chat.utils.others.androidUtils
 import com.google.android.material.tabs.TabLayout
 
@@ -36,6 +37,8 @@ class UserChatSettingsFragment : Fragment() {
     private lateinit var callBtn: LinearLayout
     private lateinit var muteIcon: ImageView
     private lateinit var addToContactsBtn: LinearLayout
+    private lateinit var addToContactsIcon: ImageView
+    private lateinit var addToContactsText: TextView
     private lateinit var tabs: TabLayout
     private lateinit var mediaRecycler: RecyclerView
     private lateinit var emptyText: TextView
@@ -43,6 +46,7 @@ class UserChatSettingsFragment : Fragment() {
     private var userID: String? = null
     private var user: userModel? = null
     private var isMuted: Boolean = false
+    private var friendshipStatus: FirebaseFriends.FriendshipStatus = FirebaseFriends.FriendshipStatus.NOT_FRIENDS
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,6 +91,8 @@ class UserChatSettingsFragment : Fragment() {
         callBtn = view.findViewById(R.id.call_btn)
         muteIcon = view.findViewById(R.id.mute_icon)
         addToContactsBtn = view.findViewById(R.id.add_to_contacts_btn)
+        addToContactsIcon = view.findViewById(R.id.add_to_contacts_icon)
+        addToContactsText = view.findViewById(R.id.add_to_contacts_text)
         tabs = view.findViewById(R.id.tabs)
         mediaRecycler = view.findViewById(R.id.media_recycler)
         emptyText = view.findViewById(R.id.empty_text)
@@ -131,8 +137,58 @@ class UserChatSettingsFragment : Fragment() {
         }
 
         addToContactsBtn.setOnClickListener {
-            // TODO: Implement add to contacts
-            Toast.makeText(requireContext(), "Add to contacts", Toast.LENGTH_SHORT).show()
+            val targetUserId = userID
+            if (targetUserId.isNullOrBlank()) {
+                Toast.makeText(requireContext(), getString(R.string.noUserMatch), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (friendshipStatus == FirebaseFriends.FriendshipStatus.FRIENDS) {
+                FirebaseFriends.removeFriend(
+                    friendID = targetUserId,
+                    onSuccess = {
+                        friendshipStatus = FirebaseFriends.FriendshipStatus.NOT_FRIENDS
+                        updateContactsButtonUI()
+                        Toast.makeText(requireContext(), getString(R.string.remove_from_contacts), Toast.LENGTH_SHORT).show()
+                    },
+                    onFailure = {
+                        Toast.makeText(requireContext(), it.message ?: "Error", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            } else {
+                val receiverName = user?.username ?: ""
+                FirebaseFriends.sendFriendRequest(
+                    receiverID = targetUserId,
+                    receiverName = receiverName,
+                    onSuccess = {
+                        Toast.makeText(requireContext(), getString(R.string.add_to_contacts), Toast.LENGTH_SHORT).show()
+                        refreshFriendshipStatus()
+                    },
+                    onFailure = {
+                        Toast.makeText(requireContext(), it.message ?: "Error", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+        }
+    }
+
+    private fun refreshFriendshipStatus() {
+        val targetUserId = userID ?: return
+        FirebaseFriends.checkFriendshipStatus(targetUserId) {
+            friendshipStatus = it
+            updateContactsButtonUI()
+        }
+    }
+
+    private fun updateContactsButtonUI() {
+        if (!this::addToContactsText.isInitialized || !this::addToContactsIcon.isInitialized) return
+
+        if (friendshipStatus == FirebaseFriends.FriendshipStatus.FRIENDS) {
+            addToContactsText.setText(R.string.remove_from_contacts)
+            addToContactsIcon.setImageResource(R.drawable.ic_person_remove)
+        } else {
+            addToContactsText.setText(R.string.add_to_contacts)
+            addToContactsIcon.setImageResource(R.drawable.ic_add_person)
         }
     }
 
@@ -192,6 +248,9 @@ class UserChatSettingsFragment : Fragment() {
 
                 // Update status
                 updateUserStatus()
+
+                // Update contacts button based on friendship status
+                refreshFriendshipStatus()
             }
             .addOnFailureListener { e ->
                 Log.e("UserChatSettings", "Failed to load user", e)
