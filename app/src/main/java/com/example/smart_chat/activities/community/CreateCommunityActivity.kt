@@ -79,7 +79,7 @@ class CreateCommunityActivity : AppCompatActivity() {
         val description = communityDescInput.text.toString().trim()
 
         if (name.isEmpty()) {
-            Toast.makeText(this, "Please enter channel name", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Please enter community name", Toast.LENGTH_SHORT).show()
             return
         }
 
