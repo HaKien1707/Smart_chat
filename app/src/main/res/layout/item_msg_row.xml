@@ -6,6 +6,18 @@
     android:orientation="vertical"
     android:padding="6dp">
 
+    <!-- Date separator (Telegram-like) -->
+    <TextView
+        android:id="@+id/dateHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="6dp"
+        android:textColor="?android:textColorSecondary"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
     <!-- Sender bubble (from others) - LEFT SIDE -->
     <LinearLayout
         android:id="@+id/sender"
@@ -41,32 +53,57 @@
                 android:padding="10dp"
                 android:layout_margin="5dp">
 
-                <TextView
-                    android:id="@+id/senderMsg"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxWidth="250dp"
-                    android:textSize="18sp"
-                    android:textColor="@color/black"
-                    android:visibility="gone"/>
+                    android:orientation="vertical">
 
-                <ImageView
-                    android:id="@+id/senderImage"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp"
-                    android:scaleType="centerCrop"
-                    android:visibility="gone"/>
+                    <!-- Message body with optional overlay timestamp -->
+                    <FrameLayout
+                        android:id="@+id/senderBody"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/senderMsg"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="18sp"
+                            android:textColor="@color/black"
+                            android:visibility="gone" />
+
+                        <ImageView
+                            android:id="@+id/senderImage"
+                            android:layout_width="200dp"
+                            android:layout_height="200dp"
+                            android:scaleType="centerCrop"
+                            android:visibility="gone" />
+
+                        <!-- Timestamp overlay (inline for short messages) -->
+                        <TextView
+                            android:id="@+id/senderTimestampOverlay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="end|bottom"
+                            android:textSize="11sp"
+                            android:textColor="#808080"
+                            android:text="10:30 AM"
+                            android:visibility="gone" />
+
+                    </FrameLayout>
+
+                    <!-- Timestamp below (default for long messages) -->
+                    <TextView
+                        android:id="@+id/senderTimestamp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:textSize="11sp"
+                        android:textColor="@color/black"
+                        android:text="10:30 AM" />
+
+                </LinearLayout>
             </FrameLayout>
-
-            <!-- Timestamp -->
-            <TextView
-                android:id="@+id/senderTimestamp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="11sp"
-                android:textColor="#808080"
-                android:layout_marginStart="10dp"
-                android:text="10:30 AM"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -103,47 +140,87 @@
                 android:padding="10dp"
                 android:layout_margin="5dp">
 
-                <TextView
-                    android:id="@+id/receiverMsg"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    android:textColor="@color/white"
-                    android:maxWidth="250dp"
-                    android:visibility="gone"/>
+                    android:orientation="vertical">
 
-                <ImageView
-                    android:id="@+id/receiverImage"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp"
-                    android:scaleType="centerCrop"
-                    android:visibility="gone"/>
+                    <!-- Message body with optional overlay meta -->
+                    <FrameLayout
+                        android:id="@+id/receiverBody"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/receiverMsg"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="18sp"
+                            android:textColor="@color/white"
+                            android:visibility="gone" />
+
+                        <ImageView
+                            android:id="@+id/receiverImage"
+                            android:layout_width="200dp"
+                            android:layout_height="200dp"
+                            android:scaleType="centerCrop"
+                            android:visibility="gone" />
+
+                        <!-- Meta overlay (inline for short messages) -->
+                        <LinearLayout
+                            android:id="@+id/receiverMetaOverlay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="end|bottom"
+                            android:orientation="horizontal"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:id="@+id/receiverTimestampOverlay"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="11sp"
+                                android:textColor="#808080"
+                                android:layout_marginEnd="4dp"
+                                android:text="10:30 AM" />
+
+                            <ImageView
+                                android:id="@+id/readStatusIconOverlay"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_message_sent" />
+
+                        </LinearLayout>
+
+                    </FrameLayout>
+
+                    <!-- Meta below (default for long messages) -->
+                    <LinearLayout
+                        android:id="@+id/receiverMetaBelow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/receiverTimestamp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="11sp"
+                            android:textColor="@color/white"
+                            android:layout_marginEnd="4dp"
+                            android:text="10:30 AM" />
+
+                        <ImageView
+                            android:id="@+id/readStatusIcon"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_message_sent" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
             </FrameLayout>
-
-            <!-- Timestamp + read status -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_gravity="end"
-                android:layout_marginTop="2dp">
-
-                <TextView
-                    android:id="@+id/receiverTimestamp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="11sp"
-                    android:textColor="#808080"
-                    android:layout_marginEnd="4dp"
-                    android:text="10:30 AM"/>
-
-                <ImageView
-                    android:id="@+id/readStatusIcon"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:src="@drawable/ic_message_sent"/>
-            </LinearLayout>
-
         </LinearLayout>
 
     </LinearLayout>

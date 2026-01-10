@@ -32,11 +32,15 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.math.ceil
 
 class MsgRecyclerAdapter(
     options: FirestoreRecyclerOptions<MsgModel>,
     private val context: FragmentActivity
 ) : FirestoreRecyclerAdapter<MsgModel, MsgRecyclerAdapter.MsgViewHolder>(options) {
+
+    private val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
+    private val dateHeaderFormat = SimpleDateFormat("d MMMM yyyy", Locale.getDefault())
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MsgViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -45,12 +49,18 @@ class MsgRecyclerAdapter(
     }
 
     override fun onBindViewHolder(holder: MsgViewHolder, position: Int, model: MsgModel) {
+        applyBubbleMaxWidth(holder)
+        bindDateHeader(holder.dateHeader, position, model.timestamp?.toDate())
+        resetInlineTimestampState(holder)
+
         // Check if it's a bot or system message
         if (model.isBot || model.senderID == "SYSTEM" || model.senderID == "BOT") {
             holder.sender.visibility = View.VISIBLE
             holder.receiver.visibility = View.GONE
 
-            holder.senderTimestamp.text = formatTimestamp(model.timestamp?.toDate())
+            val ts = formatTimestamp(model.timestamp?.toDate())
+            holder.senderTimestamp.text = ts
+            holder.senderTimestampOverlay.text = ts
             holder.senderRepliedContainer.visibility = View.GONE
 
             holder.senderImage.visibility = View.GONE
@@ -71,6 +81,11 @@ class MsgRecyclerAdapter(
             val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
             holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
 
+            setSenderTimestampColor(holder, holder.senderMsg.currentTextColor)
+
+            // Inline timestamp only for short text.
+            maybeInlineSenderTimestamp(holder, ts)
+
             // Don't allow long-press on system messages
             if (model.senderID != "SYSTEM") {
                 holder.sender.setOnLongClickListener {
@@ -87,7 +102,9 @@ class MsgRecyclerAdapter(
             holder.sender.visibility = View.GONE
             holder.receiver.visibility = View.VISIBLE
 
-            holder.receiverTimestamp.text = formatTimestamp(model.timestamp?.toDate())
+            val ts = formatTimestamp(model.timestamp?.toDate())
+            holder.receiverTimestamp.text = ts
+            holder.receiverTimestampOverlay.text = ts
 
             // NEW: Show replied message if exists
             if (!model.replyToMessageId.isNullOrEmpty()) {
@@ -111,12 +128,23 @@ class MsgRecyclerAdapter(
                 holder.receiverMsg.setTypeface(null, Typeface.ITALIC)
                 holder.receiverMessageContainer.setBackgroundResource(0)
                 holder.readStatusIcon.visibility = View.GONE
+                holder.readStatusIconOverlay.visibility = View.GONE
+                holder.receiverMetaOverlay.visibility = View.GONE
+                holder.receiverMetaBelow.visibility = View.VISIBLE
+
+                setReceiverTimestampColor(holder, holder.receiverMsg.currentTextColor)
             } else {
                 holder.readStatusIcon.visibility = View.VISIBLE
                 if (model.isRead) {
                     holder.readStatusIcon.setImageResource(R.drawable.ic_message_read)
                 } else {
                     holder.readStatusIcon.setImageResource(R.drawable.ic_message_sent)
+                }
+
+                if (model.isRead) {
+                    holder.readStatusIconOverlay.setImageResource(R.drawable.ic_message_read)
+                } else {
+                    holder.readStatusIconOverlay.setImageResource(R.drawable.ic_message_sent)
                 }
 
                 when (model.messageType) {
@@ -129,6 +157,8 @@ class MsgRecyclerAdapter(
                         holder.receiverMsg.text = "📎 $fileName\n$fileSize"
                         holder.receiverMsg.setTextColor(context.getColor(R.color.white))
                         holder.receiverMsg.setTypeface(null, Typeface.NORMAL)
+
+                        setReceiverTimestampColor(holder, holder.receiverMsg.currentTextColor)
 
                         holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
                         holder.receiverMessageContainer.backgroundTintList =
@@ -180,6 +210,8 @@ class MsgRecyclerAdapter(
                                 showMessageOptions(holder.receiverImage, position, model)
                                 true
                             }
+
+                            setReceiverTimestampColor(holder, context.getColor(R.color.white))
                         }
                     }
                     else -> {
@@ -188,6 +220,8 @@ class MsgRecyclerAdapter(
                         holder.receiverMsg.text = model.msg
                         holder.receiverMsg.setTextColor(context.getColor(R.color.white))
                         holder.receiverMsg.setTypeface(null, Typeface.NORMAL)
+
+                        setReceiverTimestampColor(holder, holder.receiverMsg.currentTextColor)
 
                         holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
                         holder.receiverMessageContainer.backgroundTintList =
@@ -199,6 +233,9 @@ class MsgRecyclerAdapter(
                             showMessageOptions(holder.receiver, position, model)
                             true
                         }
+
+                        // Inline timestamp only for short text.
+                        maybeInlineReceiverTimestamp(holder, ts)
                     }
                 }
             }
@@ -207,7 +244,9 @@ class MsgRecyclerAdapter(
             holder.sender.visibility = View.VISIBLE
             holder.receiver.visibility = View.GONE
 
-            holder.senderTimestamp.text = formatTimestamp(model.timestamp?.toDate())
+            val ts = formatTimestamp(model.timestamp?.toDate())
+            holder.senderTimestamp.text = ts
+            holder.senderTimestampOverlay.text = ts
 
             // NEW: Show replied message if exists
             if (!model.replyToMessageId.isNullOrEmpty()) {
@@ -230,6 +269,8 @@ class MsgRecyclerAdapter(
                 holder.senderMsg.setTextColor(context.getColor(R.color.gray))
                 holder.senderMsg.setTypeface(null, Typeface.ITALIC)
                 holder.senderMessageContainer.setBackgroundResource(0)
+
+                setSenderTimestampColor(holder, holder.senderMsg.currentTextColor)
             } else {
                 when (model.messageType) {
                     "file" -> {
@@ -241,6 +282,8 @@ class MsgRecyclerAdapter(
                         holder.senderMsg.text = "📎 $fileName\n$fileSize"
                         holder.senderMsg.setTextColor(context.getColor(R.color.black))
                         holder.senderMsg.setTypeface(null, Typeface.NORMAL)
+
+                        setSenderTimestampColor(holder, holder.senderMsg.currentTextColor)
 
                         holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
                         holder.senderMessageContainer.backgroundTintList =
@@ -293,6 +336,8 @@ class MsgRecyclerAdapter(
                                 showMessageOptions(holder.senderImage, position, model)
                                 true
                             }
+
+                            setSenderTimestampColor(holder, context.getColor(R.color.black))
                         }
                     }
                     else -> {
@@ -301,6 +346,8 @@ class MsgRecyclerAdapter(
                         holder.senderMsg.text = model.msg
                         holder.senderMsg.setTextColor(context.getColor(R.color.black))
                         holder.senderMsg.setTypeface(null, Typeface.NORMAL)
+
+                        setSenderTimestampColor(holder, holder.senderMsg.currentTextColor)
 
                         holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
                         holder.senderMessageContainer.backgroundTintList =
@@ -313,6 +360,9 @@ class MsgRecyclerAdapter(
                             showMessageOptions(holder.sender, position, model)
                             true
                         }
+
+                        // Inline timestamp only for short text.
+                        maybeInlineSenderTimestamp(holder, ts)
                     }
                 }
 
@@ -321,6 +371,16 @@ class MsgRecyclerAdapter(
                 }
             }
         }
+    }
+
+    private fun setSenderTimestampColor(holder: MsgViewHolder, color: Int) {
+        holder.senderTimestamp.setTextColor(color)
+        holder.senderTimestampOverlay.setTextColor(color)
+    }
+
+    private fun setReceiverTimestampColor(holder: MsgViewHolder, color: Int) {
+        holder.receiverTimestamp.setTextColor(color)
+        holder.receiverTimestampOverlay.setTextColor(color)
     }
 
     // NEW: Show replied message preview
@@ -503,29 +563,41 @@ class MsgRecyclerAdapter(
 
     private fun formatTimestamp(date: Date?): String {
         if (date == null) return ""
+        return timeFormat.format(date)
+    }
 
-        val now = Calendar.getInstance()
-        val messageTime = Calendar.getInstance().apply { time = date }
+    private fun bindDateHeader(dateHeader: TextView, position: Int, date: Date?) {
+        if (date == null) {
+            dateHeader.visibility = View.GONE
+            return
+        }
 
-        return when {
-            now.get(Calendar.DAY_OF_YEAR) == messageTime.get(Calendar.DAY_OF_YEAR) &&
-                    now.get(Calendar.YEAR) == messageTime.get(Calendar.YEAR) -> {
-                SimpleDateFormat("h:mm a", Locale.getDefault()).format(date)
-            }
-            now.get(Calendar.DAY_OF_YEAR) - messageTime.get(Calendar.DAY_OF_YEAR) == 1 &&
-                    now.get(Calendar.YEAR) == messageTime.get(Calendar.YEAR) -> {
-                "Yesterday ${SimpleDateFormat("h:mm a", Locale.getDefault()).format(date)}"
-            }
-            now.get(Calendar.YEAR) == messageTime.get(Calendar.YEAR) -> {
-                SimpleDateFormat("MMM d, h:mm a", Locale.getDefault()).format(date)
-            }
-            else -> {
-                SimpleDateFormat("MMM d, yyyy h:mm a", Locale.getDefault()).format(date)
-            }
+        val showHeader = if (position == 0) {
+            true
+        } else {
+            val prev = getItem(position - 1)
+            val prevDate = prev.timestamp?.toDate()
+            !isSameDay(prevDate, date)
+        }
+
+        if (showHeader) {
+            dateHeader.visibility = View.VISIBLE
+            dateHeader.text = dateHeaderFormat.format(date)
+        } else {
+            dateHeader.visibility = View.GONE
         }
     }
 
+    private fun isSameDay(a: Date?, b: Date?): Boolean {
+        if (a == null || b == null) return false
+        val calA = Calendar.getInstance().apply { time = a }
+        val calB = Calendar.getInstance().apply { time = b }
+        return calA.get(Calendar.YEAR) == calB.get(Calendar.YEAR) &&
+            calA.get(Calendar.DAY_OF_YEAR) == calB.get(Calendar.DAY_OF_YEAR)
+    }
+
     class MsgViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val dateHeader: TextView = itemView.findViewById(R.id.dateHeader)
         val sender: LinearLayout = itemView.findViewById(R.id.sender)
         val receiver: LinearLayout = itemView.findViewById(R.id.receiver)
         val senderMessageContainer: FrameLayout = itemView.findViewById(R.id.senderMessageContainer)
@@ -535,8 +607,23 @@ class MsgRecyclerAdapter(
         val senderImage: ImageView = itemView.findViewById(R.id.senderImage)
         val receiverImage: ImageView = itemView.findViewById(R.id.receiverImage)
         val senderTimestamp: TextView = itemView.findViewById(R.id.senderTimestamp)
+        val senderTimestampOverlay: TextView = itemView.findViewById(R.id.senderTimestampOverlay)
         val receiverTimestamp: TextView = itemView.findViewById(R.id.receiverTimestamp)
+        val receiverTimestampOverlay: TextView = itemView.findViewById(R.id.receiverTimestampOverlay)
+        val receiverMetaOverlay: View = itemView.findViewById(R.id.receiverMetaOverlay)
+        val receiverMetaBelow: View = itemView.findViewById(R.id.receiverMetaBelow)
         val readStatusIcon: ImageView = itemView.findViewById(R.id.readStatusIcon)
+        val readStatusIconOverlay: ImageView = itemView.findViewById(R.id.readStatusIconOverlay)
+
+        val senderMsgPaddingLeft = senderMsg.paddingLeft
+        val senderMsgPaddingTop = senderMsg.paddingTop
+        val senderMsgPaddingRight = senderMsg.paddingRight
+        val senderMsgPaddingBottom = senderMsg.paddingBottom
+
+        val receiverMsgPaddingLeft = receiverMsg.paddingLeft
+        val receiverMsgPaddingTop = receiverMsg.paddingTop
+        val receiverMsgPaddingRight = receiverMsg.paddingRight
+        val receiverMsgPaddingBottom = receiverMsg.paddingBottom
 
         // NEW: Replied message views
         val senderRepliedContainer: View = itemView.findViewById(R.id.sender_replied_message)
@@ -548,5 +635,105 @@ class MsgRecyclerAdapter(
         val receiverRepliedText: TextView = receiverRepliedContainer.findViewById(R.id.replied_text)
         val receiverRepliedImage: ImageView = receiverRepliedContainer.findViewById(R.id.replied_image)
         val receiverRepliedSenderName: TextView = receiverRepliedContainer.findViewById(R.id.replied_sender_name)
+    }
+
+    private fun applyBubbleMaxWidth(holder: MsgViewHolder) {
+        val screenWidthPx = holder.itemView.resources.displayMetrics.widthPixels
+        val bubbleMaxWidthPx = (screenWidthPx * 0.66f).toInt()
+
+        holder.senderMsg.maxWidth = bubbleMaxWidthPx
+        holder.receiverMsg.maxWidth = bubbleMaxWidthPx
+    }
+
+    private fun resetInlineTimestampState(holder: MsgViewHolder) {
+        holder.senderTimestampOverlay.visibility = View.GONE
+        holder.senderTimestamp.visibility = View.VISIBLE
+
+        holder.receiverMetaOverlay.visibility = View.GONE
+        holder.receiverMetaBelow.visibility = View.VISIBLE
+        holder.readStatusIconOverlay.visibility = View.GONE
+        holder.readStatusIcon.visibility = View.VISIBLE
+
+        holder.senderMsg.setPadding(
+            holder.senderMsgPaddingLeft,
+            holder.senderMsgPaddingTop,
+            holder.senderMsgPaddingRight,
+            holder.senderMsgPaddingBottom
+        )
+        holder.receiverMsg.setPadding(
+            holder.receiverMsgPaddingLeft,
+            holder.receiverMsgPaddingTop,
+            holder.receiverMsgPaddingRight,
+            holder.receiverMsgPaddingBottom
+        )
+    }
+
+    private fun maybeInlineSenderTimestamp(holder: MsgViewHolder, timestampText: String) {
+        if (holder.senderMsg.visibility != View.VISIBLE) return
+
+        holder.senderMsg.post {
+            val bubbleMaxWidthPx = holder.senderMsg.maxWidth.takeIf { it > 0 }
+                ?: (holder.itemView.resources.displayMetrics.widthPixels * 0.66f).toInt()
+
+            val text = holder.senderMsg.text?.toString().orEmpty()
+            val longestLineWidth = text
+                .split('\n')
+                .maxOfOrNull { line -> holder.senderMsg.paint.measureText(line) }
+                ?: 0f
+
+            val density = holder.itemView.resources.displayMetrics.density
+            val tsWidth = holder.senderTimestampOverlay.paint.measureText(timestampText)
+            val required = longestLineWidth + tsWidth
+
+            if (required <= bubbleMaxWidthPx) {
+                holder.senderTimestampOverlay.visibility = View.VISIBLE
+                holder.senderTimestamp.visibility = View.GONE
+
+                val endPad = (tsWidth + ceil(6f * density)).toInt()
+                val bottomPad = ceil(12f * density).toInt()
+                holder.senderMsg.setPadding(
+                    holder.senderMsgPaddingLeft,
+                    holder.senderMsgPaddingTop,
+                    endPad,
+                    bottomPad
+                )
+            }
+        }
+    }
+
+    private fun maybeInlineReceiverTimestamp(holder: MsgViewHolder, timestampText: String) {
+        if (holder.receiverMsg.visibility != View.VISIBLE) return
+
+        holder.receiverMsg.post {
+            val bubbleMaxWidthPx = holder.receiverMsg.maxWidth.takeIf { it > 0 }
+                ?: (holder.itemView.resources.displayMetrics.widthPixels * 0.66f).toInt()
+
+            val text = holder.receiverMsg.text?.toString().orEmpty()
+            val longestLineWidth = text
+                .split('\n')
+                .maxOfOrNull { line -> holder.receiverMsg.paint.measureText(line) }
+                ?: 0f
+
+            val density = holder.itemView.resources.displayMetrics.density
+            val tsWidth = holder.receiverTimestampOverlay.paint.measureText(timestampText)
+            val readIconWidth = ceil(16f * density).toFloat() + ceil(4f * density)
+            val required = longestLineWidth + tsWidth + readIconWidth
+
+            if (required <= bubbleMaxWidthPx) {
+                holder.receiverMetaOverlay.visibility = View.VISIBLE
+                holder.receiverMetaBelow.visibility = View.GONE
+                holder.readStatusIconOverlay.visibility = View.VISIBLE
+                holder.readStatusIcon.visibility = View.GONE
+
+                val endPad = (tsWidth + readIconWidth + ceil(6f * density)).toInt()
+                val bottomPad = ceil(12f * density).toInt()
+                holder.receiverMsg.setPadding(
+                    holder.receiverMsgPaddingLeft,
+                    holder.receiverMsgPaddingTop,
+                    endPad,
+                    bottomPad
+                )
+            }
+        }
     }
 }
