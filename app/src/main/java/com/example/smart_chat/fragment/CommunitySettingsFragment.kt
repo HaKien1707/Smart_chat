@@ -20,17 +20,27 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smart_chat.R
 import com.example.smart_chat.adapters.community.CommunityMemberAdapter
+import com.example.smart_chat.adapters.shared.SharedFilesAdapter
+import com.example.smart_chat.adapters.shared.SharedLinksAdapter
+import com.example.smart_chat.adapters.shared.SharedMediaAdapter
+import com.example.smart_chat.models.community.CommunityMsgModel
 import com.example.smart_chat.models.community.CommunityModel
+import com.example.smart_chat.models.shared.SharedFileItem
+import com.example.smart_chat.models.shared.SharedLinkItem
+import com.example.smart_chat.models.shared.SharedMediaItem
 import com.example.smart_chat.models.userModel
 import com.example.smart_chat.utils.firebase.FirebaseAuthentication
 import com.example.smart_chat.utils.firebase.FirebaseCommunity
 import com.example.smart_chat.utils.others.androidUtils
+import com.example.smart_chat.utils.shared.SharedContentClassifier
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.tabs.TabLayout
+import com.google.firebase.firestore.Query
 import java.io.ByteArrayOutputStream
 
 class CommunitySettingsFragment : Fragment() {
@@ -48,11 +58,21 @@ class CommunitySettingsFragment : Fragment() {
     private lateinit var inviteLinkValue: TextView
     private lateinit var tabs: TabLayout
     private lateinit var membersRecycler: RecyclerView
+    private lateinit var sharedRecycler: RecyclerView
+    private lateinit var emptyText: TextView
 
     private var communityID: String? = null
     private var community: CommunityModel? = null
     private val membersList = mutableListOf<userModel>()
     private var adapter: CommunityMemberAdapter? = null
+
+    private lateinit var mediaAdapter: SharedMediaAdapter
+    private lateinit var linksAdapter: SharedLinksAdapter
+    private lateinit var filesAdapter: SharedFilesAdapter
+    private var sharedLoaded: Boolean = false
+    private val sharedMediaItems = mutableListOf<SharedMediaItem>()
+    private val sharedLinkItems = mutableListOf<SharedLinkItem>()
+    private val sharedFileItems = mutableListOf<SharedFileItem>()
 
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -93,6 +113,7 @@ class CommunitySettingsFragment : Fragment() {
         setupRecycler()
         loadCommunityDetails()
         loadMembers()
+        loadSharedContent()
     }
 
     private fun initViews(view: View) {
@@ -109,6 +130,8 @@ class CommunitySettingsFragment : Fragment() {
         inviteLinkValue = view.findViewById(R.id.invite_link_value)
         tabs = view.findViewById(R.id.tabs)
         membersRecycler = view.findViewById(R.id.members_recycler)
+        sharedRecycler = view.findViewById(R.id.shared_recycler)
+        emptyText = view.findViewById(R.id.empty_text)
     }
 
     private fun setupListeners() {
@@ -155,27 +178,33 @@ class CommunitySettingsFragment : Fragment() {
         tabs.addTab(tabs.newTab().setText("Links"))
         tabs.addTab(tabs.newTab().setText("Files"))
 
+        membersRecycler.visibility = View.VISIBLE
+        sharedRecycler.visibility = View.GONE
+        emptyText.visibility = View.GONE
+
         tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 when (tab?.position) {
                     0 -> {
                         // Show members
                         membersRecycler.visibility = View.VISIBLE
+                        sharedRecycler.visibility = View.GONE
+                        emptyText.visibility = View.GONE
                     }
                     1 -> {
                         // Show media
                         membersRecycler.visibility = View.GONE
-                        Toast.makeText(requireContext(), "Media - Coming soon", Toast.LENGTH_SHORT).show()
+                        showMediaTab()
                     }
                     2 -> {
                         // Show links
                         membersRecycler.visibility = View.GONE
-                        Toast.makeText(requireContext(), "Links - Coming soon", Toast.LENGTH_SHORT).show()
+                        showLinksTab()
                     }
                     3 -> {
                         // Show files
                         membersRecycler.visibility = View.GONE
-                        Toast.makeText(requireContext(), "Files - Coming soon", Toast.LENGTH_SHORT).show()
+                        showFilesTab()
                     }
                 }
             }
@@ -183,12 +212,148 @@ class CommunitySettingsFragment : Fragment() {
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
+
+        if (tabs.tabCount > 0) {
+            tabs.selectTab(tabs.getTabAt(0))
+        }
     }
 
     private fun setupRecycler() {
+        mediaAdapter = SharedMediaAdapter(requireContext())
+        linksAdapter = SharedLinksAdapter(requireContext())
+        filesAdapter = SharedFilesAdapter(requireContext())
+
         adapter = CommunityMemberAdapter(requireContext(), membersList, community?.adminID)
         membersRecycler.layoutManager = LinearLayoutManager(requireContext())
         membersRecycler.adapter = adapter
+    }
+
+    private fun loadSharedContent() {
+        val id = communityID ?: return
+        FirebaseCommunity.getCommunityMessagesReference(id)
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .limit(500)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                sharedMediaItems.clear()
+                sharedLinkItems.clear()
+                sharedFileItems.clear()
+
+                for (doc in snapshot.documents) {
+                    val model = doc.toObject(CommunityMsgModel::class.java) ?: continue
+                    if (model.isDeleted) continue
+
+                    val messageType = model.messageType
+                    val msg = model.msg
+                    val imageUrl = model.imageUrl
+                    val fileUrl = model.fileUrl
+                    val fileName = model.fileName
+                    val fileSize = model.fileSize
+                    val timestamp = model.timestamp
+
+                    if (SharedContentClassifier.isMediaMessage(messageType, imageUrl, fileUrl, fileName)) {
+                        val url = if (!imageUrl.isNullOrBlank()) imageUrl else (fileUrl ?: "")
+                        if (url.isNotBlank()) {
+                            sharedMediaItems.add(
+                                SharedMediaItem(
+                                    url = url,
+                                    isVideo = SharedContentClassifier.isVideoFile(fileName, fileUrl),
+                                    timestamp = timestamp
+                                )
+                            )
+                        }
+                    }
+
+                    if (SharedContentClassifier.isLinkMessage(messageType, msg)) {
+                        val urls = SharedContentClassifier.extractUrls(msg)
+                        urls.forEach { url ->
+                            sharedLinkItems.add(SharedLinkItem(url = url, text = msg, timestamp = timestamp))
+                        }
+                    }
+
+                    if (SharedContentClassifier.isFileMessage(messageType, fileUrl, fileName)) {
+                        val url = fileUrl ?: ""
+                        if (url.isNotBlank()) {
+                            sharedFileItems.add(
+                                SharedFileItem(
+                                    url = url,
+                                    fileName = fileName,
+                                    fileSize = fileSize,
+                                    timestamp = timestamp
+                                )
+                            )
+                        }
+                    }
+                }
+
+                sharedLoaded = true
+                when (tabs.selectedTabPosition) {
+                    1 -> showMediaTab()
+                    2 -> showLinksTab()
+                    3 -> showFilesTab()
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("CommunitySettings", "Failed to load shared content", e)
+                sharedLoaded = true
+            }
+    }
+
+    private fun showMediaTab() {
+        if (!sharedLoaded) {
+            showEmptyState("Loading...")
+            return
+        }
+        if (sharedMediaItems.isEmpty()) {
+            showEmptyState("No shared media yet")
+            return
+        }
+
+        emptyText.visibility = View.GONE
+        sharedRecycler.visibility = View.VISIBLE
+        sharedRecycler.layoutManager = GridLayoutManager(requireContext(), 3)
+        sharedRecycler.adapter = mediaAdapter
+        mediaAdapter.submit(sharedMediaItems)
+    }
+
+    private fun showLinksTab() {
+        if (!sharedLoaded) {
+            showEmptyState("Loading...")
+            return
+        }
+        if (sharedLinkItems.isEmpty()) {
+            showEmptyState("No shared links yet")
+            return
+        }
+
+        emptyText.visibility = View.GONE
+        sharedRecycler.visibility = View.VISIBLE
+        sharedRecycler.layoutManager = LinearLayoutManager(requireContext())
+        sharedRecycler.adapter = linksAdapter
+        linksAdapter.submit(sharedLinkItems)
+    }
+
+    private fun showFilesTab() {
+        if (!sharedLoaded) {
+            showEmptyState("Loading...")
+            return
+        }
+        if (sharedFileItems.isEmpty()) {
+            showEmptyState("No shared files yet")
+            return
+        }
+
+        emptyText.visibility = View.GONE
+        sharedRecycler.visibility = View.VISIBLE
+        sharedRecycler.layoutManager = LinearLayoutManager(requireContext())
+        sharedRecycler.adapter = filesAdapter
+        filesAdapter.submit(sharedFileItems)
+    }
+
+    private fun showEmptyState(message: String) {
+        sharedRecycler.visibility = View.GONE
+        emptyText.visibility = View.VISIBLE
+        emptyText.text = message
     }
 
     private fun loadCommunityDetails() {

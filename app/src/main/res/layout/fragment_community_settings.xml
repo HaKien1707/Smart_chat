@@ -307,6 +307,23 @@
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false" />
 
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/shared_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:nestedScrollingEnabled="false" />
+
+                <TextView
+                    android:id="@+id/empty_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text=""
+                    android:textSize="14sp"
+                    android:textColor="?android:textColorSecondary"
+                    android:visibility="gone" />
+
             </FrameLayout>
 
         </LinearLayout>
