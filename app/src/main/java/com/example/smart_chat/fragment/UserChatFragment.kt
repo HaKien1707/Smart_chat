@@ -13,6 +13,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.Button
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -29,6 +30,7 @@ import com.example.smart_chat.models.userModel
 import com.example.smart_chat.utils.AI.BotMessageHelper
 import com.example.smart_chat.utils.AI.GeminiHelper
 import com.example.smart_chat.utils.firebase.FirebaseAuthentication
+import com.example.smart_chat.utils.firebase.FirebaseBlocking
 import com.example.smart_chat.utils.firebase.FirebaseChat
 import com.example.smart_chat.utils.media.CloudinaryHelper
 import com.example.smart_chat.utils.media.MediaMessageHelper
@@ -54,6 +56,11 @@ class UserChatFragment : Fragment() {
     private lateinit var attachBtn: ImageButton
     private lateinit var msgRecycler: RecyclerView
 
+    private lateinit var chatBoxContainer: View
+    private lateinit var blockedStateContainer: View
+    private lateinit var blockedStateText: TextView
+    private lateinit var unblockBtn: Button
+
     // Reply preview views
     private lateinit var replyPreviewContainer: View
     private lateinit var replyText: TextView
@@ -69,6 +76,9 @@ class UserChatFragment : Fragment() {
     private var currentReplyData: ReplyMessageData? = null
     private var isBotProcessing = false
     private var isCheckingFriendship = true
+
+    private var isChatBlocked: Boolean = false
+    private var isBlockedByMe: Boolean = false
 
     // Activity Result Launchers
     private val imagePickerLauncher = registerForActivityResult(
@@ -128,6 +138,8 @@ class UserChatFragment : Fragment() {
         setupUI()
         setupListeners()
         setupRecycler()
+
+        refreshBlockState()
     }
 
     private fun initViews(view: View) {
@@ -139,6 +151,11 @@ class UserChatFragment : Fragment() {
         attachBtn = view.findViewById(R.id.send_file_btn)
         sendImageBtn = view.findViewById(R.id.send_image_btn)
         msgRecycler = view.findViewById(R.id.chatList)
+
+        chatBoxContainer = view.findViewById(R.id.chatBoxContainer)
+        blockedStateContainer = view.findViewById(R.id.blocked_state_container)
+        blockedStateText = view.findViewById(R.id.blocked_state_text)
+        unblockBtn = view.findViewById(R.id.unblock_btn)
 
         val profileContainer = view.findViewById<View>(R.id.profile_image_container)
         profileImage = profileContainer.findViewById(R.id.profile_image)
@@ -177,6 +194,22 @@ class UserChatFragment : Fragment() {
 
         cancelReplyBtn.setOnClickListener {
             cancelReply()
+        }
+
+        unblockBtn.setOnClickListener {
+            val targetUserID = otherUser?.userID
+            if (targetUserID.isNullOrBlank()) return@setOnClickListener
+
+            FirebaseBlocking.unblockUser(
+                targetUserID,
+                onSuccess = {
+                    Toast.makeText(requireContext(), getString(R.string.unblock), Toast.LENGTH_SHORT).show()
+                    refreshBlockState()
+                },
+                onFailure = { e ->
+                    Toast.makeText(requireContext(), "Failed to unblock: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            )
         }
 
         profileImage.setOnClickListener {
@@ -321,6 +354,11 @@ class UserChatFragment : Fragment() {
     }
 
     private fun sendMessage() {
+        if (isChatBlocked) {
+            Toast.makeText(requireContext(), blockedStateText.text, Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val messageText = msgInput.text.toString().trim()
 
         if (messageText.isEmpty()) {
@@ -397,6 +435,11 @@ class UserChatFragment : Fragment() {
     }
 
     private fun pickImage() {
+        if (isChatBlocked) {
+            Toast.makeText(requireContext(), blockedStateText.text, Toast.LENGTH_SHORT).show()
+            return
+        }
+
         ImagePicker.with(this)
             .compress(1024)
             .maxResultSize(1080, 1080)
@@ -404,6 +447,11 @@ class UserChatFragment : Fragment() {
     }
 
     private fun pickFile() {
+        if (isChatBlocked) {
+            Toast.makeText(requireContext(), blockedStateText.text, Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
             type = "*/*"
             addCategory(Intent.CATEGORY_OPENABLE)
@@ -426,6 +474,7 @@ class UserChatFragment : Fragment() {
     }
 
     private fun sendImageMessage(imageUri: Uri) {
+        if (isChatBlocked) return
         attachBtn.isEnabled = false
 
         MediaMessageHelper.uploadAndSendImage(
@@ -453,6 +502,7 @@ class UserChatFragment : Fragment() {
     }
 
     private fun sendFileMessage(fileUri: Uri) {
+        if (isChatBlocked) return
         attachBtn.isEnabled = false
 
         MediaMessageHelper.uploadAndSendFile(
@@ -483,6 +533,43 @@ class UserChatFragment : Fragment() {
     // ==============================================================
     //                          CHAT BOT
     // ==============================================================
+
+    private fun refreshBlockState() {
+        val targetUserID = otherUser?.userID
+        if (targetUserID.isNullOrBlank()) return
+
+        FirebaseBlocking.isUserBlocked(targetUserID) { blockedByMe ->
+            FirebaseBlocking.isBlockedByUser(targetUserID) { blockedMe ->
+                applyBlockUi(blockedByMe = blockedByMe, blockedMe = blockedMe)
+            }
+        }
+    }
+
+    private fun applyBlockUi(blockedByMe: Boolean, blockedMe: Boolean) {
+        isBlockedByMe = blockedByMe
+        isChatBlocked = blockedByMe || blockedMe
+
+        if (isChatBlocked) {
+            // Hide input area and reply preview
+            chatBoxContainer.visibility = View.GONE
+            sendBtn.visibility = View.GONE
+            replyPreviewContainer.visibility = View.GONE
+
+            blockedStateContainer.visibility = View.VISIBLE
+
+            if (blockedByMe) {
+                blockedStateText.text = getString(R.string.youBlockedThisUser)
+                unblockBtn.visibility = View.VISIBLE
+            } else {
+                blockedStateText.text = getString(R.string.youAreBlocked)
+                unblockBtn.visibility = View.GONE
+            }
+        } else {
+            blockedStateContainer.visibility = View.GONE
+            chatBoxContainer.visibility = View.VISIBLE
+            sendBtn.visibility = View.VISIBLE
+        }
+    }
     private fun handleBotCommand(command: String) {
         if (isBotProcessing) {
             Toast.makeText(requireContext(), "Bot is processing. Please wait...", Toast.LENGTH_SHORT).show()
@@ -633,6 +720,9 @@ class UserChatFragment : Fragment() {
         super.onResume()
         // Track that user is in this chat
         chatRoomID?.let { ChatStateManager.setCurrentChat(it) }
+
+        // Refresh blocked state whenever returning to the chat
+        refreshBlockState()
     }
 
     override fun onPause() {

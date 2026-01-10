@@ -49,6 +49,7 @@
     <string name="selectMember">Chọn thành viên thêm vào nhóm</string>
     <string name="blocked">Bạn đã bị chặn</string>
     <string name="block">Đã chặn người dùng</string>
+    <string name="youBlockedThisUser">Bạn đã chặn người dùng này</string>
     <string name="userBlocked">Blocked users</string>
     <string name="NoBlockedUsers">No blocked users</string>
     <string name="unblock">Unblock</string>

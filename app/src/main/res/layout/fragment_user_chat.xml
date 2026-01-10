@@ -82,6 +82,37 @@
         android:layout_alignParentBottom="true"
         android:padding="10dp">
 
+        <LinearLayout
+            android:id="@+id/blocked_state_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:padding="12dp"
+            android:background="?attr/inputBoxBackground"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/blocked_state_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?android:textColorSecondary"
+                android:textSize="14sp"
+                tools:text="You are blocked by this user" />
+
+            <Button
+                android:id="@+id/unblock_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/unblock"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
         <ImageButton
             android:id="@+id/sendBtn"
             android:layout_width="48dp"

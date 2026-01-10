@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,6 +18,8 @@ import com.example.smart_chat.R
 import com.example.smart_chat.fragment.CallFragment
 import com.example.smart_chat.models.userModel
 import com.example.smart_chat.utils.firebase.FirebaseAuthentication
+import com.example.smart_chat.utils.firebase.FirebaseBlocking
+import com.example.smart_chat.utils.firebase.FirebaseChat
 import com.example.smart_chat.utils.others.androidUtils
 import com.google.android.material.tabs.TabLayout
 
@@ -253,8 +256,31 @@ class UserChatSettingsFragment : Fragment() {
     }
 
     private fun showBlockUserDialog() {
-        // TODO: Show confirmation dialog
-        Toast.makeText(requireContext(), "Block user dialog", Toast.LENGTH_SHORT).show()
+        val targetUserID = userID
+        if (targetUserID.isNullOrBlank()) {
+            Toast.makeText(requireContext(), "User not found", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val targetName = user?.username ?: "this user"
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Block User")
+            .setMessage("Block $targetName? They will be added to your blocked users list.")
+            .setPositiveButton("Block") { _, _ ->
+                FirebaseBlocking.blockUser(
+                    targetUserID,
+                    onSuccess = {
+                        Toast.makeText(requireContext(), "$targetName blocked", Toast.LENGTH_SHORT).show()
+                        activity?.finish()
+                    },
+                    onFailure = { e ->
+                        Toast.makeText(requireContext(), "Failed to block: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun showReportUserDialog() {
@@ -263,8 +289,34 @@ class UserChatSettingsFragment : Fragment() {
     }
 
     private fun showDeleteChatDialog() {
-        // TODO: Show confirmation dialog
-        Toast.makeText(requireContext(), "Delete chat dialog", Toast.LENGTH_SHORT).show()
+        val currentUserID = FirebaseAuthentication.currentUserID()
+        val otherUserID = userID
+
+        if (currentUserID.isNullOrBlank() || otherUserID.isNullOrBlank()) {
+            Toast.makeText(requireContext(), "Chat not available", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val chatRoomID = FirebaseChat.getChatRoomID(currentUserID, otherUserID)
+        val targetName = user?.username ?: "this user"
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Chat")
+            .setMessage("This chat will be moved to Deleted Chats. You can recover it later.")
+            .setPositiveButton("Delete") { _, _ ->
+                FirebaseChat.softDeleteChatRoom(
+                    chatRoomID,
+                    onSuccess = {
+                        Toast.makeText(requireContext(), "Chat deleted", Toast.LENGTH_SHORT).show()
+                        activity?.finish()
+                    },
+                    onFailure = { e ->
+                        Toast.makeText(requireContext(), "Failed to delete chat: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     companion object {

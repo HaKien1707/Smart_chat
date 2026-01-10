@@ -99,6 +99,8 @@ class ChatFragment : Fragment() {
                 ?.mapNotNull { doc ->
                     doc.toObject(UserChatModel::class.java)?.apply {
                         if (chatRoomID.isNullOrBlank()) chatRoomID = doc.id
+                    }?.takeIf { chat ->
+                        !chat.deletedBy.contains(currentUserID)
                     }
                 }
                 ?: emptyList()
