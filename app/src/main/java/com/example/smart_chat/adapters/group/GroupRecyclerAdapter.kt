@@ -53,15 +53,11 @@ class GroupRecyclerAdapter(
         }
 
         // --- Last message time (handle null timestamp) ---
-        if (model.lastMsgTimestamp != null) {
-            holder.lastMsgTime.text = androidUtils.timestampToString(model.lastMsgTimestamp)
+        holder.lastMsgTime.text = if (model.lastMsgTimestamp != null) {
+            androidUtils.timestampToString(model.lastMsgTimestamp)
         } else {
-            holder.lastMsgTime.text = ""
+            ""
         }
-
-        // --- Member count ---
-        val memberCount = model.memberIDs?.size ?: 0
-        holder.memberCount.text = "$memberCount members"
 
         // --- Click listener to open group chat ---
         holder.itemView.setOnClickListener {
@@ -80,12 +76,10 @@ class GroupRecyclerAdapter(
     }
 
     inner class GroupViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val profileContainer: View = itemView.findViewById(R.id.group_image_container)
-        val groupImage: ImageView = profileContainer.findViewById(R.id.profile_image)
+        val groupImage: ImageView = itemView.findViewById(R.id.group_image)
         val groupNameText: TextView = itemView.findViewById(R.id.groupNameText)
         val lastMsg: TextView = itemView.findViewById(R.id.lastMsg)
         val lastMsgTime: TextView = itemView.findViewById(R.id.lastMsgTime)
-        val memberCount: TextView = itemView.findViewById(R.id.memberCount)
         // Removed: val settingsBtn: ImageButton
     }
 }

@@ -8,57 +8,75 @@
     app:cardElevation="0dp"
     app:cardBackgroundColor="?attr/cardBackgroundColor">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp"
+        android:minHeight="72dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
         android:background="?attr/selectableItemBackground">
 
         <!-- Community Image -->
         <ImageView
             android:id="@+id/community_image"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:contentDescription="Community image"
             android:src="@drawable/ic_community"
             android:background="@drawable/circle_bg"
             android:scaleType="centerCrop" />
 
-        <!-- Community Info -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <!-- Time (right side): show HH:mm if today, else date -->
+        <TextView
+            android:id="@+id/community_time"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/community_image"
-            android:layout_centerVertical="true"
+            android:layout_marginStart="8dp"
+            android:text="22:01"
+            android:textSize="12sp"
+            android:textColor="?android:attr/textColorSecondary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/community_name"
+            app:layout_constraintBottom_toBottomOf="@id/community_name" />
+
+        <!-- Community Info -->
+        <TextView
+            android:id="@+id/community_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:orientation="vertical">
+            android:layout_marginEnd="8dp"
+            android:text="Community Name"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="?android:textColorPrimary"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintStart_toEndOf="@id/community_image"
+            app:layout_constraintEnd_toStartOf="@id/community_time"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/community_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Community Name"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="?android:textColorPrimary"
-                android:maxLines="1"
-                android:ellipsize="end" />
+        <TextView
+            android:id="@+id/community_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="4dp"
+            android:text="Last message"
+            android:textSize="14sp"
+            android:textColor="?android:textColorSecondary"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintStart_toEndOf="@id/community_image"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/community_name" />
 
-            <TextView
-                android:id="@+id/community_description"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Community description"
-                android:textSize="14sp"
-                android:textColor="?android:textColorSecondary"
-                android:layout_marginTop="4dp"
-                android:maxLines="2"
-                android:ellipsize="end" />
-
-        </LinearLayout>
-
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>

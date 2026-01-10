@@ -8,80 +8,71 @@
     app:cardElevation="0dp"
     app:cardBackgroundColor="?attr/cardBackgroundColor">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="12dp"
+        android:minHeight="72dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
         android:background="?attr/selectableItemBackground">
 
-        <!-- Group Image -->
-        <include layout="@layout/profile_image_holder"
-            android:id="@+id/group_image_container"
-            android:layout_margin="8dp"
-            android:layout_height="52dp"
+        <ImageView
+            android:id="@+id/group_image"
             android:layout_width="52dp"
-            android:layout_gravity="center" />
+            android:layout_height="52dp"
+            android:contentDescription="@string/menu_group"
+            android:src="@drawable/ic_group"
+            android:background="@drawable/circle_bg"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/lastMsgTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/time"
+            android:textColor="?android:textColorSecondary"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/groupNameText"
+            app:layout_constraintBottom_toBottomOf="@id/groupNameText" />
+
+        <TextView
+            android:id="@+id/groupNameText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_gravity="center"
-            android:layout_marginStart="8dp">
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/groupName"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="?android:textColorPrimary"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintStart_toEndOf="@id/group_image"
+            app:layout_constraintEnd_toStartOf="@id/lastMsgTime"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/lastMsg"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="4dp"
+            android:text="@string/blank_number"
+            android:textColor="?android:textColorSecondary"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintStart_toEndOf="@id/group_image"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/groupNameText" />
 
-                <!-- Group Name -->
-                <TextView
-                    android:id="@+id/groupNameText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/groupName"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="?android:textColorPrimary"
-                    android:maxLines="1"
-                    android:ellipsize="end" />
-
-                <!-- Last Message Time -->
-                <TextView
-                    android:id="@+id/lastMsgTime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/time"
-                    android:textColor="?android:textColorSecondary"
-                    android:textSize="12sp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_marginEnd="4dp" />
-            </RelativeLayout>
-
-            <!-- Member Count -->
-            <TextView
-                android:id="@+id/memberCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="5 members"
-                android:textSize="12sp"
-                android:textColor="?android:textColorSecondary"
-                android:layout_marginTop="2dp" />
-
-            <!-- Last Message -->
-            <TextView
-                android:id="@+id/lastMsg"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/blank_number"
-                android:textColor="?android:textColorSecondary"
-                android:textSize="14sp"
-                android:layout_marginTop="2dp"
-                android:maxLines="1"
-                android:ellipsize="end" />
-        </LinearLayout>
-
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>

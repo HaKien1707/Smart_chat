@@ -22,6 +22,10 @@ import com.example.smart_chat.models.userModel
 import com.example.smart_chat.utils.firebase.FirebaseAuthentication
 import com.example.smart_chat.utils.firebase.FirebaseChat
 import com.example.smart_chat.utils.others.androidUtils
+import com.google.firebase.Timestamp
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 sealed class UnifiedChatItem {
     abstract val id: String
@@ -50,6 +54,25 @@ class UnifiedChatListAdapter(
     private val context: Context,
     private val onDeleteUserChat: ((chatRoomId: String) -> Unit)? = null,
 ) : ListAdapter<UnifiedChatItem, RecyclerView.ViewHolder>(DiffCallback) {
+
+    private fun formatTimeOrDate(timestamp: Timestamp?): String {
+        if (timestamp == null) return ""
+        val date = timestamp.toDate()
+
+        val now = Calendar.getInstance()
+        val cal = Calendar.getInstance()
+        cal.time = date
+
+        val isSameDay = now.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
+                && now.get(Calendar.DAY_OF_YEAR) == cal.get(Calendar.DAY_OF_YEAR)
+
+        return if (isSameDay) {
+            SimpleDateFormat("HH:mm", Locale.getDefault()).format(date)
+        } else {
+            // Telegram-like: month + day (e.g. Jan 03)
+            SimpleDateFormat("MMM dd", Locale.getDefault()).format(date)
+        }
+    }
 
     companion object {
         private const val VT_USER_CHAT = 1
@@ -98,15 +121,11 @@ class UnifiedChatListAdapter(
         private val username: TextView = itemView.findViewById(R.id.username)
         private val lastMsg: TextView = itemView.findViewById(R.id.lastMsg)
         private val lastMsgTime: TextView = itemView.findViewById(R.id.lastMsgTime)
-        private val deleteBtn: ImageButton? = itemView.findViewById(R.id.delete_btn)
 
         private val currentUserID = FirebaseAuthentication.currentUserID()
 
         fun bind(item: UnifiedChatItem.UserChat) {
             val model = item.model
-
-            // Preserve existing UI: show delete button only if handler is provided
-            deleteBtn?.visibility = if (onDeleteUserChat != null) View.VISIBLE else View.GONE
 
             FirebaseChat.get2ndUserInChatRoom(model.userID)?.get()
                 ?.addOnSuccessListener { documentSnapshot ->
@@ -126,7 +145,7 @@ class UnifiedChatListAdapter(
                             model.lastMsg ?: ""
                         }
                         lastMsg.text = lastMessageText
-                        lastMsgTime.text = androidUtils.timestampToString(model.lastMsgTimestamp)
+                        lastMsgTime.text = formatTimeOrDate(model.lastMsgTimestamp)
 
                         itemView.setOnClickListener {
                             val intent = Intent(context, ChatActivity::class.java)
@@ -135,10 +154,6 @@ class UnifiedChatListAdapter(
                             context.startActivity(intent)
                         }
 
-                        deleteBtn?.setOnClickListener {
-                            val chatRoomId = model.chatRoomID ?: return@setOnClickListener
-                            onDeleteUserChat?.invoke(chatRoomId)
-                        }
                     }
                 }
         }
@@ -148,12 +163,24 @@ class UnifiedChatListAdapter(
         private val communityImage: ImageView = itemView.findViewById(R.id.community_image)
         private val communityName: TextView = itemView.findViewById(R.id.community_name)
         private val communityDescription: TextView = itemView.findViewById(R.id.community_description)
+        private val communityTime: TextView = itemView.findViewById(R.id.community_time)
 
         fun bind(item: UnifiedChatItem.Community) {
             val model = item.model
 
             communityName.text = model.communityName ?: "Unknown Community"
-            communityDescription.text = model.communityDescription ?: ""
+            val currentUserId = FirebaseAuthentication.currentUserID()
+            val preview = if (!model.lastMsg.isNullOrBlank()) {
+                if (model.lastMsgSenderID == currentUserId) {
+                    context.getString(R.string.you_prefix) + model.lastMsg
+                } else {
+                    model.lastMsg
+                }
+            } else {
+                model.communityDescription ?: ""
+            }
+            communityDescription.text = preview
+            communityTime.text = formatTimeOrDate(model.lastMsgTimestamp)
 
             if (!model.communityImage.isNullOrBlank()) {
                 androidUtils.setProfileImageFromBase64(context, model.communityImage, communityImage)
@@ -172,12 +199,10 @@ class UnifiedChatListAdapter(
     }
 
     private inner class GroupViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val profileContainer: View = itemView.findViewById(R.id.group_image_container)
-        private val groupImage: ImageView = profileContainer.findViewById(R.id.profile_image)
+        private val groupImage: ImageView = itemView.findViewById(R.id.group_image)
         private val groupNameText: TextView = itemView.findViewById(R.id.groupNameText)
         private val lastMsg: TextView = itemView.findViewById(R.id.lastMsg)
         private val lastMsgTime: TextView = itemView.findViewById(R.id.lastMsgTime)
-        private val memberCount: TextView = itemView.findViewById(R.id.memberCount)
 
         fun bind(item: UnifiedChatItem.Group) {
             val model = item.model
@@ -201,10 +226,7 @@ class UnifiedChatListAdapter(
                 ""
             }
             lastMsg.text = msgText
-            lastMsgTime.text = if (model.lastMsgTimestamp != null) androidUtils.timestampToString(model.lastMsgTimestamp) else ""
-
-            val count = model.memberIDs?.size ?: 0
-            memberCount.text = "$count members"
+            lastMsgTime.text = formatTimeOrDate(model.lastMsgTimestamp)
 
             itemView.setOnClickListener {
                 val intent = Intent(context, GroupChatActivity::class.java)
