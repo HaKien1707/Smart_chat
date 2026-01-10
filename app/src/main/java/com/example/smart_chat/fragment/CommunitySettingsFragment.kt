@@ -44,7 +44,8 @@ class CommunitySettingsFragment : Fragment() {
     private lateinit var messageBtn: LinearLayout
     private lateinit var muteBtn: LinearLayout
     private lateinit var leaveBtn: LinearLayout
-    private lateinit var addMembersBtn: LinearLayout
+    private lateinit var descriptionValue: TextView
+    private lateinit var inviteLinkValue: TextView
     private lateinit var tabs: TabLayout
     private lateinit var membersRecycler: RecyclerView
 
@@ -104,7 +105,8 @@ class CommunitySettingsFragment : Fragment() {
         messageBtn = view.findViewById(R.id.message_btn)
         muteBtn = view.findViewById(R.id.mute_btn)
         leaveBtn = view.findViewById(R.id.leave_btn)
-        addMembersBtn = view.findViewById(R.id.add_members_btn)
+        descriptionValue = view.findViewById(R.id.description_value)
+        inviteLinkValue = view.findViewById(R.id.invite_link_value)
         tabs = view.findViewById(R.id.tabs)
         membersRecycler = view.findViewById(R.id.members_recycler)
     }
@@ -144,11 +146,6 @@ class CommunitySettingsFragment : Fragment() {
         leaveBtn.setOnClickListener {
             // TODO: Implement leave community
             Toast.makeText(requireContext(), "Leave community", Toast.LENGTH_SHORT).show()
-        }
-
-        addMembersBtn.setOnClickListener {
-            // TODO: Implement add members
-            Toast.makeText(requireContext(), "Add members", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -200,6 +197,9 @@ class CommunitySettingsFragment : Fragment() {
                 community = document.toObject(CommunityModel::class.java)
 
                 communityName.text = community?.communityName ?: "Community"
+
+                descriptionValue.text = community?.communityDescription ?: ""
+                inviteLinkValue.text = "smartchat://community/${communityID ?: ""}"
 
                 // Load community image
                 val imageUrl = community?.communityImage
