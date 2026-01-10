@@ -65,6 +65,7 @@
     <string name="sendBTN">Send</string>
 
     <string name="menu_chat">Chats</string>
+    <string name="menu_community">Communities</string>
     <string name="menu_group">Groups</string>
     <string name="menu_profile">My profile</string>
     <string name="menu_settings">Settings</string>

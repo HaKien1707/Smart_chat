@@ -115,8 +115,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 R.id.menu_chat -> replaceFragment(ChatFragment())
                 R.id.menu_temporary_chat -> replaceFragment(TemporaryChatFragment())
                 R.id.menu_notifications -> replaceFragment(NotificationFragment())
-                R.id.menu_community -> replaceFragment(CommunityFragment())
-                R.id.menu_group -> replaceFragment(GroupFragment())
             }
             true
         }
@@ -140,8 +138,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val title = when (itemId) {
             R.id.menu_temporary_chat -> "Temporary Chat"
             R.id.menu_notifications -> getString(R.string.notification)
-            R.id.menu_community -> "Community"
-            R.id.menu_group -> getString(R.string.menu_group)
             else -> getString(R.string.title) // Default to app name
         }
         binding.headerTitle.text = title
