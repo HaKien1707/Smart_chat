@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smart_chat.R
 import com.example.smart_chat.activities.community.CreateCommunityActivity
-import com.example.smart_chat.activities.group_chat.CreateGroupActivity
+import com.example.smart_chat.activities.group_chat.CreateGroupMembersActivity
 import com.example.smart_chat.adapters.group.GroupRecyclerAdapter
 import com.example.smart_chat.models.group.groupModel
 import com.example.smart_chat.utils.firebase.FirebaseGroups
@@ -43,7 +43,7 @@ class GroupFragment : Fragment() {
             menu.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.action_create_group -> {
-                        startActivity(android.content.Intent(requireContext(), CreateGroupActivity::class.java))
+                        startActivity(android.content.Intent(requireContext(), CreateGroupMembersActivity::class.java))
                         true
                     }
                     R.id.action_create_community -> {

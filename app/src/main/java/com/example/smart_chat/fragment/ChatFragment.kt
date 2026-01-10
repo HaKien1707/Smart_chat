@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smart_chat.activities.community.CreateCommunityActivity
-import com.example.smart_chat.activities.group_chat.CreateGroupActivity
+import com.example.smart_chat.activities.group_chat.CreateGroupMembersActivity
 import com.example.smart_chat.R
 import com.example.smart_chat.adapters.common.UnifiedChatItem
 import com.example.smart_chat.adapters.common.UnifiedChatListAdapter
@@ -57,7 +57,7 @@ class ChatFragment : Fragment() {
             menu.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.action_create_group -> {
-                        startActivity(Intent(requireContext(), CreateGroupActivity::class.java))
+                        startActivity(Intent(requireContext(), CreateGroupMembersActivity::class.java))
                         true
                     }
                     R.id.action_create_community -> {

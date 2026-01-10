@@ -61,6 +61,15 @@
     <string name="createGroup">Create Group</string>
     <string name="createCommunity">Create Community</string>
 
+    <string name="newGroup">New Group</string>
+    <string name="newGroupSubtitle">up to 200000 members</string>
+    <string name="noContactsYet">No contacts yet</string>
+    <string name="groupNameHint">Group name</string>
+    <string name="channelNameHint">Channel name</string>
+    <string name="description">Description</string>
+    <string name="descriptionOptional">You can provide an optional description for your channel.</string>
+    <string name="search">Search</string>
+
     <string name="searchBTN">Search</string>
     <string name="backBTN">Back</string>
     <string name="saveBTN">Save</string>
