@@ -77,9 +77,10 @@
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
     <string name="writeMSG">Write message here…</string>
-    <string name="logout"><u>Log out</u>.</string>
+    <string name="logout">Log out</string>
     <string name="login">Log in</string>
     <string name="logout_msg">Are you sure you want to log out?</string>
+    <string name="logout_success">Logged out successfully</string>
     <string name="updateProfile">Update Profile</string>
     <string name="signUp">Sign up</string>
     <string name="friendRequest">Friend Request</string>

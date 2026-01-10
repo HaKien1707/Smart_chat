@@ -77,9 +77,10 @@
     <string name="confirm">Xác nhận</string>
     <string name="cancel">Hủy</string>
     <string name="writeMSG">Nhập tin nhắn ở đây…</string>
-    <string name="logout"><u>Đăng xuất</u>.</string>
+    <string name="logout">Đăng xuất</string>
     <string name="login">Đăng nhập</string>
     <string name="logout_msg">Bạn có chắc chắn muốn đăng xuất không?</string>
+    <string name="logout_success">Đăng xuất thành công</string>
     <string name="updateProfile">Cập nhật hồ sơ</string>
     <string name="signUp">Đăng ký</string>
     <string name="friendRequest">Lời mời kết bạn</string>

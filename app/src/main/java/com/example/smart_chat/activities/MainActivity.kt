@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -37,6 +38,7 @@ import com.example.smart_chat.utils.firebase.*
 import com.google.firebase.firestore.ListenerRegistration
 import android.Manifest
 import com.example.smart_chat.models.video_call.VideoCallModel
+import com.example.smart_chat.activities.login.WelcomeActivity
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     companion object {
@@ -235,7 +237,47 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun logoutUser() {
-        // Logout logic...
+        // Show confirmation dialog
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.logout)
+            .setMessage(R.string.logout_msg)
+            .setPositiveButton(android.R.string.yes) { _, _ ->
+                // Perform logout
+                performLogout()
+            }
+            .setNegativeButton(android.R.string.no) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+        
+        // Set button text color to white
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(android.graphics.Color.WHITE)
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.WHITE)
+    }
+
+    private fun performLogout() {
+        try {
+            // Stop listening for incoming calls
+            incomingCallListener?.remove()
+
+            // Sign out from Firebase
+            FirebaseAuthentication.logout()
+
+            // Clear app data/cache if needed
+            // Optional: Clear SharedPreferences or other local data
+            val sharedPref = getSharedPreferences("app_prefs", MODE_PRIVATE)
+            sharedPref?.edit()?.clear()?.apply()
+
+            // Navigate to Welcome Activity
+            val intent = Intent(this, WelcomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+
+            Toast.makeText(this, R.string.logout_success, Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Logout failed: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     fun replaceFragment(fragment: Fragment, addToBackStack: Boolean = false) {
