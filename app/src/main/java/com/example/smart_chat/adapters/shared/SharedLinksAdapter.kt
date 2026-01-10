@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smart_chat.R
 import com.example.smart_chat.models.shared.SharedLinkItem
+import com.example.smart_chat.utils.shared.SharedContentClassifier
 
 class SharedLinksAdapter(
     private val context: Context,
@@ -34,7 +35,7 @@ class SharedLinksAdapter(
         holder.url.text = item.url
 
         holder.itemView.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.url))
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(SharedContentClassifier.normalizeUrlForOpen(item.url)))
             context.startActivity(intent)
         }
     }

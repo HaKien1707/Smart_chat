@@ -7,15 +7,48 @@ object SharedContentClassifier {
     private val imageExtensions = setOf("jpg", "jpeg", "png", "gif", "webp", "heic")
     private val videoExtensions = setOf("mp4", "mov", "mkv", "webm", "3gp", "avi")
 
+    /**
+     * Extract URLs from plain text.
+     *
+     * Note: Patterns.WEB_URL is quite permissive and can match code-like tokens
+     * (e.g. "chatActivity.class"). We filter aggressively to reduce false positives
+     * so the Links tab behaves like Telegram.
+     */
     fun extractUrls(text: String?): List<String> {
         if (text.isNullOrBlank()) return emptyList()
+
         val matcher = Patterns.WEB_URL.matcher(text)
         val urls = mutableListOf<String>()
+
         while (matcher.find()) {
-            val match = matcher.group() ?: continue
-            urls.add(match)
+            val raw = matcher.group() ?: continue
+            val candidate = raw.trim().trimEnd('.', ',', ';', ')', ']', '}', '"', '\'')
+
+            // Accept only explicit URLs or common "www." form.
+            val lower = candidate.lowercase()
+            val hasScheme = lower.startsWith("http://") || lower.startsWith("https://")
+            val isWww = lower.startsWith("www.")
+            if (!hasScheme && !isWww) continue
+
+            // Filter out typical code / class references.
+            if (lower.endsWith(".class") || lower.endsWith(".kt") || lower.endsWith(".java") || lower.endsWith(".xml")) {
+                continue
+            }
+
+            urls.add(candidate)
         }
+
         return urls.distinct()
+    }
+
+    fun normalizeUrlForOpen(url: String): String {
+        val trimmed = url.trim()
+        val lower = trimmed.lowercase()
+        return if (lower.startsWith("http://") || lower.startsWith("https://")) {
+            trimmed
+        } else {
+            "https://$trimmed"
+        }
     }
 
     fun isMediaMessage(
