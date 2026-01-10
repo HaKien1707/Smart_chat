@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smart_chat.R
+import com.example.smart_chat.fragment.CallFragment
 import com.example.smart_chat.models.userModel
 import com.example.smart_chat.utils.firebase.FirebaseAuthentication
 import com.example.smart_chat.utils.others.androidUtils
@@ -107,8 +108,23 @@ class UserChatSettingsFragment : Fragment() {
         }
 
         callBtn.setOnClickListener {
-            // TODO: Implement call functionality
-            Toast.makeText(requireContext(), "Call ${user?.username}", Toast.LENGTH_SHORT).show()
+            val currentUser = user
+            if (currentUser?.userID.isNullOrBlank()) {
+                Toast.makeText(requireContext(), "User not found", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val fragment = CallFragment.newInstance(
+                receiverId = currentUser!!.userID!!,
+                receiverName = currentUser.username,
+                receiverImage = currentUser.profileImage,
+                callType = "video"
+            )
+
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit()
         }
 
         addToContactsBtn.setOnClickListener {
