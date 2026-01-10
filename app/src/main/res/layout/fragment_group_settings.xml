@@ -249,7 +249,7 @@
                 android:layout_height="8dp"
                 android:background="?attr/backgroundColor" />
 
-            <!-- Tabs (Members, Media, Links, Voice) -->
+            <!-- Tabs (Members, Media, Links, Files) -->
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabs"
                 android:layout_width="match_parent"

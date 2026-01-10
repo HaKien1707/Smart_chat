@@ -153,7 +153,7 @@ class CommunitySettingsFragment : Fragment() {
         tabs.addTab(tabs.newTab().setText("Members"))
         tabs.addTab(tabs.newTab().setText("Media"))
         tabs.addTab(tabs.newTab().setText("Links"))
-        tabs.addTab(tabs.newTab().setText("Voice"))
+        tabs.addTab(tabs.newTab().setText("Files"))
 
         tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -173,9 +173,9 @@ class CommunitySettingsFragment : Fragment() {
                         Toast.makeText(requireContext(), "Links - Coming soon", Toast.LENGTH_SHORT).show()
                     }
                     3 -> {
-                        // Show voice
+                        // Show files
                         membersRecycler.visibility = View.GONE
-                        Toast.makeText(requireContext(), "Voice - Coming soon", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Files - Coming soon", Toast.LENGTH_SHORT).show()
                     }
                 }
             }

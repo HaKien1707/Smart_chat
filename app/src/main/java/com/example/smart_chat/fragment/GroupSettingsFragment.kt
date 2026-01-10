@@ -161,7 +161,7 @@ class GroupSettingsFragment : Fragment() {
         tabs.addTab(tabs.newTab().setText("Members"))
         tabs.addTab(tabs.newTab().setText("Media"))
         tabs.addTab(tabs.newTab().setText("Links"))
-        tabs.addTab(tabs.newTab().setText("Voice"))
+        tabs.addTab(tabs.newTab().setText("Files"))
 
         // Set default visibility for members tab
         membersRecycler.visibility = View.VISIBLE
@@ -184,9 +184,9 @@ class GroupSettingsFragment : Fragment() {
                         Toast.makeText(requireContext(), "Links - Coming soon", Toast.LENGTH_SHORT).show()
                     }
                     3 -> {
-                        // Show voice
+                        // Show files
                         membersRecycler.visibility = View.GONE
-                        Toast.makeText(requireContext(), "Voice - Coming soon", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Files - Coming soon", Toast.LENGTH_SHORT).show()
                     }
                 }
             }

@@ -278,7 +278,7 @@
                 android:textStyle="bold"
                 android:padding="16dp" />
 
-            <!-- Tabs (Media, Links, Voice, Files) -->
+            <!-- Tabs (Media, Links, Files) -->
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabs"
                 android:layout_width="match_parent"

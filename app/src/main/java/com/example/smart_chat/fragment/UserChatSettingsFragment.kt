@@ -195,7 +195,6 @@ class UserChatSettingsFragment : Fragment() {
     private fun setupTabs() {
         tabs.addTab(tabs.newTab().setText("Media"))
         tabs.addTab(tabs.newTab().setText("Links"))
-        tabs.addTab(tabs.newTab().setText("Voice"))
         tabs.addTab(tabs.newTab().setText("Files"))
 
         tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -210,10 +209,6 @@ class UserChatSettingsFragment : Fragment() {
                         showEmptyState("No shared links yet")
                     }
                     2 -> {
-                        // Show voice
-                        showEmptyState("No shared voice messages yet")
-                    }
-                    3 -> {
                         // Show files
                         showEmptyState("No shared files yet")
                     }
