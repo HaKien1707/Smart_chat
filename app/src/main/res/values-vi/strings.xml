@@ -99,7 +99,7 @@
     <string name="privacy_policy_title">Chính sách bảo mật</string>
     <string name="privacy_policy_content">Đây là nội dung mẫu cho Chính sách bảo mật của bạn. Vui lòng thay thế bằng chính sách thực tế.</string>
 
-    <string name="you_prefix">Bạn: </string>
+    <string name="you_prefix">Bạn:</string>
 
     <!-- Placeholder -->
     <string name="chat_screen">Màn hình chat</string>

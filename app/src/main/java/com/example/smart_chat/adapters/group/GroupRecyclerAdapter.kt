@@ -22,6 +22,12 @@ class GroupRecyclerAdapter(
     private val context: Context
 ) : FirestoreRecyclerAdapter<groupModel, GroupRecyclerAdapter.GroupViewHolder>(options) {
 
+    private fun prefixPreview(prefix: String, message: String?): String {
+        val cleanedPrefix = prefix.trimEnd()
+        val cleanedMessage = message.orEmpty()
+        return if (cleanedMessage.isBlank()) cleanedPrefix else "$cleanedPrefix $cleanedMessage"
+    }
+
     override fun onBindViewHolder(holder: GroupViewHolder, position: Int, model: groupModel) {
         Log.d("GroupAdapter", "Binding group: ${model.groupName}")
 
@@ -43,7 +49,7 @@ class GroupRecyclerAdapter(
         if (model.lastMsg != null) {
             // Get sender name for last message
             if (model.lastMsgSenderID == FirebaseAuthentication.currentUserID()) {
-                holder.lastMsg.text = "You: ${model.lastMsg}"
+                holder.lastMsg.text = prefixPreview(context.getString(R.string.you_prefix), model.lastMsg)
             } else {
                 // Show just the message or sender name if available
                 holder.lastMsg.text = model.lastMsg

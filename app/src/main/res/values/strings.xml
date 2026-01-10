@@ -99,7 +99,7 @@
     <string name="privacy_policy_title">Privacy Policy</string>
     <string name="privacy_policy_content">This is a placeholder for your Privacy Policy. Please replace this with your actual policy.</string>
 
-    <string name="you_prefix">You: </string>
+    <string name="you_prefix">You:</string>
 
     <!-- Placeholder -->
     <string name="chat_screen">Chat Screen</string>

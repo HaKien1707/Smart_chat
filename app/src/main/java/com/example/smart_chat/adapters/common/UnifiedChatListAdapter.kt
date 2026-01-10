@@ -55,6 +55,12 @@ class UnifiedChatListAdapter(
     private val onDeleteUserChat: ((chatRoomId: String) -> Unit)? = null,
 ) : ListAdapter<UnifiedChatItem, RecyclerView.ViewHolder>(DiffCallback) {
 
+    private fun prefixPreview(prefix: String, message: String?): String {
+        val cleanedPrefix = prefix.trimEnd()
+        val cleanedMessage = message.orEmpty()
+        return if (cleanedMessage.isBlank()) cleanedPrefix else "$cleanedPrefix $cleanedMessage"
+    }
+
     private fun formatTimeOrDate(timestamp: Timestamp?): String {
         if (timestamp == null) return ""
         val date = timestamp.toDate()
@@ -69,8 +75,14 @@ class UnifiedChatListAdapter(
         return if (isSameDay) {
             SimpleDateFormat("HH:mm", Locale.getDefault()).format(date)
         } else {
-            // Telegram-like: month + day (e.g. Jan 03)
-            SimpleDateFormat("MMM dd", Locale.getDefault()).format(date)
+            val locale = Locale.getDefault()
+            if (locale.language.equals("vi", ignoreCase = true)) {
+                // Vietnamese: day then month (e.g. 09 Thg 5)
+                SimpleDateFormat("dd 'Thg' M", Locale("vi", "VN")).format(date)
+            } else {
+                // Telegram-like: month + day (e.g. Jan 03)
+                SimpleDateFormat("MMM dd", locale).format(date)
+            }
         }
     }
 
@@ -140,7 +152,7 @@ class UnifiedChatListAdapter(
                         }
 
                         val lastMessageText = if (model.lastMsgSenderID == currentUserID) {
-                            context.getString(R.string.you_prefix) + (model.lastMsg ?: "")
+                                prefixPreview(context.getString(R.string.you_prefix), model.lastMsg)
                         } else {
                             model.lastMsg ?: ""
                         }
@@ -172,7 +184,7 @@ class UnifiedChatListAdapter(
             val currentUserId = FirebaseAuthentication.currentUserID()
             val preview = if (!model.lastMsg.isNullOrBlank()) {
                 if (model.lastMsgSenderID == currentUserId) {
-                    context.getString(R.string.you_prefix) + model.lastMsg
+                    prefixPreview(context.getString(R.string.you_prefix), model.lastMsg)
                 } else {
                     model.lastMsg
                 }
@@ -218,7 +230,7 @@ class UnifiedChatListAdapter(
             val currentUserId = FirebaseAuthentication.currentUserID()
             val msgText = if (model.lastMsg != null) {
                 if (model.lastMsgSenderID == currentUserId) {
-                    "You: ${model.lastMsg}"
+                    prefixPreview(context.getString(R.string.you_prefix), model.lastMsg)
                 } else {
                     model.lastMsg
                 }

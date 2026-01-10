@@ -23,6 +23,12 @@ class RecentChatRecyclerAdapter(
     private val isDeletedView: Boolean = false
 ) : FirestoreRecyclerAdapter<UserChatModel, RecentChatRecyclerAdapter.ChatRoomViewHolder>(options) {
 
+    private fun prefixPreview(prefix: String, message: String?): String {
+        val cleanedPrefix = prefix.trimEnd()
+        val cleanedMessage = message.orEmpty()
+        return if (cleanedMessage.isBlank()) cleanedPrefix else "$cleanedPrefix $cleanedMessage"
+    }
+
     private val currentUserID = FirebaseAuthentication.currentUserID()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatRoomViewHolder {
@@ -44,7 +50,7 @@ class RecentChatRecyclerAdapter(
                     }
 
                     val lastMessageText = if (model.lastMsgSenderID == currentUserID) {
-                        context.getString(R.string.you_prefix) + model.lastMsg
+                        prefixPreview(context.getString(R.string.you_prefix), model.lastMsg)
                     } else {
                         model.lastMsg
                     }
