@@ -63,6 +63,7 @@
 
     <string name="newGroup">New Group</string>
     <string name="newGroupSubtitle">up to 200000 members</string>
+    <string name="newChannel">New Channel</string>
     <string name="noContactsYet">No contacts yet</string>
     <string name="groupNameHint">Group name</string>
     <string name="channelNameHint">Channel name</string>

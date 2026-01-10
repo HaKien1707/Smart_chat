@@ -1,136 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/backgroundColor">
 
-    <LinearLayout
+    <!-- Header -->
+    <RelativeLayout
+        android:id="@+id/panel"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/header_green"
+        android:elevation="4dp">
 
-        <!-- Top Panel -->
-        <RelativeLayout
-            android:layout_width="match_parent"
+        <ImageButton
+            android:id="@+id/back_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="12dp"
+            android:src="@drawable/ic_arrow_back_24"
+            app:tint="@color/white"
+            android:contentDescription="@string/backBTN" />
+
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/lazuli"
-            android:padding="12dp">
+            android:layout_centerInParent="true"
+            android:text="@string/newChannel"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-            <ImageButton
-                android:id="@+id/back_btn"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_back"
-                android:contentDescription="Back" />
+        <ImageButton
+            android:id="@+id/tick_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="12dp"
+            android:src="@drawable/ic_check"
+            app:tint="@color/white"
+            android:contentDescription="@string/confirm" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="Create Community"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/black" />
+    </RelativeLayout>
 
-        </RelativeLayout>
+    <!-- Content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/panel">
 
-        <!-- Community Image -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center"
-            android:padding="24dp">
+            android:paddingTop="18dp"
+            android:paddingBottom="24dp">
 
-            <ImageView
-                android:id="@+id/community_image"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:src="@drawable/ic_community"
-                android:background="@drawable/circle_bg"
-                android:scaleType="centerCrop"
-                android:contentDescription="Community image" />
-
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Channel name row -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Tap to add image"
-                android:textSize="14sp"
-                android:textColor="?android:textColorSecondary"
-                android:layout_marginTop="8dp" />
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/community_image"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/circle_bg"
+                    android:padding="14dp"
+                    android:src="@drawable/ic_add"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="@string/tapToChange" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:orientation="vertical">
+
+                    <EditText
+                        android:id="@+id/community_name_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
+                        android:hint="@string/channelNameHint"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:textColor="?attr/editTextColor"
+                        android:textColorHint="?android:textColorSecondary" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="?android:attr/listDivider" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Description section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="18dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/description"
+                    android:textStyle="bold"
+                    android:textColor="?android:textColorPrimary" />
+
+                <EditText
+                    android:id="@+id/community_desc_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/descriptionOptional"
+                    android:inputType="textMultiLine"
+                    android:minLines="2"
+                    android:maxLines="4"
+                    android:gravity="top"
+                    android:textColor="?attr/editTextColor"
+                    android:textColorHint="?android:textColorSecondary" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="6dp"
+                    android:background="?android:attr/listDivider" />
+
+            </LinearLayout>
 
         </LinearLayout>
+    </ScrollView>
 
-        <!-- Community Name -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Community Name"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="?android:textColorPrimary"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="16dp" />
-
-        <EditText
-            android:id="@+id/community_name_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="8dp"
-            android:background="?attr/inputBoxBackground"
-            android:padding="16dp"
-            android:hint="Enter community name"
-            android:textColor="?attr/editTextColor"
-            android:textColorHint="?android:textColorSecondary"
-            android:inputType="text"
-            android:maxLines="1" />
-
-        <!-- Community Description -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Description"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="?android:textColorPrimary"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="24dp" />
-
-        <EditText
-            android:id="@+id/community_desc_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="8dp"
-            android:background="?attr/inputBoxBackground"
-            android:padding="16dp"
-            android:hint="Enter community description"
-            android:textColor="?attr/editTextColor"
-            android:textColorHint="?android:textColorSecondary"
-            android:inputType="textMultiLine"
-            android:minLines="3"
-            android:maxLines="5"
-            android:gravity="top" />
-
-        <!-- Create Button -->
-        <Button
-            android:id="@+id/create_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="24dp"
-            android:text="Create Community"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:backgroundTint="@color/my_primary"
-            android:textColor="@color/white"
-            android:padding="16dp" />
-
-    </LinearLayout>
-
-</ScrollView>
+</RelativeLayout>

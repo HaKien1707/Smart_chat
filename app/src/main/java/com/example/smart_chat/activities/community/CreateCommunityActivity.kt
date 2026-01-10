@@ -3,7 +3,6 @@ package com.example.smart_chat.activities.community
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -20,10 +19,10 @@ import com.github.dhaval2404.imagepicker.ImagePicker
 class CreateCommunityActivity : AppCompatActivity() {
 
     private lateinit var backBtn: ImageButton
+    private lateinit var tickBtn: ImageButton
     private lateinit var communityImage: ImageView
     private lateinit var communityNameInput: EditText
     private lateinit var communityDescInput: EditText
-    private lateinit var createBtn: Button
 
     private var selectedImageBase64: String? = null
 
@@ -45,10 +44,10 @@ class CreateCommunityActivity : AppCompatActivity() {
         setContentView(R.layout.activity_create_community)
 
         backBtn = findViewById(R.id.back_btn)
+        tickBtn = findViewById(R.id.tick_btn)
         communityImage = findViewById(R.id.community_image)
         communityNameInput = findViewById(R.id.community_name_input)
         communityDescInput = findViewById(R.id.community_desc_input)
-        createBtn = findViewById(R.id.create_btn)
 
         backBtn.setOnClickListener {
             finish()
@@ -58,7 +57,7 @@ class CreateCommunityActivity : AppCompatActivity() {
             pickImage()
         }
 
-        createBtn.setOnClickListener {
+        tickBtn.setOnClickListener {
             createCommunity()
         }
     }
@@ -80,16 +79,11 @@ class CreateCommunityActivity : AppCompatActivity() {
         val description = communityDescInput.text.toString().trim()
 
         if (name.isEmpty()) {
-            Toast.makeText(this, "Please enter community name", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Please enter channel name", Toast.LENGTH_SHORT).show()
             return
         }
 
-        if (description.isEmpty()) {
-            Toast.makeText(this, "Please enter community description", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        createBtn.isEnabled = false
+        tickBtn.isEnabled = false
 
         FirebaseCommunity.createCommunity(
             name,
@@ -102,7 +96,7 @@ class CreateCommunityActivity : AppCompatActivity() {
             onFailure = { e ->
                 Log.e("CreateCommunity", "Failed to create community", e)
                 Toast.makeText(this, "Failed to create community", Toast.LENGTH_SHORT).show()
-                createBtn.isEnabled = true
+                tickBtn.isEnabled = true
             }
         )
     }
