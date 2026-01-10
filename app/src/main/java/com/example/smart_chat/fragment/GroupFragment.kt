@@ -5,10 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smart_chat.R
+import com.example.smart_chat.activities.community.CreateCommunityActivity
 import com.example.smart_chat.activities.group_chat.CreateGroupActivity
 import com.example.smart_chat.adapters.group.GroupRecyclerAdapter
 import com.example.smart_chat.models.group.groupModel
@@ -36,7 +38,22 @@ class GroupFragment : Fragment() {
 
         // Click listener for FAB
         fabCreateGroup.setOnClickListener {
-            showCreateGroupDialog()
+            val menu = PopupMenu(requireContext(), fabCreateGroup)
+            menu.menuInflater.inflate(R.menu.menu_fab_create, menu.menu)
+            menu.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.action_create_group -> {
+                        startActivity(android.content.Intent(requireContext(), CreateGroupActivity::class.java))
+                        true
+                    }
+                    R.id.action_create_community -> {
+                        startActivity(android.content.Intent(requireContext(), CreateCommunityActivity::class.java))
+                        true
+                    }
+                    else -> false
+                }
+            }
+            menu.show()
         }
 
         setupGroupRecyclerView()
@@ -81,10 +98,7 @@ class GroupFragment : Fragment() {
         })
     }
 
-    private fun showCreateGroupDialog() {
-        val intent = android.content.Intent(requireContext(), CreateGroupActivity::class.java)
-        startActivity(intent)
-    }
+    // create flow handled via popup menu
 
     override fun onStart() {
         super.onStart()

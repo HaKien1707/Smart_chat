@@ -5,9 +5,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.smart_chat.activities.community.CreateCommunityActivity
 import com.example.smart_chat.activities.group_chat.CreateGroupActivity
 import com.example.smart_chat.R
 import com.example.smart_chat.adapters.common.UnifiedChatItem
@@ -50,8 +52,22 @@ class ChatFragment : Fragment() {
         setupRecyclerView()
 
         fabCreateGroup.setOnClickListener {
-            val intent = Intent(requireContext(), CreateGroupActivity::class.java)
-            startActivity(intent)
+            val menu = PopupMenu(requireContext(), fabCreateGroup)
+            menu.menuInflater.inflate(R.menu.menu_fab_create, menu.menu)
+            menu.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.action_create_group -> {
+                        startActivity(Intent(requireContext(), CreateGroupActivity::class.java))
+                        true
+                    }
+                    R.id.action_create_community -> {
+                        startActivity(Intent(requireContext(), CreateCommunityActivity::class.java))
+                        true
+                    }
+                    else -> false
+                }
+            }
+            menu.show()
         }
 
         return view

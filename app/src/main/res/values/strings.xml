@@ -59,6 +59,7 @@
 
     <string name="searchUser">Search User</string>
     <string name="createGroup">Create Group</string>
+    <string name="createCommunity">Create Community</string>
 
     <string name="searchBTN">Search</string>
     <string name="backBTN">Back</string>
