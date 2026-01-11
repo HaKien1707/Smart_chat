@@ -17,6 +17,7 @@ import com.example.smart_chat.models.notification.NotificationItemModel
 import com.example.smart_chat.models.notification.NotificationType
 import com.example.smart_chat.utils.others.androidUtils
 import com.example.smart_chat.utils.firebase.*
+import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -78,10 +79,21 @@ class NotificationAdapter(
         position: Int
     ) {
         val user = notification.user
-        val request = notification.friendRequest!!
+        val senderId = notification.friendRequest?.senderID ?: notification.notification?.senderID
+        val currentUserId = FirebaseAuthentication.currentUserID()
+        val requestId = if (!currentUserId.isNullOrBlank() && !senderId.isNullOrBlank()) {
+            FirebaseFriends.generateFriendRequestID(currentUserId, senderId)
+        } else {
+            null
+        }
+        val notificationDocId = notification.notification?.notificationID ?: requestId
 
         holder.userName.text = user?.username ?: "Unknown"
         holder.requestDescription.text = "sent you a friend request"
+
+        // Timestamp
+        val timestampDate = notification.friendRequest?.timestamp?.toDate() ?: notification.notification?.timestamp?.toDate()
+        holder.requestTime.text = formatTimestamp(timestampDate)
 
         // Load profile image
         if (!user?.profileImage.isNullOrBlank()) {
@@ -92,14 +104,53 @@ class NotificationAdapter(
 
         // Accept button
         holder.acceptBtn.setOnClickListener {
+            if (senderId.isNullOrBlank()) {
+                Toast.makeText(context, "Invalid request", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             FirebaseFriends.acceptFriendRequest(
-                request.senderID ?: "",
+                senderId,
                 onSuccess = {
-                    Toast.makeText(context, "Friend request accepted", Toast.LENGTH_SHORT).show()
-                    notifications.removeAt(position)
+                    val now = Timestamp.now()
+                    val message = "You and ${user?.username ?: "this user"} are now friends"
+
+                    // Update/keep the receiver-side notification (id=requestId)
+                    if (!notificationDocId.isNullOrBlank()) {
+                        FirebaseNotifications.updateNotification(
+                            notificationID = notificationDocId,
+                            updates = mapOf(
+                                "type" to "FRIEND_REQUEST_ACCEPTED",
+                                "message" to message,
+                                "isRead" to true,
+                                "timestamp" to now
+                            )
+                        )
+                    }
+
+                    // Convert this row into an info notification (keep it in the list)
+                    val info = com.example.smart_chat.models.notification.NotificationModel(
+                        notificationDocId,
+                        "FRIEND_REQUEST_ACCEPTED",
+                        currentUserId,
+                        senderId,
+                        user?.username,
+                        null,
+                        null,
+                        null,
+                        null,
+                        message,
+                        true,
+                        now
+                    )
+                    notifications[position] = NotificationItemModel(
+                        type = NotificationType.FRIEND_REQUEST_ACCEPTED,
+                        user = user,
+                        notification = info
+                    )
+                    // Force RecyclerView to recreate the correct view holder (view type changes)
                     notifyItemRemoved(position)
-                    notifyItemRangeChanged(position, notifications.size)
-                    onNotificationRemoved()
+                    notifyItemInserted(position)
+                    Toast.makeText(context, "Friend request accepted", Toast.LENGTH_SHORT).show()
                 },
                 onFailure = { e ->
                     Toast.makeText(context, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -109,14 +160,53 @@ class NotificationAdapter(
 
         // Reject button
         holder.rejectBtn.setOnClickListener {
+            if (senderId.isNullOrBlank()) {
+                Toast.makeText(context, "Invalid request", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             FirebaseFriends.rejectFriendRequest(
-                request.senderID ?: "",
+                senderId,
                 onSuccess = {
-                    Toast.makeText(context, "Friend request rejected", Toast.LENGTH_SHORT).show()
-                    notifications.removeAt(position)
+                    val now = Timestamp.now()
+                    val message = "You rejected ${user?.username ?: "a"} friend request"
+
+                    // Update/keep the receiver-side notification (id=requestId)
+                    if (!notificationDocId.isNullOrBlank()) {
+                        FirebaseNotifications.updateNotification(
+                            notificationID = notificationDocId,
+                            updates = mapOf(
+                                "type" to "FRIEND_REQUEST_REJECTED",
+                                "message" to message,
+                                "isRead" to true,
+                                "timestamp" to now
+                            )
+                        )
+                    }
+
+                    // Convert this row into an info notification (keep it in the list)
+                    val info = com.example.smart_chat.models.notification.NotificationModel(
+                        notificationDocId,
+                        "FRIEND_REQUEST_REJECTED",
+                        currentUserId,
+                        senderId,
+                        user?.username,
+                        null,
+                        null,
+                        null,
+                        null,
+                        message,
+                        true,
+                        now
+                    )
+                    notifications[position] = NotificationItemModel(
+                        type = NotificationType.FRIEND_REQUEST_REJECTED,
+                        user = user,
+                        notification = info
+                    )
+                    // Force RecyclerView to recreate the correct view holder (view type changes)
                     notifyItemRemoved(position)
-                    notifyItemRangeChanged(position, notifications.size)
-                    onNotificationRemoved()
+                    notifyItemInserted(position)
+                    Toast.makeText(context, "Friend request rejected", Toast.LENGTH_SHORT).show()
                 },
                 onFailure = { e ->
                     Toast.makeText(context, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -194,6 +284,10 @@ class NotificationAdapter(
                 holder.notificationIcon.setImageResource(R.drawable.ic_person_add)
                 holder.notificationIcon.setColorFilter(context.getColor(R.color.green))
             }
+            NotificationType.FRIEND_REQUEST_REJECTED -> {
+                holder.notificationIcon.setImageResource(R.drawable.ic_close)
+                holder.notificationIcon.setColorFilter(context.getColor(R.color.red))
+            }
             NotificationType.GROUP_JOIN_REQUEST_ACCEPTED -> {
                 holder.notificationIcon.setImageResource(R.drawable.ic_group)
                 holder.notificationIcon.setColorFilter(context.getColor(R.color.green))
@@ -240,8 +334,17 @@ class NotificationAdapter(
 
         // Dismiss button
         holder.dismissBtn.setOnClickListener {
+            val notificationId = notif.notificationID
+            if (notificationId.isNullOrBlank()) {
+                // Nothing to delete on server; remove locally to prevent a stuck UI.
+                notifications.removeAt(position)
+                notifyItemRemoved(position)
+                notifyItemRangeChanged(position, notifications.size)
+                onNotificationRemoved()
+                return@setOnClickListener
+            }
             FirebaseNotifications.deleteNotification(
-                notif.notificationID ?: "",
+                notificationId,
                 onSuccess = {
                     notifications.removeAt(position)
                     notifyItemRemoved(position)
@@ -256,6 +359,7 @@ class NotificationAdapter(
 
         // Make clickable for certain types
         holder.itemView.setOnClickListener {
+            val notificationId = notif.notificationID
             when (notification.type) {
                 NotificationType.GROUP_JOIN_REQUEST_ACCEPTED,
                 NotificationType.ADDED_TO_GROUP -> {
@@ -267,7 +371,9 @@ class NotificationAdapter(
                         context.startActivity(intent)
 
                         // Mark as read
-                        FirebaseNotifications.markNotificationAsRead(notif.notificationID ?: "")
+                        if (!notificationId.isNullOrBlank()) {
+                            FirebaseNotifications.markNotificationAsRead(notificationId)
+                        }
                     }
                 }
                 NotificationType.UNBANNED_FROM_COMMUNITY -> {
@@ -279,12 +385,16 @@ class NotificationAdapter(
                         context.startActivity(intent)
 
                         // Mark as read
-                        FirebaseNotifications.markNotificationAsRead(notif.notificationID ?: "")
+                        if (!notificationId.isNullOrBlank()) {
+                            FirebaseNotifications.markNotificationAsRead(notificationId)
+                        }
                     }
                 }
                 else -> {
                     // Just mark as read
-                    FirebaseNotifications.markNotificationAsRead(notif.notificationID ?: "")
+                    if (!notificationId.isNullOrBlank()) {
+                        FirebaseNotifications.markNotificationAsRead(notificationId)
+                    }
                 }
             }
         }
@@ -312,6 +422,7 @@ class NotificationAdapter(
         val profileImage: ImageView = itemView.findViewById(R.id.profile_image)
         val userName: TextView = itemView.findViewById(R.id.user_name)
         val requestDescription: TextView = itemView.findViewById(R.id.request_description)
+        val requestTime: TextView = itemView.findViewById(R.id.request_time)
         val acceptBtn: ImageButton = itemView.findViewById(R.id.accept_btn)
         val rejectBtn: ImageButton = itemView.findViewById(R.id.reject_btn)
     }

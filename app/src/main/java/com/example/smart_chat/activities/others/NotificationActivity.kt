@@ -268,7 +268,9 @@ class NotificationActivity : AppCompatActivity() {
 
     private fun mapStringToNotificationType(type: String): NotificationType {
         return when (type) {
+            "FRIEND_REQUEST" -> NotificationType.FRIEND_REQUEST
             "FRIEND_REQUEST_ACCEPTED" -> NotificationType.FRIEND_REQUEST_ACCEPTED
+            "FRIEND_REQUEST_REJECTED" -> NotificationType.FRIEND_REQUEST_REJECTED
             "GROUP_JOIN_REQUEST_ACCEPTED" -> NotificationType.GROUP_JOIN_REQUEST_ACCEPTED
             "ADDED_TO_GROUP" -> NotificationType.ADDED_TO_GROUP
             "REMOVED_FROM_GROUP" -> NotificationType.REMOVED_FROM_GROUP
@@ -284,7 +286,7 @@ class NotificationActivity : AppCompatActivity() {
             // Sort by timestamp (newest first)
             notificationList.sortByDescending {
                 when (it.type) {
-                    NotificationType.FRIEND_REQUEST -> it.friendRequest?.timestamp
+                    NotificationType.FRIEND_REQUEST -> it.friendRequest?.timestamp ?: it.notification?.timestamp
                     NotificationType.GROUP_JOIN_REQUEST -> it.groupJoinRequest?.timestamp
                     else -> it.notification?.timestamp
                 }

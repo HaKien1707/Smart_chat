@@ -26,7 +26,68 @@ class SearchUserRecyclerAdapter(
     private val activity: Activity
 ) : FirestoreRecyclerAdapter<userModel, SearchUserRecyclerAdapter.UserModelViewHolder>(options) {
 
+    private var searchQuery: String = ""
+    private var isPhoneSearch: Boolean = false
+
+    fun updateSearchQuery(query: String) {
+        searchQuery = query
+        isPhoneSearch = query.matches(Regex("^[+\\-\\d\\s]+$"))
+        notifyDataSetChanged()
+    }
+
+    fun getFilteredItemCount(): Int {
+        if (searchQuery.isBlank()) return snapshots.size
+
+        var count = 0
+        for (i in 0 until snapshots.size) {
+            val model = snapshots[i]
+            if (matchesQuery(model)) count++
+        }
+        return count
+    }
+
+    private fun matchesQuery(model: userModel): Boolean {
+        val q = searchQuery.trim()
+        if (q.isEmpty()) return true
+
+        return if (isPhoneSearch) {
+            val normalizedQuery = q.replace(Regex("[\\s-]"), "")
+            val normalizedPhone = (model.phoneNumber ?: "").replace(Regex("[\\s-]"), "")
+            normalizedPhone.startsWith(normalizedQuery)
+        } else {
+            val lowerQuery = q.lowercase()
+            (model.username ?: "").lowercase().startsWith(lowerQuery)
+        }
+    }
+
     override fun onBindViewHolder(holder: UserModelViewHolder, position: Int, model: userModel) {
+        // Firestore usually stores user id as the document id.
+        // If userID isn't stored as a field, model.userID will be null -> can crash code paths that do document("").
+        val resolvedUserId = try {
+            snapshots.getSnapshot(position).id
+        } catch (_: Exception) {
+            model.userID ?: ""
+        }
+        if (model.userID.isNullOrBlank() && resolvedUserId.isNotBlank()) {
+            model.userID = resolvedUserId
+        }
+
+        // Client-side filter to make search case-insensitive even if stored usernames are "Cat".
+        if (!matchesQuery(model)) {
+            holder.itemView.visibility = View.GONE
+            holder.itemView.layoutParams = RecyclerView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0
+            )
+            return
+        } else {
+            holder.itemView.visibility = View.VISIBLE
+            holder.itemView.layoutParams = RecyclerView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
         // Load image
         if (!model.profileImage.isNullOrEmpty()) {
             androidUtils.setProfileImageFromBase64(
@@ -41,7 +102,7 @@ class SearchUserRecyclerAdapter(
         holder.usernameText.text = model.username
         holder.usernamePhone.text = model.phoneNumber
 
-        val isCurrentUser = model.userID == FirebaseAuthentication.currentUserID()
+        val isCurrentUser = resolvedUserId.isNotBlank() && resolvedUserId == FirebaseAuthentication.currentUserID()
 
         if (isCurrentUser) {
             // Current user
@@ -60,8 +121,20 @@ class SearchUserRecyclerAdapter(
             holder.removeFriendBtn.setOnClickListener(null)
             holder.blockBtn.setOnClickListener(null)
 
+            if (resolvedUserId.isBlank()) {
+                activity.runOnUiThread {
+                    holder.statusText.text = "User not available"
+                    holder.statusText.visibility = View.VISIBLE
+                    holder.addFriendBtn.visibility = View.GONE
+                    holder.removeFriendBtn.visibility = View.GONE
+                    holder.blockBtn.visibility = View.GONE
+                    holder.itemView.setOnClickListener(null)
+                }
+                return
+            }
+
             // Check if blocked by other user
-            FirebaseBlocking.isBlockedByUser(model.userID ?: "") { isBlockedBy ->
+            FirebaseBlocking.isBlockedByUser(resolvedUserId) { isBlockedBy ->
                 if (isBlockedBy) {
                     // Blocked by them
                     activity.runOnUiThread {
@@ -76,7 +149,7 @@ class SearchUserRecyclerAdapter(
                 }
 
                 // Check friendship status
-                FirebaseFriends.checkFriendshipStatus(model.userID ?: "") { status ->
+                FirebaseFriends.checkFriendshipStatus(resolvedUserId) { status ->
                     activity.runOnUiThread {
                         holder.statusText.visibility = View.GONE
 
@@ -133,6 +206,7 @@ class SearchUserRecyclerAdapter(
 
                                 holder.itemView.setOnClickListener {
                                     val intent = Intent(activity, ChatActivity::class.java)
+                                    model.userID = resolvedUserId
                                     androidUtils.passUserModelAsIntent(intent, model)
                                     activity.startActivity(intent)
                                 }
@@ -177,6 +251,7 @@ class SearchUserRecyclerAdapter(
 
                                 holder.itemView.setOnClickListener {
                                     val intent = Intent(activity, ChatActivity::class.java)
+                                    model.userID = resolvedUserId
                                     androidUtils.passUserModelAsIntent(intent, model)
                                     activity.startActivity(intent)
                                 }
@@ -189,8 +264,13 @@ class SearchUserRecyclerAdapter(
     }
 
     private fun sendFriendRequest(model: userModel, holder: UserModelViewHolder) {
+        val targetId = model.userID
+        if (targetId.isNullOrBlank()) {
+            Toast.makeText(activity, "User not available", Toast.LENGTH_SHORT).show()
+            return
+        }
         FirebaseFriends.sendFriendRequest(
-            model.userID ?: "",
+            targetId,
             model.username ?: "",
             onSuccess = {
                 activity.runOnUiThread {
@@ -218,8 +298,13 @@ class SearchUserRecyclerAdapter(
     }
 
     private fun cancelFriendRequest(model: userModel, holder: UserModelViewHolder) {
+        val targetId = model.userID
+        if (targetId.isNullOrBlank()) {
+            Toast.makeText(activity, "User not available", Toast.LENGTH_SHORT).show()
+            return
+        }
         FirebaseFriends.cancelFriendRequest(
-            model.userID ?: "",
+            targetId,
             onSuccess = {
                 activity.runOnUiThread {
                     Toast.makeText(activity, "Request cancelled", Toast.LENGTH_SHORT).show()
@@ -245,8 +330,13 @@ class SearchUserRecyclerAdapter(
     }
 
     private fun acceptFriendRequest(model: userModel, holder: UserModelViewHolder) {
+        val targetId = model.userID
+        if (targetId.isNullOrBlank()) {
+            Toast.makeText(activity, "User not available", Toast.LENGTH_SHORT).show()
+            return
+        }
         FirebaseFriends.acceptFriendRequest(
-            senderID = model.userID ?: "",
+            senderID = targetId,
             onSuccess = {
                 activity.runOnUiThread {
                     Toast.makeText(activity, "Friend request accepted", Toast.LENGTH_SHORT).show()
@@ -278,12 +368,17 @@ class SearchUserRecyclerAdapter(
     }
 
     private fun removeFriend(model: userModel, holder: UserModelViewHolder) {
+        val targetId = model.userID
+        if (targetId.isNullOrBlank()) {
+            Toast.makeText(activity, "User not available", Toast.LENGTH_SHORT).show()
+            return
+        }
         AlertDialog.Builder(activity)
             .setTitle("Remove Friend")
             .setMessage("Remove ${model.username} from friends?")
             .setPositiveButton("Remove") { _, _ ->
                 FirebaseFriends.removeFriend(
-                    model.userID ?: "",
+                    targetId,
                     onSuccess = {
                         activity.runOnUiThread {
                             Toast.makeText(activity, "Friend removed", Toast.LENGTH_SHORT).show()
@@ -303,12 +398,17 @@ class SearchUserRecyclerAdapter(
     }
 
     private fun blockUser(model: userModel, holder: UserModelViewHolder) {
+        val targetId = model.userID
+        if (targetId.isNullOrBlank()) {
+            Toast.makeText(activity, "User not available", Toast.LENGTH_SHORT).show()
+            return
+        }
         AlertDialog.Builder(activity)
             .setTitle("Block User")
             .setMessage("Block ${model.username}? They won't be able to send you friend requests.")
             .setPositiveButton("Block") { _, _ ->
                 FirebaseBlocking.blockUser(
-                    model.userID ?: "",
+                    targetId,
                     onSuccess = {
                         activity.runOnUiThread {
                             Toast.makeText(activity, "${model.username} blocked", Toast.LENGTH_SHORT).show()

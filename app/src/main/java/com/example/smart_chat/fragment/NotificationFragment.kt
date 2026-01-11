@@ -46,6 +46,9 @@ class NotificationFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        FirebaseAuthentication.currentUserID()?.let { userId ->
+            FirebaseNotifications.markAllUserNotificationsAsRead(userId)
+        }
         if (!isFirstLoad) {
             loadAllNotifications()
         }
@@ -72,7 +75,7 @@ class NotificationFragment : Fragment() {
             if (completedTasks == totalTasks) {
                 notificationList.sortByDescending {
                     when (it.type) {
-                        NotificationType.FRIEND_REQUEST -> it.friendRequest?.timestamp
+                        NotificationType.FRIEND_REQUEST -> it.friendRequest?.timestamp ?: it.notification?.timestamp
                         NotificationType.GROUP_JOIN_REQUEST -> it.groupJoinRequest?.timestamp
                         else -> it.notification?.timestamp
                     }
@@ -131,6 +134,13 @@ class NotificationFragment : Fragment() {
                 notifications.forEach { notif ->
                     val type = try { NotificationType.valueOf(notif.type ?: "") } catch (e: Exception) { null }
                     if (type != null) {
+                        // Pending friend requests are sourced from friendRequests collection.
+                        // Skipping FRIEND_REQUEST here prevents duplicate rows.
+                        if (type == NotificationType.FRIEND_REQUEST) {
+                            loadedCount++
+                            if (loadedCount == notifications.size) checkComplete()
+                            return@forEach
+                        }
                         if (!notif.senderID.isNullOrEmpty()) {
                             FirebaseAuthentication.allUsersCollection().document(notif.senderID!!).get()
                                 .addOnSuccessListener { userDoc ->

@@ -6,6 +6,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.WriteBatch
 
 object FirebaseNotifications {
     @JvmStatic
@@ -24,11 +25,12 @@ object FirebaseNotifications {
         communityID: String? = null,
         communityName: String? = null,
         message: String,
+        notificationIDOverride: String? = null,
         onSuccess: () -> Unit = {},
         onFailure: (Exception) -> Unit = {}
     ) {
         try {
-            val notificationID = notificationsCollection().document().id
+            val notificationID = notificationIDOverride ?: notificationsCollection().document().id
 
             val notification = NotificationModel(
                 notificationID,
@@ -98,6 +100,10 @@ object FirebaseNotifications {
         onSuccess: () -> Unit = {},
         onFailure: (Exception) -> Unit = {}
     ) {
+        if (notificationID.isBlank()) {
+            onFailure(IllegalArgumentException("notificationID is blank"))
+            return
+        }
         notificationsCollection().document(notificationID)
             .update("isRead", true)
             .addOnSuccessListener { onSuccess() }
@@ -110,9 +116,60 @@ object FirebaseNotifications {
         onSuccess: () -> Unit = {},
         onFailure: (Exception) -> Unit = {}
     ) {
+        if (notificationID.isBlank()) {
+            onFailure(IllegalArgumentException("notificationID is blank"))
+            return
+        }
         notificationsCollection().document(notificationID)
             .delete()
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
+    }
+
+    @JvmStatic
+    fun updateNotification(
+        notificationID: String,
+        updates: Map<String, Any>,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        if (notificationID.isBlank()) {
+            onFailure(IllegalArgumentException("notificationID is blank"))
+            return
+        }
+        notificationsCollection().document(notificationID)
+            .update(updates)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    @JvmStatic
+    fun markAllUserNotificationsAsRead(
+        userID: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        try {
+            notificationsCollection()
+                .whereEqualTo("recipientID", userID)
+                .whereEqualTo("isRead", false)
+                .get()
+                .addOnSuccessListener { docs ->
+                    if (docs.isEmpty) {
+                        onSuccess()
+                        return@addOnSuccessListener
+                    }
+                    val batch: WriteBatch = FirebaseFirestore.getInstance().batch()
+                    docs.documents.forEach { doc ->
+                        batch.update(doc.reference, "isRead", true)
+                    }
+                    batch.commit()
+                        .addOnSuccessListener { onSuccess() }
+                        .addOnFailureListener { onFailure(it) }
+                }
+                .addOnFailureListener { onFailure(it) }
+        } catch (e: Exception) {
+            onFailure(e)
+        }
     }
 }

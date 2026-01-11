@@ -50,6 +50,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var binding: ActivityMainBinding
 
     private var incomingCallListener: ListenerRegistration? = null
+    private var unreadNotificationsListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         ThemeManager.applySavedTheme(this)
@@ -93,8 +94,34 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         syncUiWithCurrentFragment()
 
         startListeningForIncomingCalls()
+        startListeningForUnreadNotifications()
         getFCMtoken()
         loadUserDataIntoDrawer()
+    }
+
+    private fun startListeningForUnreadNotifications() {
+        val userId = FirebaseAuthentication.currentUserID() ?: return
+
+        // Remove old listener if any
+        unreadNotificationsListener?.remove()
+
+        unreadNotificationsListener = FirebaseNotifications.notificationsCollection()
+            .whereEqualTo("recipientID", userId)
+            .whereEqualTo("isRead", false)
+            .addSnapshotListener { snapshot, _ ->
+                val count = snapshot?.size() ?: 0
+                runOnUiThread {
+                    if (count <= 0) {
+                        binding.bottomNavigation.removeBadge(R.id.menu_notifications)
+                    } else {
+                        val badge = binding.bottomNavigation.getOrCreateBadge(R.id.menu_notifications)
+                        // Show exact unread count (avoid 9+/0+ style)
+                        badge.maxCharacterCount = 4
+                        badge.number = count
+                        badge.isVisible = true
+                    }
+                }
+            }
     }
 
     private fun syncUiWithCurrentFragment() {
@@ -119,7 +146,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    private fun clearDrawerCheckedItem() {
+        val menu = binding.navView.menu
+        for (i in 0 until menu.size()) {
+            val item = menu.getItem(i)
+            item.isChecked = false
+            val subMenu = item.subMenu
+            if (subMenu != null) {
+                for (j in 0 until subMenu.size()) {
+                    subMenu.getItem(j).isChecked = false
+                }
+            }
+        }
+    }
+
     private fun setupMainUI() {
+        // We're back on a main screen; drawer should not keep highlighting the last selected item.
+        clearDrawerCheckedItem()
+
         binding.panel.visibility = View.VISIBLE
         binding.bottomNavigation.visibility = View.VISIBLE
         binding.searchBtn.visibility = View.VISIBLE
@@ -339,8 +383,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onDestroy() {
-        super.onDestroy()
+        unreadNotificationsListener?.remove()
         incomingCallListener?.remove()
+        super.onDestroy()
     }
 
     override fun onResume() {

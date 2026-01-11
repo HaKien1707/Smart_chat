@@ -7,6 +7,7 @@ import com.example.smart_chat.models.userModel
 enum class NotificationType {
     FRIEND_REQUEST,
     FRIEND_REQUEST_ACCEPTED,
+    FRIEND_REQUEST_REJECTED,
     GROUP_JOIN_REQUEST,
     GROUP_JOIN_REQUEST_ACCEPTED,
     REMOVED_FROM_GROUP,

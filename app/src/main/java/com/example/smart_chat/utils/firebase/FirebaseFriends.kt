@@ -35,6 +35,10 @@ object FirebaseFriends {
         onFailure: (Exception) -> Unit
     ) {
         val currentUserID = FirebaseAuthentication.currentUserID() ?: return
+        if (receiverID.isBlank()) {
+            onFailure(IllegalArgumentException("receiverID is blank"))
+            return
+        }
 
         FirebaseAuthentication.currentUserDetails().get().addOnSuccessListener { document ->
             val currentUser = document.toObject(userModel::class.java)
@@ -51,7 +55,19 @@ object FirebaseFriends {
             )
 
             getFriendRequestReference(requestID).set(request)
-                .addOnSuccessListener { onSuccess() }
+                .addOnSuccessListener {
+                    // Create an in-app notification for the receiver (shown in bottom-nav Notifications)
+                    FirebaseNotifications.createNotification(
+                        type = "FRIEND_REQUEST",
+                        recipientID = receiverID,
+                        senderID = currentUserID,
+                        senderName = currentUser?.username ?: "Someone",
+                        message = "${currentUser?.username ?: "Someone"} sent you a friend request",
+                        // Use deterministic id so we can delete it easily on cancel/accept/reject
+                        notificationIDOverride = requestID
+                    )
+                    onSuccess()
+                }
                 .addOnFailureListener { onFailure(it) }
         }
     }
@@ -63,6 +79,10 @@ object FirebaseFriends {
         onFailure: (Exception) -> Unit
     ) {
         val currentUserID = FirebaseAuthentication.currentUserID() ?: return
+        if (senderID.isBlank()) {
+            onFailure(IllegalArgumentException("senderID is blank"))
+            return
+        }
         val requestID = generateFriendRequestID(currentUserID, senderID)
 
         getFriendRequestReference(requestID).update("status", "accepted")
@@ -90,10 +110,27 @@ object FirebaseFriends {
         onFailure: (Exception) -> Unit
     ) {
         val currentUserID = FirebaseAuthentication.currentUserID() ?: return
+        if (senderID.isBlank()) {
+            onFailure(IllegalArgumentException("senderID is blank"))
+            return
+        }
         val requestID = generateFriendRequestID(currentUserID, senderID)
 
         getFriendRequestReference(requestID).update("status", "rejected")
-            .addOnSuccessListener { onSuccess() }
+            .addOnSuccessListener {
+                // Notify sender about rejection
+                FirebaseAuthentication.currentUserDetails().get().addOnSuccessListener { doc ->
+                    val currentUser = doc.toObject(userModel::class.java)
+                    FirebaseNotifications.createNotification(
+                        type = "FRIEND_REQUEST_REJECTED",
+                        recipientID = senderID,
+                        senderID = currentUserID,
+                        senderName = currentUser?.username ?: "Someone",
+                        message = "${currentUser?.username ?: "Someone"} rejected your friend request"
+                    )
+                }
+                onSuccess()
+            }
             .addOnFailureListener { onFailure(it) }
     }
 
@@ -104,10 +141,18 @@ object FirebaseFriends {
         onFailure: (Exception) -> Unit
     ) {
         val currentUserID = FirebaseAuthentication.currentUserID() ?: return
+        if (receiverID.isBlank()) {
+            onFailure(IllegalArgumentException("receiverID is blank"))
+            return
+        }
         val requestID = generateFriendRequestID(currentUserID, receiverID)
 
         getFriendRequestReference(requestID).delete()
-            .addOnSuccessListener { onSuccess() }
+            .addOnSuccessListener {
+                // Remove the pending friend-request notification for the receiver
+                FirebaseNotifications.deleteNotification(requestID)
+                onSuccess()
+            }
             .addOnFailureListener { onFailure(it) }
     }
 
@@ -117,6 +162,10 @@ object FirebaseFriends {
         onResult: (FriendshipStatus) -> Unit
     ) {
         val currentUserID = FirebaseAuthentication.currentUserID() ?: return
+        if (otherUserID.isBlank()) {
+            onResult(FriendshipStatus.NOT_FRIENDS)
+            return
+        }
         val requestID = generateFriendRequestID(currentUserID, otherUserID)
 
         getFriendRequestReference(requestID).get()
@@ -218,6 +267,10 @@ object FirebaseFriends {
         onFailure: (Exception) -> Unit
     ) {
         val currentUserID = FirebaseAuthentication.currentUserID() ?: return
+        if (friendID.isBlank()) {
+            onFailure(IllegalArgumentException("friendID is blank"))
+            return
+        }
         val requestID = generateFriendRequestID(currentUserID, friendID)
 
         getFriendRequestReference(requestID).delete()

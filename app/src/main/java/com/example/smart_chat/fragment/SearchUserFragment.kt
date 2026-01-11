@@ -116,32 +116,22 @@ class SearchUserFragment : Fragment() {
             return
         }
 
-        // Detect if search query is a phone number (contains only digits and possibly +, -, spaces)
-        val isPhoneSearch = searchQuery.matches(Regex("^[+\\-\\d\\s]+$"))
-        
-        // Convert to lowercase for case-insensitive search
-        val lowerQuery = searchQuery.lowercase()
-
-        val query = if (isPhoneSearch) {
-            // Search by phone number
-            FirebaseAuthentication.allUsersCollection()
-                .whereGreaterThanOrEqualTo("phoneNumber", searchQuery)
-                .whereLessThanOrEqualTo("phoneNumber", searchQuery + "\uf8ff")
-        } else {
-            // Search by username (lowercase for case-insensitive)
-            FirebaseAuthentication.allUsersCollection()
-                .whereGreaterThanOrEqualTo("username", lowerQuery)
-                .whereLessThanOrEqualTo("username", lowerQuery + "\uf8ff")
-        }
+        // Broad query + local filtering in adapter.
+        // This avoids case-sensitive prefix-query issues (e.g. stored "Cat" not found when typing "cat").
+        val query = FirebaseAuthentication.allUsersCollection().limit(500)
 
         val options = FirestoreRecyclerOptions.Builder<userModel>()
             .setQuery(query, userModel::class.java)
             .build()
 
-        peopleAdapter = SearchUserRecyclerAdapter(options, requireActivity())
-        peopleList.layoutManager = LinearLayoutManager(context)
-        peopleList.adapter = peopleAdapter
-        peopleAdapter?.startListening()
+        if (peopleAdapter == null || peopleList.adapter == null) {
+            peopleAdapter = SearchUserRecyclerAdapter(options, requireActivity())
+            peopleList.layoutManager = LinearLayoutManager(context)
+            peopleList.adapter = peopleAdapter
+            peopleAdapter?.startListening()
+        }
+
+        peopleAdapter?.updateSearchQuery(searchQuery)
 
         peopleAdapter?.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onChanged() {
@@ -149,7 +139,7 @@ class SearchUserFragment : Fragment() {
                 checkEmpty()
             }
             private fun checkEmpty() {
-                val isEmpty = peopleAdapter?.itemCount == 0
+                val isEmpty = (peopleAdapter?.getFilteredItemCount() ?: 0) == 0
                 if (currentTabPosition == 0) {
                     emptyStateText.visibility = if (isEmpty) View.VISIBLE else View.GONE
                     emptyStateText.text = "No users found"
@@ -157,6 +147,14 @@ class SearchUserFragment : Fragment() {
                 }
             }
         })
+
+        // Also update empty-state immediately for the current query
+        val isEmptyNow = (peopleAdapter?.getFilteredItemCount() ?: 0) == 0
+        if (currentTabPosition == 0) {
+            emptyStateText.visibility = if (isEmptyNow) View.VISIBLE else View.GONE
+            emptyStateText.text = "No users found"
+            peopleList.visibility = if (isEmptyNow) View.GONE else View.VISIBLE
+        }
     }
 
     private fun searchCommunities(searchQuery: String) {

@@ -13,6 +13,10 @@ object FirebaseBlocking {
         onFailure: (Exception) -> Unit
     ) {
         val currentUserID = FirebaseAuthentication.currentUserID() ?: return
+        if (userID.isBlank()) {
+            onFailure(IllegalArgumentException("userID is blank"))
+            return
+        }
 
         // Remove friend if they are friends
         val requestID = FirebaseFriends.generateFriendRequestID(currentUserID, userID)
@@ -46,6 +50,10 @@ object FirebaseBlocking {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
+        if (userID.isBlank()) {
+            onFailure(IllegalArgumentException("userID is blank"))
+            return
+        }
         FirebaseAuthentication.currentUserDetails().update(
             "blockedUsers",
             FieldValue.arrayRemove(userID)
@@ -59,6 +67,10 @@ object FirebaseBlocking {
         userID: String,
         onResult: (Boolean) -> Unit
     ) {
+        if (userID.isBlank()) {
+            onResult(false)
+            return
+        }
         FirebaseAuthentication.currentUserDetails().get()
             .addOnSuccessListener { document ->
                 val user = document.toObject(userModel::class.java)
@@ -75,6 +87,10 @@ object FirebaseBlocking {
         userID: String,
         onResult: (Boolean) -> Unit
     ) {
+        if (userID.isBlank()) {
+            onResult(false)
+            return
+        }
         FirebaseAuthentication.allUsersCollection().document(userID).get()
             .addOnSuccessListener { document ->
                 val user = document.toObject(userModel::class.java)
