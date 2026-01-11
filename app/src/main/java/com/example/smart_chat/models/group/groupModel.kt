@@ -18,6 +18,10 @@ class groupModel {
     @JvmField
     var adminIDs: MutableList<String?>? = null
 
+    // New schema (backwards compatible): exactly one owner, and 0..n admins.
+    @JvmField
+    var ownerID: String? = null
+
     @JvmField
     var blockedUserIDs: MutableList<String> = mutableListOf() // Blocked users list
 
@@ -53,6 +57,7 @@ class groupModel {
         this.adminIDs = adminIDs
         this.createdTimestamp = createdTimestamp
         this.createdBy = createdBy
+        this.ownerID = createdBy
         this.blockedUserIDs = mutableListOf()
     }
 }

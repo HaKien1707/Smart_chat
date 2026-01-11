@@ -64,6 +64,7 @@ class UserChatSettingsFragment : Fragment() {
     private var userID: String? = null
     private var user: userModel? = null
     private var isMuted: Boolean = false
+    private var muteUntil: Long? = null
     private var friendshipStatus: FirebaseFriends.FriendshipStatus = FirebaseFriends.FriendshipStatus.NOT_FRIENDS
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,6 +97,7 @@ class UserChatSettingsFragment : Fragment() {
         setupRecycler()
         loadUserDetails()
         loadSharedContent()
+        loadMuteState()
     }
 
     private fun initViews(view: View) {
@@ -132,7 +134,7 @@ class UserChatSettingsFragment : Fragment() {
         }
 
         muteBtn.setOnClickListener {
-            toggleMute()
+            onMuteClicked()
         }
 
         callBtn.setOnClickListener {
@@ -283,17 +285,95 @@ class UserChatSettingsFragment : Fragment() {
         userStatus.text = "last seen recently"
     }
 
-    private fun toggleMute() {
-        isMuted = !isMuted
+    private fun loadMuteState() {
+        val currentUserID = FirebaseAuthentication.currentUserID()
+        val otherUserID = userID
+        if (currentUserID.isNullOrBlank() || otherUserID.isNullOrBlank()) return
+
+        val chatRoomID = FirebaseChat.getChatRoomID(currentUserID, otherUserID)
+        FirebaseChat.getChatRoomReference(chatRoomID)
+            .collection("mutes")
+            .document(currentUserID)
+            .get()
+            .addOnSuccessListener { doc ->
+                muteUntil = doc.getLong("muteUntil")
+                updateMuteUI()
+            }
+    }
+
+    private fun updateMuteUI() {
+        val now = System.currentTimeMillis()
+        isMuted = (muteUntil ?: 0L) > now
         if (isMuted) {
             muteIcon.setImageResource(R.drawable.ic_notifications_off)
-            Toast.makeText(requireContext(), "Notifications muted", Toast.LENGTH_SHORT).show()
-            // TODO: Save mute preference
         } else {
             muteIcon.setImageResource(R.drawable.ic_bell)
-            Toast.makeText(requireContext(), "Notifications enabled", Toast.LENGTH_SHORT).show()
-            // TODO: Remove mute preference
         }
+    }
+
+    private fun onMuteClicked() {
+        val currentUserID = FirebaseAuthentication.currentUserID()
+        val otherUserID = userID
+        if (currentUserID.isNullOrBlank() || otherUserID.isNullOrBlank()) return
+
+        val chatRoomID = FirebaseChat.getChatRoomID(currentUserID, otherUserID)
+        val muteRef = FirebaseChat.getChatRoomReference(chatRoomID)
+            .collection("mutes")
+            .document(currentUserID)
+
+        val now = System.currentTimeMillis()
+        val currentlyMuted = (muteUntil ?: 0L) > now
+
+        if (currentlyMuted) {
+            muteRef.delete()
+                .addOnSuccessListener {
+                    muteUntil = 0L
+                    updateMuteUI()
+                    Toast.makeText(requireContext(), "Notifications enabled", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                }
+            return
+        }
+
+        showMuteDialog { selectedUntil ->
+            muteRef.set(mapOf("muteUntil" to selectedUntil))
+                .addOnSuccessListener {
+                    muteUntil = selectedUntil
+                    updateMuteUI()
+                    Toast.makeText(requireContext(), "Notifications muted", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    private fun showMuteDialog(onOk: (Long) -> Unit) {
+        val options = arrayOf("5 minutes", "15 minutes", "Until I change")
+        var selectedIndex = 0
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Mute notifications")
+            .setSingleChoiceItems(options, selectedIndex) { _, which ->
+                selectedIndex = which
+            }
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("OK") { _, _ ->
+                val now = System.currentTimeMillis()
+                val until = when (selectedIndex) {
+                    0 -> now + 5 * 60 * 1000L
+                    1 -> now + 15 * 60 * 1000L
+                    else -> Long.MAX_VALUE
+                }
+                onOk(until)
+            }
+            .show()
+            .apply {
+                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(android.graphics.Color.WHITE)
+                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(android.graphics.Color.WHITE)
+            }
     }
 
     private fun loadSharedContent() {

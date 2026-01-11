@@ -18,6 +18,17 @@ class CommunityModel {
     @JvmField
     var adminID: String? = null
 
+    // New schema (backwards compatible): one owner, many admins
+    @JvmField
+    var ownerID: String? = null
+
+    @JvmField
+    var adminIDs: MutableList<String>? = null
+
+    // "public" (searchable) or "private" (not searchable)
+    @JvmField
+    var communityType: String? = "public"
+
     @JvmField
     var bannedUserIDs: MutableList<String> = mutableListOf()
 
@@ -51,6 +62,9 @@ class CommunityModel {
         this.communityDescription = communityDescription
         this.communityImage = communityImage
         this.adminID = adminID
+        this.ownerID = adminID
+        this.adminIDs = mutableListOf()
+        this.communityType = "public"
         this.createdTimestamp = createdTimestamp
         this.bannedUserIDs = mutableListOf()
         this.announcement = null

@@ -18,14 +18,20 @@ class GroupMemberAdapter(
     val members: List<Pair<userModel, Boolean>>, // Pair<user, isAdmin>
     private val context: Context,
     private val currentUserIsAdmin: Boolean,
+    private val currentUserIsOwner: Boolean,
     private val currentUserID: String?,
+    private val ownerID: String?,
     private val onChatMember: (userModel) -> Unit,
+    private val onAddAdmin: (String) -> Unit,
+    private val onRemoveAdmin: (String) -> Unit,
     private val onRemoveMember: (String) -> Unit
 ) : RecyclerView.Adapter<GroupMemberAdapter.MemberViewHolder>() {
 
     private companion object {
         const val MENU_ID_CHAT = 1
         const val MENU_ID_REMOVE = 2
+        const val MENU_ID_ADD_ADMIN = 3
+        const val MENU_ID_REMOVE_ADMIN = 4
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MemberViewHolder {
@@ -37,6 +43,8 @@ class GroupMemberAdapter(
     override fun onBindViewHolder(holder: MemberViewHolder, position: Int) {
         val (user, isAdmin) = members[position]
 
+        val isOwner = user.userID != null && user.userID == ownerID
+
         // Set member name
         holder.memberName.text = user.username
 
@@ -45,10 +53,10 @@ class GroupMemberAdapter(
             holder.memberName.text = "${user.username} (You)"
         }
 
-        // Show admin badge
-        if (isAdmin) {
+        // Show role badge
+        if (isOwner || isAdmin) {
             holder.memberRole.visibility = View.VISIBLE
-            holder.memberRole.text = "Admin"
+            holder.memberRole.text = if (isOwner) "Owner" else "Admin"
         } else {
             holder.memberRole.visibility = View.GONE
         }
@@ -98,8 +106,20 @@ class GroupMemberAdapter(
 
         popup.menu.add(0, MENU_ID_CHAT, 0, "Chat")
 
+        val memberId = member.userID
+        val isOwnerMember = memberId != null && memberId == ownerID
+
+        // Owner-only: add/remove admin
+        if (currentUserIsOwner && memberId != null && !isOwnerMember && memberId != currentUserID) {
+            if (memberIsAdmin) {
+                popup.menu.add(0, MENU_ID_REMOVE_ADMIN, 1, "Remove from admin")
+            } else {
+                popup.menu.add(0, MENU_ID_ADD_ADMIN, 1, "Add admin")
+            }
+        }
+
         // Admins can remove members (but typically not other admins)
-        val canRemove = currentUserIsAdmin && !memberIsAdmin && member.userID != currentUserID
+        val canRemove = currentUserIsAdmin && !memberIsAdmin && !isOwnerMember && member.userID != currentUserID
         if (canRemove) {
             popup.menu.add(0, MENU_ID_REMOVE, 1, "Remove")
         }
@@ -108,6 +128,20 @@ class GroupMemberAdapter(
             when (item.itemId) {
                 MENU_ID_CHAT -> {
                     onChatMember(member)
+                    true
+                }
+                MENU_ID_ADD_ADMIN -> {
+                    val id = member.userID
+                    if (!id.isNullOrBlank()) {
+                        onAddAdmin(id)
+                    }
+                    true
+                }
+                MENU_ID_REMOVE_ADMIN -> {
+                    val id = member.userID
+                    if (!id.isNullOrBlank()) {
+                        onRemoveAdmin(id)
+                    }
                     true
                 }
                 MENU_ID_REMOVE -> {

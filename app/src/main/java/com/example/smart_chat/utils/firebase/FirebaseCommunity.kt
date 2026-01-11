@@ -43,6 +43,11 @@ object FirebaseCommunity {
             Timestamp.now()
         )
 
+        // Backfill new fields for search/permissions.
+        community.ownerID = currentUserID
+        community.adminIDs = mutableListOf()
+        community.communityType = "public"
+
         getCommunityReference(communityID).set(community)
             .addOnSuccessListener { onSuccess(communityID) }
             .addOnFailureListener { onFailure(it) }

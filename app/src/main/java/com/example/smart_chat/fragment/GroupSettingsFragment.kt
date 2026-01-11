@@ -46,8 +46,10 @@ import com.example.smart_chat.utils.shared.SharedContentClassifier
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import java.io.ByteArrayOutputStream
+import kotlin.random.Random
 
 class GroupSettingsFragment : Fragment() {
 
@@ -59,6 +61,7 @@ class GroupSettingsFragment : Fragment() {
     private lateinit var membersCount: TextView
     private lateinit var messageBtn: LinearLayout
     private lateinit var muteBtn: LinearLayout
+    private lateinit var muteIcon: ImageView
     private lateinit var leaveBtn: LinearLayout
     private lateinit var addMembersBtn: LinearLayout
     private lateinit var tabs: TabLayout
@@ -71,6 +74,9 @@ class GroupSettingsFragment : Fragment() {
     private val membersList = mutableListOf<Pair<userModel, Boolean>>()
     private var adapter: GroupMemberAdapter? = null
     private var currentUserIsAdmin = false
+    private var currentUserIsOwner = false
+
+    private var muteUntil: Long? = null
 
     private lateinit var mediaAdapter: SharedMediaAdapter
     private lateinit var linksAdapter: SharedLinksAdapter
@@ -127,6 +133,7 @@ class GroupSettingsFragment : Fragment() {
         setupRecycler()
         loadGroupDetails()
         loadSharedContent()
+        loadMuteState()
     }
 
     private fun initViews(view: View) {
@@ -138,12 +145,23 @@ class GroupSettingsFragment : Fragment() {
         membersCount = view.findViewById(R.id.members_count)
         messageBtn = view.findViewById(R.id.message_btn)
         muteBtn = view.findViewById(R.id.mute_btn)
+        muteIcon = view.findViewById(R.id.mute_icon)
         leaveBtn = view.findViewById(R.id.leave_btn)
         addMembersBtn = view.findViewById(R.id.add_members_btn)
         tabs = view.findViewById(R.id.tabs)
         membersRecycler = view.findViewById(R.id.members_recycler)
         sharedRecycler = view.findViewById(R.id.shared_recycler)
         emptyText = view.findViewById(R.id.empty_text)
+    }
+
+    private fun updateMuteUI() {
+        val now = System.currentTimeMillis()
+        val isMutedNow = (muteUntil ?: 0L) > now
+        if (isMutedNow) {
+            muteIcon.setImageResource(R.drawable.ic_notifications_off)
+        } else {
+            muteIcon.setImageResource(R.drawable.ic_bell)
+        }
     }
 
     private fun setupListeners() {
@@ -168,8 +186,8 @@ class GroupSettingsFragment : Fragment() {
         }
 
         moreBtn.setOnClickListener {
-            // TODO: Show more options menu
-            Toast.makeText(requireContext(), "More options", Toast.LENGTH_SHORT).show()
+            if (!currentUserIsOwner) return@setOnClickListener
+            showOwnerMoreOptionsMenu()
         }
 
         messageBtn.setOnClickListener {
@@ -178,13 +196,11 @@ class GroupSettingsFragment : Fragment() {
         }
 
         muteBtn.setOnClickListener {
-            // TODO: Implement mute functionality
-            Toast.makeText(requireContext(), "Mute notifications", Toast.LENGTH_SHORT).show()
+            onMuteClicked()
         }
 
         leaveBtn.setOnClickListener {
-            // TODO: Implement leave group
-            Toast.makeText(requireContext(), "Leave group", Toast.LENGTH_SHORT).show()
+            confirmLeaveGroup()
         }
 
         addMembersBtn.setOnClickListener {
@@ -257,9 +273,17 @@ class GroupSettingsFragment : Fragment() {
             members = membersList,
             context = requireContext(),
             currentUserIsAdmin = currentUserIsAdmin,
+            currentUserIsOwner = currentUserIsOwner,
             currentUserID = FirebaseAuthentication.currentUserID(),
+            ownerID = group?.ownerID,
             onChatMember = { user ->
                 openChatWithMember(user)
+            },
+            onAddAdmin = { userId ->
+                addAdminForMember(userId)
+            },
+            onRemoveAdmin = { userId ->
+                removeAdminForMember(userId)
             },
             onRemoveMember = { userID ->
                 removeMember(userID)
@@ -267,6 +291,42 @@ class GroupSettingsFragment : Fragment() {
         )
         membersRecycler.layoutManager = LinearLayoutManager(requireContext())
         membersRecycler.adapter = adapter
+    }
+
+    private fun addAdminForMember(userId: String) {
+        if (!currentUserIsOwner) return
+        val id = groupID ?: return
+
+        // Owner is not an admin
+        if (userId == group?.ownerID) return
+
+        FirebaseGroups.getGroupReference(id)
+            .update("adminIDs", FieldValue.arrayUnion(userId))
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Admin added", Toast.LENGTH_SHORT).show()
+                loadGroupDetails()
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun removeAdminForMember(userId: String) {
+        if (!currentUserIsOwner) return
+        val id = groupID ?: return
+
+        // Never remove owner from admin list
+        if (userId == group?.ownerID) return
+
+        FirebaseGroups.getGroupReference(id)
+            .update("adminIDs", FieldValue.arrayRemove(userId))
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Admin removed", Toast.LENGTH_SHORT).show()
+                loadGroupDetails()
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun loadGroupDetails() {
@@ -284,8 +344,38 @@ class GroupSettingsFragment : Fragment() {
                     groupImage.setImageResource(R.drawable.ic_group)
                 }
 
-                // Check if current user is admin
-                currentUserIsAdmin = group?.adminIDs?.contains(FirebaseAuthentication.currentUserID()) == true
+                val currentUserId = FirebaseAuthentication.currentUserID()
+
+                // Enforce 1 owner (backfill from legacy schema if needed)
+                val legacyOwner = group?.adminIDs?.filterNotNull()?.firstOrNull()
+                val computedOwner = group?.ownerID ?: legacyOwner ?: group?.createdBy
+                if (group?.ownerID.isNullOrBlank() && !computedOwner.isNullOrBlank()) {
+                    group?.ownerID = computedOwner
+
+                    // Remove owner from adminIDs to keep 0..n admins semantics
+                    val admins = group?.adminIDs?.filterNotNull()?.filter { it != computedOwner }?.distinct() ?: emptyList()
+                    group?.adminIDs = admins.toMutableList()
+
+                    FirebaseGroups.getGroupReference(groupID!!)
+                        .update(mapOf("ownerID" to computedOwner, "adminIDs" to admins))
+                } else if (!computedOwner.isNullOrBlank()) {
+                    // Also ensure owner is not duplicated inside adminIDs
+                    val admins = group?.adminIDs?.filterNotNull()?.filter { it != computedOwner }?.distinct() ?: emptyList()
+                    if (admins.size != (group?.adminIDs?.filterNotNull()?.size ?: 0)) {
+                        group?.adminIDs = admins.toMutableList()
+                        FirebaseGroups.getGroupReference(groupID!!)
+                            .update("adminIDs", admins)
+                    }
+                }
+
+                val ownerId = group?.ownerID
+                val isAdmin = group?.adminIDs?.contains(currentUserId) == true
+                currentUserIsOwner = !ownerId.isNullOrBlank() && ownerId == currentUserId
+
+                // Staff permissions (owner OR admin)
+                currentUserIsAdmin = currentUserIsOwner || isAdmin
+
+                moreBtn.visibility = if (currentUserIsOwner) View.VISIBLE else View.GONE
 
                 addMembersBtn.visibility = if (currentUserIsAdmin) View.VISIBLE else View.GONE
 
@@ -296,6 +386,271 @@ class GroupSettingsFragment : Fragment() {
             .addOnFailureListener { e ->
                 Log.e("GroupSettings", "Failed to load group", e)
                 Toast.makeText(requireContext(), "Failed to load group", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun showOwnerMoreOptionsMenu() {
+        val popupMenu = android.widget.PopupMenu(requireContext(), moreBtn)
+        popupMenu.menuInflater.inflate(R.menu.menu_group_settings_owner, popupMenu.menu)
+
+        popupMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_add_admin -> {
+                    showAddAdminDialog()
+                    true
+                }
+                R.id.action_delete_group -> {
+                    showDeleteGroupDialog()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popupMenu.show()
+    }
+
+    private fun showAddAdminDialog() {
+        val candidateUsers = membersList
+            .mapNotNull { (user, isAdmin) ->
+                val id = user.userID
+                if (id.isNullOrBlank()) return@mapNotNull null
+                if (isAdmin) return@mapNotNull null
+                // Owner can promote any non-admin member
+                id to (user.username ?: "Unknown")
+            }
+            .distinctBy { it.first }
+
+        if (candidateUsers.isEmpty()) {
+            Toast.makeText(requireContext(), "No members to promote", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val names = candidateUsers.map { it.second }.toTypedArray()
+        val checked = BooleanArray(candidateUsers.size)
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Add admin")
+            .setMultiChoiceItems(names, checked) { _, which, isChecked ->
+                checked[which] = isChecked
+            }
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("OK") { _, _ ->
+                val selectedIds = candidateUsers
+                    .filterIndexed { index, _ -> checked[index] }
+                    .map { it.first }
+
+                if (selectedIds.isEmpty()) return@setPositiveButton
+
+                val id = groupID ?: return@setPositiveButton
+                FirebaseGroups.getGroupReference(id)
+                    .update("adminIDs", FieldValue.arrayUnion(*selectedIds.toTypedArray()))
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Admins updated", Toast.LENGTH_SHORT).show()
+                        loadGroupDetails()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .show()
+            .apply {
+                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+            }
+    }
+
+    private fun showDeleteGroupDialog() {
+        val id = groupID ?: return
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete group")
+            .setMessage("Delete this group? This cannot be undone.")
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Delete") { _, _ ->
+                FirebaseGroups.getGroupReference(id)
+                    .delete()
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Group deleted", Toast.LENGTH_SHORT).show()
+                        activity?.finish()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .show()
+            .apply {
+                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+            }
+    }
+
+    private fun loadMuteState() {
+        val id = groupID ?: return
+        val currentUserId = FirebaseAuthentication.currentUserID() ?: return
+
+        FirebaseGroups.getGroupReference(id)
+            .collection("mutes")
+            .document(currentUserId)
+            .get()
+            .addOnSuccessListener { doc ->
+                val until = doc.getLong("muteUntil")
+                muteUntil = until
+                updateMuteUI()
+            }
+            .addOnFailureListener { e ->
+                Log.e("GroupSettingsMute", "Failed to load mute state for chatgroups/$id/mutes/$currentUserId", e)
+                updateMuteUI()
+            }
+    }
+
+    private fun onMuteClicked() {
+        val id = groupID ?: return
+        val currentUserId = FirebaseAuthentication.currentUserID() ?: return
+
+        val now = System.currentTimeMillis()
+        val isCurrentlyMuted = (muteUntil ?: 0L) > now
+
+        if (isCurrentlyMuted) {
+            FirebaseGroups.getGroupReference(id)
+                .collection("mutes")
+                .document(currentUserId)
+                .delete()
+                .addOnSuccessListener {
+                    muteUntil = 0L
+                    updateMuteUI()
+                    Toast.makeText(requireContext(), "Notifications enabled", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Log.e(
+                        "GroupSettingsMute",
+                        "Failed to unmute at chatgroups/$id/mutes/$currentUserId",
+                        it
+                    )
+                    Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                }
+            return
+        }
+
+        showMuteDialog { selectedUntil ->
+            FirebaseGroups.getGroupReference(id)
+                .collection("mutes")
+                .document(currentUserId)
+                .set(mapOf("muteUntil" to selectedUntil))
+                .addOnSuccessListener {
+                    muteUntil = selectedUntil
+                    updateMuteUI()
+                    Toast.makeText(requireContext(), "Notifications muted", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Log.e(
+                        "GroupSettingsMute",
+                        "Failed to mute at chatgroups/$id/mutes/$currentUserId",
+                        it
+                    )
+                    Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    private fun showMuteDialog(onOk: (Long) -> Unit) {
+        val options = arrayOf("5 minutes", "15 minutes", "Until I change")
+        var selectedIndex = 0
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Mute notifications")
+            .setSingleChoiceItems(options, selectedIndex) { _, which ->
+                selectedIndex = which
+            }
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("OK") { _, _ ->
+                val now = System.currentTimeMillis()
+                val until = when (selectedIndex) {
+                    0 -> now + 5 * 60 * 1000L
+                    1 -> now + 15 * 60 * 1000L
+                    else -> Long.MAX_VALUE
+                }
+                onOk(until)
+            }
+            .show()
+            .apply {
+                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+            }
+    }
+
+    private fun confirmLeaveGroup() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Leave group")
+            .setMessage("Leave this group?")
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("OK") { _, _ ->
+                leaveGroup()
+            }
+            .show()
+            .apply {
+                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+            }
+    }
+
+    private fun leaveGroup() {
+        val id = groupID ?: return
+        val currentUserId = FirebaseAuthentication.currentUserID() ?: return
+        val groupRef = FirebaseGroups.getGroupReference(id)
+
+        FirebaseFirestore.getInstance().runTransaction { tx ->
+            val snap = tx.get(groupRef)
+            val g = snap.toObject(groupModel::class.java) ?: return@runTransaction null
+
+            val members = (g.memberIDs ?: mutableListOf()).filterNotNull().toMutableList()
+            val admins = (g.adminIDs ?: mutableListOf()).filterNotNull().toMutableList()
+            var ownerId = g.ownerID ?: g.createdBy ?: admins.firstOrNull()
+
+            if (!members.contains(currentUserId)) return@runTransaction null
+
+            members.remove(currentUserId)
+            admins.remove(currentUserId)
+
+            // Ensure owner is not duplicated in admins list
+            if (!ownerId.isNullOrBlank()) {
+                admins.removeAll { it == ownerId }
+            }
+
+            if (members.isEmpty()) {
+                tx.delete(groupRef)
+                return@runTransaction null
+            }
+
+            // If the leaving user is the owner, reassign owner to a random remaining member.
+            if (!ownerId.isNullOrBlank() && ownerId == currentUserId) {
+                ownerId = members[Random.nextInt(members.size)]
+                // Owner should not appear in admins.
+                admins.removeAll { it == ownerId }
+            }
+
+            // Enforce exactly one owner
+            if (ownerId.isNullOrBlank()) {
+                ownerId = members[Random.nextInt(members.size)]
+                admins.removeAll { it == ownerId }
+            }
+
+            tx.update(
+                groupRef,
+                mapOf(
+                    "memberIDs" to members,
+                    "adminIDs" to admins,
+                    "ownerID" to ownerId
+                )
+            )
+
+            null
+        }
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Left group", Toast.LENGTH_SHORT).show()
+                activity?.finish()
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -319,16 +674,24 @@ class GroupSettingsFragment : Fragment() {
                     val user = doc.toObject(userModel::class.java)
                     val userId = user?.userID
                     if (userId != null && memberIds.contains(userId)) {
-                        val isAdmin = group?.adminIDs?.contains(userId) == true
+                        val isAdmin = userId != group?.ownerID && group?.adminIDs?.contains(userId) == true
                         membersList.add(Pair(user, isAdmin))
                         totalMembers++
                     }
                 }
 
-                // Sort: owner first, then others
-                membersList.sortWith(compareBy {
-                    if (it.first.userID == group?.adminIDs?.getOrNull(0)) 0 else 1
-                })
+                val ownerId = group?.ownerID
+                membersList.sortWith(
+                    compareBy<Pair<userModel, Boolean>> {
+                        val userId = it.first.userID
+                        val isAdmin = it.second
+                        when {
+                            userId == ownerId -> 0
+                            isAdmin -> 1
+                            else -> 2
+                        }
+                    }.thenBy { it.first.username ?: "" }
+                )
 
                 membersCount.text = "$totalMembers members"
                 adapter?.notifyDataSetChanged()

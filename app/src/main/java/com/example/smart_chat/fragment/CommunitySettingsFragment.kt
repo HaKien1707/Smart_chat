@@ -40,6 +40,7 @@ import com.example.smart_chat.utils.others.androidUtils
 import com.example.smart_chat.utils.shared.SharedContentClassifier
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.tabs.TabLayout
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import java.io.ByteArrayOutputStream
 
@@ -53,6 +54,7 @@ class CommunitySettingsFragment : Fragment() {
     private lateinit var membersCount: TextView
     private lateinit var messageBtn: LinearLayout
     private lateinit var muteBtn: LinearLayout
+    private lateinit var muteIcon: ImageView
     private lateinit var leaveBtn: LinearLayout
     private lateinit var descriptionValue: TextView
     private lateinit var inviteLinkValue: TextView
@@ -65,6 +67,9 @@ class CommunitySettingsFragment : Fragment() {
     private var community: CommunityModel? = null
     private val membersList = mutableListOf<userModel>()
     private var adapter: CommunityMemberAdapter? = null
+
+    private var currentUserIsOwner: Boolean = false
+    private var muteUntil: Long? = null
 
     private lateinit var mediaAdapter: SharedMediaAdapter
     private lateinit var linksAdapter: SharedLinksAdapter
@@ -114,6 +119,7 @@ class CommunitySettingsFragment : Fragment() {
         loadCommunityDetails()
         loadMembers()
         loadSharedContent()
+        loadMuteState()
     }
 
     private fun initViews(view: View) {
@@ -125,6 +131,7 @@ class CommunitySettingsFragment : Fragment() {
         membersCount = view.findViewById(R.id.members_count)
         messageBtn = view.findViewById(R.id.message_btn)
         muteBtn = view.findViewById(R.id.mute_btn)
+        muteIcon = view.findViewById(R.id.mute_icon)
         leaveBtn = view.findViewById(R.id.leave_btn)
         descriptionValue = view.findViewById(R.id.description_value)
         inviteLinkValue = view.findViewById(R.id.invite_link_value)
@@ -132,6 +139,16 @@ class CommunitySettingsFragment : Fragment() {
         membersRecycler = view.findViewById(R.id.members_recycler)
         sharedRecycler = view.findViewById(R.id.shared_recycler)
         emptyText = view.findViewById(R.id.empty_text)
+    }
+
+    private fun updateMuteUI() {
+        val now = System.currentTimeMillis()
+        val isMutedNow = (muteUntil ?: 0L) > now
+        if (isMutedNow) {
+            muteIcon.setImageResource(R.drawable.ic_notifications_off)
+        } else {
+            muteIcon.setImageResource(R.drawable.ic_bell)
+        }
     }
 
     private fun setupListeners() {
@@ -152,8 +169,8 @@ class CommunitySettingsFragment : Fragment() {
         }
 
         moreBtn.setOnClickListener {
-            // TODO: Show more options menu
-            Toast.makeText(requireContext(), "More options", Toast.LENGTH_SHORT).show()
+            if (!currentUserIsOwner) return@setOnClickListener
+            showOwnerMoreOptionsMenu()
         }
 
         messageBtn.setOnClickListener {
@@ -162,8 +179,7 @@ class CommunitySettingsFragment : Fragment() {
         }
 
         muteBtn.setOnClickListener {
-            // TODO: Implement mute functionality
-            Toast.makeText(requireContext(), "Mute notifications", Toast.LENGTH_SHORT).show()
+            onMuteClicked()
         }
 
         leaveBtn.setOnClickListener {
@@ -223,9 +239,57 @@ class CommunitySettingsFragment : Fragment() {
         linksAdapter = SharedLinksAdapter(requireContext())
         filesAdapter = SharedFilesAdapter(requireContext())
 
-        adapter = CommunityMemberAdapter(requireContext(), membersList, community?.adminID)
+        val ownerId = community?.ownerID ?: community?.adminID
+        val adminIds = community?.adminIDs?.filterNotNull()?.toSet().orEmpty()
+        adapter = CommunityMemberAdapter(
+            context = requireContext(),
+            membersList = membersList,
+            ownerID = ownerId,
+            adminIDs = adminIds,
+            currentUserID = FirebaseAuthentication.currentUserID(),
+            onAddAdmin = { userId ->
+                addAdminForMember(userId)
+            },
+            onRemoveAdmin = { userId ->
+                removeAdminForMember(userId)
+            }
+        )
         membersRecycler.layoutManager = LinearLayoutManager(requireContext())
         membersRecycler.adapter = adapter
+    }
+
+    private fun addAdminForMember(userId: String) {
+        if (!currentUserIsOwner) return
+        val id = communityID ?: return
+        val ownerId = community?.ownerID ?: community?.adminID
+        if (userId == ownerId) return
+
+        FirebaseCommunity.getCommunityReference(id)
+            .update("adminIDs", FieldValue.arrayUnion(userId))
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Admin added", Toast.LENGTH_SHORT).show()
+                loadCommunityDetails()
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun removeAdminForMember(userId: String) {
+        if (!currentUserIsOwner) return
+        val id = communityID ?: return
+        val ownerId = community?.ownerID ?: community?.adminID
+        if (userId == ownerId) return
+
+        FirebaseCommunity.getCommunityReference(id)
+            .update("adminIDs", FieldValue.arrayRemove(userId))
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Admin removed", Toast.LENGTH_SHORT).show()
+                loadCommunityDetails()
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun loadSharedContent() {
@@ -374,12 +438,265 @@ class CommunitySettingsFragment : Fragment() {
                     communityImage.setImageResource(R.drawable.ic_community)
                 }
 
-                // Update adapter with admin ID
-                adapter?.updateAdminID(community?.adminID)
+                val ownerId = community?.ownerID ?: community?.adminID
+                currentUserIsOwner = ownerId == FirebaseAuthentication.currentUserID()
+                moreBtn.visibility = if (currentUserIsOwner) View.VISIBLE else View.GONE
+
+                // Enforce exactly one owner and keep adminIDs excluding owner (backfill legacy docs).
+                if (!ownerId.isNullOrBlank()) {
+                    val currentAdminIds = community?.adminIDs?.filterNotNull()?.toSet().orEmpty()
+                    val cleanedAdmins = currentAdminIds.filter { it != ownerId }.toList()
+
+                    val needsOwnerBackfill = community?.ownerID.isNullOrBlank()
+                    val ownerInAdmins = currentAdminIds.contains(ownerId)
+                    val needsAdminsInit = community?.adminIDs == null
+
+                    if (needsOwnerBackfill || ownerInAdmins || needsAdminsInit) {
+                        community?.ownerID = ownerId
+                        community?.adminIDs = cleanedAdmins.toMutableList()
+                        FirebaseCommunity.getCommunityReference(communityID!!)
+                            .update(mapOf("ownerID" to ownerId, "adminIDs" to cleanedAdmins))
+                    }
+                }
+
+                val adminIds = community?.adminIDs?.filterNotNull()?.toSet().orEmpty()
+                adapter?.updateRoles(ownerId, adminIds)
+
+                // Refresh ordering/labels immediately after role changes.
+                loadMembers()
             }
             .addOnFailureListener { e ->
                 Log.e("CommunitySettings", "Failed to load community", e)
                 Toast.makeText(requireContext(), "Failed to load community", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun showOwnerMoreOptionsMenu() {
+        val popupMenu = android.widget.PopupMenu(requireContext(), moreBtn)
+        popupMenu.menuInflater.inflate(R.menu.menu_community_settings_owner, popupMenu.menu)
+
+        popupMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_community_type -> {
+                    showCommunityTypeDialog()
+                    true
+                }
+                R.id.action_add_admins -> {
+                    showAddAdminsDialog()
+                    true
+                }
+                R.id.action_delete_community -> {
+                    showDeleteCommunityDialog()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popupMenu.show()
+    }
+
+    private fun showCommunityTypeDialog() {
+        val id = communityID ?: return
+        val currentType = (community?.communityType ?: "public").lowercase()
+        val options = arrayOf("Public", "Private")
+        var selectedIndex = if (currentType == "private") 1 else 0
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Community type")
+            .setSingleChoiceItems(options, selectedIndex) { _, which ->
+                selectedIndex = which
+            }
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("OK") { _, _ ->
+                val newType = if (selectedIndex == 1) "private" else "public"
+                FirebaseCommunity.getCommunityReference(id)
+                    .update("communityType", newType)
+                    .addOnSuccessListener {
+                        community?.communityType = newType
+                        Toast.makeText(requireContext(), "Updated", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .show()
+            .apply {
+                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+            }
+    }
+
+    private fun showAddAdminsDialog() {
+        val id = communityID ?: return
+        val ownerId = community?.ownerID ?: community?.adminID
+        val existingAdmins = community?.adminIDs?.toSet().orEmpty()
+
+        val candidates = membersList
+            .mapNotNull { user ->
+                val uid = user.userID
+                if (uid.isNullOrBlank()) return@mapNotNull null
+                if (uid == ownerId) return@mapNotNull null
+                if (existingAdmins.contains(uid)) return@mapNotNull null
+                uid to (user.username ?: "Unknown")
+            }
+            .distinctBy { it.first }
+
+        if (candidates.isEmpty()) {
+            Toast.makeText(requireContext(), "No users to promote", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val names = candidates.map { it.second }.toTypedArray()
+        val checked = BooleanArray(candidates.size)
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Add admin")
+            .setMultiChoiceItems(names, checked) { _, which, isChecked ->
+                checked[which] = isChecked
+            }
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("OK") { _, _ ->
+                val selectedIds = candidates
+                    .filterIndexed { index, _ -> checked[index] }
+                    .map { it.first }
+
+                if (selectedIds.isEmpty()) return@setPositiveButton
+
+                FirebaseCommunity.getCommunityReference(id)
+                    .update("adminIDs", FieldValue.arrayUnion(*selectedIds.toTypedArray()))
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Admins updated", Toast.LENGTH_SHORT).show()
+                        // Refresh cached community object
+                        loadCommunityDetails()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .show()
+            .apply {
+                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+            }
+    }
+
+    private fun showDeleteCommunityDialog() {
+        val id = communityID ?: return
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete community")
+            .setMessage("Delete this community? This cannot be undone.")
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Delete") { _, _ ->
+                FirebaseCommunity.getCommunityReference(id)
+                    .delete()
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Community deleted", Toast.LENGTH_SHORT).show()
+                        activity?.finish()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .show()
+            .apply {
+                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+            }
+    }
+
+    private fun loadMuteState() {
+        val id = communityID ?: return
+        val currentUserId = FirebaseAuthentication.currentUserID() ?: return
+
+        FirebaseCommunity.getCommunityReference(id)
+            .collection("mutes")
+            .document(currentUserId)
+            .get()
+            .addOnSuccessListener { doc ->
+                muteUntil = doc.getLong("muteUntil")
+                updateMuteUI()
+            }
+            .addOnFailureListener { e ->
+                Log.e(
+                    "CommunitySettingsMute",
+                    "Failed to load mute state for communities/$id/mutes/$currentUserId",
+                    e
+                )
+                updateMuteUI()
+            }
+    }
+
+    private fun onMuteClicked() {
+        val id = communityID ?: return
+        val currentUserId = FirebaseAuthentication.currentUserID() ?: return
+
+        val now = System.currentTimeMillis()
+        val isCurrentlyMuted = (muteUntil ?: 0L) > now
+
+        val muteRef = FirebaseCommunity.getCommunityReference(id)
+            .collection("mutes")
+            .document(currentUserId)
+
+        if (isCurrentlyMuted) {
+            muteRef.delete()
+                .addOnSuccessListener {
+                    muteUntil = 0L
+                    updateMuteUI()
+                    Toast.makeText(requireContext(), "Notifications enabled", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Log.e(
+                        "CommunitySettingsMute",
+                        "Failed to unmute at communities/$id/mutes/$currentUserId",
+                        it
+                    )
+                    Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                }
+            return
+        }
+
+        showMuteDialog { selectedUntil ->
+            muteRef.set(mapOf("muteUntil" to selectedUntil))
+                .addOnSuccessListener {
+                    muteUntil = selectedUntil
+                    updateMuteUI()
+                    Toast.makeText(requireContext(), "Notifications muted", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Log.e(
+                        "CommunitySettingsMute",
+                        "Failed to mute at communities/$id/mutes/$currentUserId",
+                        it
+                    )
+                    Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    private fun showMuteDialog(onOk: (Long) -> Unit) {
+        val options = arrayOf("5 minutes", "15 minutes", "Until I change")
+        var selectedIndex = 0
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Mute notifications")
+            .setSingleChoiceItems(options, selectedIndex) { _, which ->
+                selectedIndex = which
+            }
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("OK") { _, _ ->
+                val now = System.currentTimeMillis()
+                val until = when (selectedIndex) {
+                    0 -> now + 5 * 60 * 1000L
+                    1 -> now + 15 * 60 * 1000L
+                    else -> Long.MAX_VALUE
+                }
+                onOk(until)
+            }
+            .show()
+            .apply {
+                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
             }
     }
 
@@ -398,10 +715,19 @@ class CommunitySettingsFragment : Fragment() {
                     }
                 }
 
-                // Sort: owner first, then others
-                membersList.sortWith(compareBy {
-                    if (it.userID == community?.adminID) 0 else 1
-                })
+                val ownerId = community?.ownerID ?: community?.adminID
+                val adminIds = community?.adminIDs?.filterNotNull()?.toSet().orEmpty()
+
+                // Sort: Owner first, then Admins, then others
+                membersList.sortWith(
+                    compareBy<userModel> {
+                        when {
+                            it.userID == ownerId -> 0
+                            it.userID != null && adminIds.contains(it.userID!!) -> 1
+                            else -> 2
+                        }
+                    }.thenBy { it.username ?: "" }
+                )
 
                 membersCount.text = "$totalMembers members"
                 adapter?.notifyDataSetChanged()

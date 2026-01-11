@@ -19,6 +19,7 @@ import com.example.smart_chat.utils.UI.LanguageManager
 import com.example.smart_chat.utils.UI.ThemeManager
 import com.example.smart_chat.utils.others.androidUtils
 import com.example.smart_chat.utils.firebase.*
+import com.google.firebase.firestore.FieldValue
 
 class GroupMembersActivity : AppCompatActivity() {
 
@@ -76,7 +77,12 @@ class GroupMembersActivity : AppCompatActivity() {
                     return@addOnSuccessListener
                 }
 
-                isAdmin = group?.adminIDs?.contains(FirebaseAuthentication.currentUserID()) == true
+                val currentUserId = FirebaseAuthentication.currentUserID()
+                val ownerId = group?.ownerID ?: group?.createdBy ?: group?.adminIDs?.filterNotNull()?.firstOrNull()
+                val isAdminOnly = group?.adminIDs?.contains(currentUserId) == true
+
+                // Staff permissions (owner OR admin)
+                isAdmin = (ownerId != null && ownerId == currentUserId) || isAdminOnly
                 loadMembers()
             }
             .addOnFailureListener {
@@ -102,7 +108,8 @@ class GroupMembersActivity : AppCompatActivity() {
                     .addOnSuccessListener { doc ->
                         val user = doc.toObject(userModel::class.java)
                         if (user != null) {
-                            val isMemberAdmin = group?.adminIDs?.contains(memberID) == true
+                            val ownerId = group?.ownerID ?: group?.createdBy
+                            val isMemberAdmin = memberID != ownerId && group?.adminIDs?.contains(memberID) == true
                             membersList.add(Pair(user, isMemberAdmin))
                         }
 
@@ -122,21 +129,76 @@ class GroupMembersActivity : AppCompatActivity() {
     }
 
     private fun setupAdapter() {
+        val currentUserId = FirebaseAuthentication.currentUserID()
+        val ownerId = group?.ownerID ?: group?.createdBy
+        val currentUserIsOwner = ownerId != null && ownerId == currentUserId
+
+        // Sort: Owner first, then Admins, then others
+        membersList.sortWith(
+            compareBy<Pair<userModel, Boolean>> {
+                val userId = it.first.userID
+                val isMemberAdmin = it.second
+                when {
+                    userId == ownerId -> 0
+                    isMemberAdmin -> 1
+                    else -> 2
+                }
+            }.thenBy { it.first.username ?: "" }
+        )
+
         adapter = GroupMemberAdapter(
-            membersList,
-            this,
-            isAdmin,
-            FirebaseAuthentication.currentUserID(),
-            onChatMember = { user ->
-                openChatWithMember(user)
-            },
-            onRemoveMember = { userID ->
-                removeMember(userID)
-            }
+            members = membersList,
+            context = this,
+            currentUserIsAdmin = isAdmin,
+            currentUserIsOwner = currentUserIsOwner,
+            currentUserID = currentUserId,
+            ownerID = ownerId,
+            onChatMember = { user -> openChatWithMember(user) },
+            onAddAdmin = { userId -> addAdminForMember(userId) },
+            onRemoveAdmin = { userId -> removeAdminForMember(userId) },
+            onRemoveMember = { userID -> removeMember(userID) }
         )
 
         membersRecycler.adapter = adapter
         hideEmptyState()
+    }
+
+    private fun addAdminForMember(userId: String) {
+        val id = groupID ?: return
+        val currentUserId = FirebaseAuthentication.currentUserID() ?: return
+        val ownerId = group?.ownerID ?: group?.createdBy
+        val currentUserIsOwner = ownerId != null && ownerId == currentUserId
+        if (!currentUserIsOwner) return
+        if (userId == ownerId) return
+
+        FirebaseGroups.getGroupReference(id)
+            .update("adminIDs", FieldValue.arrayUnion(userId))
+            .addOnSuccessListener {
+                android.widget.Toast.makeText(this, "Admin added", android.widget.Toast.LENGTH_SHORT).show()
+                loadGroupDetails()
+            }
+            .addOnFailureListener {
+                android.widget.Toast.makeText(this, it.message ?: "Failed", android.widget.Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun removeAdminForMember(userId: String) {
+        val id = groupID ?: return
+        val currentUserId = FirebaseAuthentication.currentUserID() ?: return
+        val ownerId = group?.ownerID ?: group?.createdBy
+        val currentUserIsOwner = ownerId != null && ownerId == currentUserId
+        if (!currentUserIsOwner) return
+        if (userId == ownerId) return
+
+        FirebaseGroups.getGroupReference(id)
+            .update("adminIDs", FieldValue.arrayRemove(userId))
+            .addOnSuccessListener {
+                android.widget.Toast.makeText(this, "Admin removed", android.widget.Toast.LENGTH_SHORT).show()
+                loadGroupDetails()
+            }
+            .addOnFailureListener {
+                android.widget.Toast.makeText(this, it.message ?: "Failed", android.widget.Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun openChatWithMember(user: userModel) {

@@ -146,8 +146,8 @@ class CreateGroupActivity : AppCompatActivity() {
         val allMembers = mutableListOf(FirebaseAuthentication.currentUserID())
         allMembers.addAll(selectedMembers)
 
-        // Creator is admin
-        val adminIDs = mutableListOf(FirebaseAuthentication.currentUserID())
+        // New schema: creator is the owner; admins can be empty.
+        val adminIDs = mutableListOf<String?>()
 
         // Create group model
         val group = groupModel(
@@ -159,6 +159,8 @@ class CreateGroupActivity : AppCompatActivity() {
             Timestamp.now(),
             FirebaseAuthentication.currentUserID()
         )
+
+        group.ownerID = FirebaseAuthentication.currentUserID()
 
         // Save to Firestore
         FirebaseGroups.getGroupReference(groupID)

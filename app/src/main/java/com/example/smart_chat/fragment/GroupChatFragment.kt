@@ -229,9 +229,11 @@ class GroupChatFragment : Fragment() {
                     groupImage.setImageResource(R.drawable.ic_group)
                 }
 
-                // Show settings button based on admin status
-                val isAdmin = group?.adminIDs?.contains(FirebaseAuthentication.currentUserID()) == true
-                groupSettingsBtn.visibility = if (isAdmin) View.VISIBLE else View.VISIBLE
+                    val currentUserId = FirebaseAuthentication.currentUserID()
+                    val isOwner = !group?.ownerID.isNullOrBlank() && group?.ownerID == currentUserId
+                    val isAdmin = group?.adminIDs?.contains(currentUserId) == true
+                    val isStaff = isOwner || isAdmin
+                    groupSettingsBtn.visibility = if (isStaff) View.VISIBLE else View.GONE
             }
             .addOnFailureListener { e ->
                 Log.e("GroupChatFragment", "Failed to load group: ${e.message}")

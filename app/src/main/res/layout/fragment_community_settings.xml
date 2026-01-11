@@ -161,6 +161,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless">
 
                 <ImageView
+                    android:id="@+id/mute_icon"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:src="@drawable/ic_bell"

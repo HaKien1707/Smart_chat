@@ -27,6 +27,25 @@ class SearchCommunityAdapter(
     }
 
     override fun onBindViewHolder(holder: CommunityViewHolder, position: Int, model: CommunityModel) {
+        val type = model.communityType?.lowercase()
+        val isPrivate = type == "private"
+
+        if (isPrivate) {
+            holder.itemView.visibility = View.GONE
+            holder.itemView.layoutParams = holder.itemView.layoutParams.apply {
+                height = 0
+                width = 0
+            }
+            holder.itemView.setOnClickListener(null)
+            return
+        } else {
+            holder.itemView.visibility = View.VISIBLE
+            holder.itemView.layoutParams = holder.itemView.layoutParams.apply {
+                height = ViewGroup.LayoutParams.WRAP_CONTENT
+                width = ViewGroup.LayoutParams.MATCH_PARENT
+            }
+        }
+
         holder.communityName.text = model.communityName ?: "Unknown Community"
         holder.communityDescription.text = model.communityDescription ?: "No description"
 
