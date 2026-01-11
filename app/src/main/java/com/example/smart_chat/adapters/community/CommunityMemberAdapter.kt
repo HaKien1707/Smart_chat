@@ -19,9 +19,18 @@ class CommunityMemberAdapter(
     private var ownerID: String?,
     private var adminIDs: Set<String>,
     private val currentUserID: String?,
+    private val onChatMember: (userModel) -> Unit,
     private val onAddAdmin: (String) -> Unit,
-    private val onRemoveAdmin: (String) -> Unit
+    private val onRemoveAdmin: (String) -> Unit,
+    private val onRemoveMember: (userModel) -> Unit
 ) : RecyclerView.Adapter<CommunityMemberAdapter.MemberViewHolder>() {
+
+    private companion object {
+        const val MENU_ID_CHAT = 1
+        const val MENU_ID_ADD_ADMIN = 2
+        const val MENU_ID_REMOVE_ADMIN = 3
+        const val MENU_ID_REMOVE_MEMBER = 4
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MemberViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -32,7 +41,13 @@ class CommunityMemberAdapter(
     override fun onBindViewHolder(holder: MemberViewHolder, position: Int) {
         val member = membersList[position]
 
-        holder.memberName.text = member.username ?: "Unknown"
+        val userId = member.userID
+        val displayName = member.username ?: "Unknown"
+        holder.memberName.text = if (!userId.isNullOrBlank() && userId == currentUserID) {
+            "$displayName (You)"
+        } else {
+            displayName
+        }
 
         // Set status - show "last seen recently" for all users
         holder.memberStatus.text = "last seen recently"
@@ -40,7 +55,6 @@ class CommunityMemberAdapter(
             context.getColor(android.R.color.darker_gray)
         )
 
-        val userId = member.userID
         val isOwner = userId != null && userId == ownerID
         val isAdmin = userId != null && adminIDs.contains(userId)
 
@@ -55,16 +69,23 @@ class CommunityMemberAdapter(
         }
 
         val currentUserIsOwner = ownerID != null && ownerID == currentUserID
-        val canManageThisMember = currentUserIsOwner && userId != null && userId != ownerID && userId != currentUserID
+        val currentUserIsAdmin = currentUserID != null && adminIDs.contains(currentUserID)
 
-        if (canManageThisMember) {
-            holder.optionsBtn.visibility = View.VISIBLE
-            holder.optionsBtn.setOnClickListener {
-                showMemberMenu(anchor = holder.optionsBtn, memberId = userId, memberIsAdmin = isAdmin)
-            }
-        } else {
+        val isCurrentUser = userId != null && userId == currentUserID
+        if (isCurrentUser) {
             holder.optionsBtn.visibility = View.GONE
             holder.optionsBtn.setOnClickListener(null)
+        } else {
+            // Always show 3-dots for other members; actions depend on role.
+            holder.optionsBtn.visibility = View.VISIBLE
+            holder.optionsBtn.setOnClickListener {
+                showMemberMenu(
+                    anchor = holder.optionsBtn,
+                    member = member,
+                    currentUserIsOwner = currentUserIsOwner,
+                    currentUserIsAdmin = currentUserIsAdmin
+                )
+            }
         }
 
         // Load profile image
@@ -86,21 +107,62 @@ class CommunityMemberAdapter(
         notifyDataSetChanged()
     }
 
-    private fun showMemberMenu(anchor: View, memberId: String, memberIsAdmin: Boolean) {
+    private fun showMemberMenu(
+        anchor: View,
+        member: userModel,
+        currentUserIsOwner: Boolean,
+        currentUserIsAdmin: Boolean
+    ) {
         val popup = PopupMenu(context, anchor)
-        if (memberIsAdmin) {
-            popup.menu.add("Remove from admin")
-        } else {
-            popup.menu.add("Add admin")
+        popup.menu.add(0, MENU_ID_CHAT, 0, "Chat")
+
+        val memberId = member.userID
+        val isOwnerMember = memberId != null && memberId == ownerID
+        val memberIsAdmin = memberId != null && adminIDs.contains(memberId)
+
+        // Owner-only: add/remove admin. Admins and regular users will not see this.
+        if (currentUserIsOwner && memberId != null && !isOwnerMember && memberId != currentUserID) {
+            if (memberIsAdmin) {
+                popup.menu.add(0, MENU_ID_REMOVE_ADMIN, 1, "Remove from admin")
+            } else {
+                popup.menu.add(0, MENU_ID_ADD_ADMIN, 1, "Add admin")
+            }
         }
 
-        popup.setOnMenuItemClickListener {
-            if (memberIsAdmin) {
-                onRemoveAdmin(memberId)
-            } else {
-                onAddAdmin(memberId)
+        // Remove member
+        val canRemoveMember = when {
+            memberId.isNullOrBlank() -> false
+            memberId == currentUserID -> false
+            isOwnerMember -> false
+            currentUserIsOwner -> true
+            currentUserIsAdmin && !memberIsAdmin -> true
+            else -> false
+        }
+
+        if (canRemoveMember) {
+            popup.menu.add(0, MENU_ID_REMOVE_MEMBER, 2, "Remove")
+        }
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                MENU_ID_CHAT -> {
+                    onChatMember(member)
+                    true
+                }
+                MENU_ID_ADD_ADMIN -> {
+                    if (!memberId.isNullOrBlank()) onAddAdmin(memberId)
+                    true
+                }
+                MENU_ID_REMOVE_ADMIN -> {
+                    if (!memberId.isNullOrBlank()) onRemoveAdmin(memberId)
+                    true
+                }
+                MENU_ID_REMOVE_MEMBER -> {
+                    onRemoveMember(member)
+                    true
+                }
+                else -> false
             }
-            true
         }
 
         popup.show()

@@ -1,5 +1,6 @@
 package com.example.smart_chat.fragment
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
@@ -23,6 +24,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.smart_chat.activities.user_chat.ChatActivity
 import com.example.smart_chat.R
 import com.example.smart_chat.adapters.community.CommunityMemberAdapter
 import com.example.smart_chat.adapters.shared.SharedFilesAdapter
@@ -36,6 +38,7 @@ import com.example.smart_chat.models.shared.SharedMediaItem
 import com.example.smart_chat.models.userModel
 import com.example.smart_chat.utils.firebase.FirebaseAuthentication
 import com.example.smart_chat.utils.firebase.FirebaseCommunity
+import com.example.smart_chat.utils.firebase.FirebaseNotifications
 import com.example.smart_chat.utils.others.androidUtils
 import com.example.smart_chat.utils.shared.SharedContentClassifier
 import com.github.dhaval2404.imagepicker.ImagePicker
@@ -166,6 +169,7 @@ class CommunitySettingsFragment : Fragment() {
         }
 
         editBtn.setOnClickListener {
+            if (!currentUserIsOwner && !currentUserIsAdmin) return@setOnClickListener
             showEditCommunityNameDialog()
         }
 
@@ -248,15 +252,80 @@ class CommunitySettingsFragment : Fragment() {
             ownerID = ownerId,
             adminIDs = adminIds,
             currentUserID = FirebaseAuthentication.currentUserID(),
+            onChatMember = { user ->
+                openChatWithMember(user)
+            },
             onAddAdmin = { userId ->
                 addAdminForMember(userId)
             },
             onRemoveAdmin = { userId ->
                 removeAdminForMember(userId)
+            },
+            onRemoveMember = { user ->
+                removeMemberFromCommunity(user)
             }
         )
         membersRecycler.layoutManager = LinearLayoutManager(requireContext())
         membersRecycler.adapter = adapter
+    }
+
+    private fun removeMemberFromCommunity(user: userModel) {
+        if (!currentUserIsOwner && !currentUserIsAdmin) return
+
+        val id = communityID ?: return
+        val memberId = user.userID ?: return
+        val ownerId = community?.ownerID ?: community?.adminID
+        val adminIds = community?.adminIDs?.filterNotNull()?.toSet().orEmpty()
+
+        val isOwnerMember = !ownerId.isNullOrBlank() && memberId == ownerId
+        val isAdminMember = adminIds.contains(memberId)
+
+        if (isOwnerMember) return
+        if (memberId == FirebaseAuthentication.currentUserID()) return
+
+        // Admin cannot remove admins/owner.
+        if (currentUserIsAdmin && !currentUserIsOwner && isAdminMember) return
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Remove member")
+            .setMessage("Remove ${user.username ?: "this member"} from this community?")
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Remove") { _, _ ->
+                val updates = mutableMapOf<String, Any>(
+                    "bannedUserIDs" to FieldValue.arrayUnion(memberId)
+                )
+
+                // If owner removes an admin, also remove from adminIDs.
+                if (currentUserIsOwner && isAdminMember) {
+                    updates["adminIDs"] = FieldValue.arrayRemove(memberId)
+                }
+
+                FirebaseCommunity.getCommunityReference(id)
+                    .update(updates)
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Member removed", Toast.LENGTH_SHORT).show()
+
+                        FirebaseNotifications.createNotification(
+                            type = "BANNED_FROM_COMMUNITY",
+                            recipientID = memberId,
+                            senderID = FirebaseAuthentication.currentUserID() ?: "",
+                            senderName = if (currentUserIsOwner) "Owner" else "Admin",
+                            communityID = id,
+                            communityName = community?.communityName,
+                            message = "You have been removed from ${community?.communityName}"
+                        )
+
+                        loadCommunityDetails()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .show()
+            .apply {
+                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+            }
     }
 
     private fun addAdminForMember(userId: String) {
@@ -445,6 +514,7 @@ class CommunitySettingsFragment : Fragment() {
                 currentUserIsOwner = !ownerId.isNullOrBlank() && ownerId == currentUserId
                 currentUserIsAdmin = adminIds.contains(currentUserId)
                 moreBtn.visibility = if (currentUserIsOwner || currentUserIsAdmin) View.VISIBLE else View.GONE
+                editBtn.visibility = if (currentUserIsOwner || currentUserIsAdmin) View.VISIBLE else View.GONE
 
                 // Enforce exactly one owner and keep adminIDs excluding owner (backfill legacy docs).
                 if (!ownerId.isNullOrBlank()) {
@@ -472,6 +542,12 @@ class CommunitySettingsFragment : Fragment() {
                 Log.e("CommunitySettings", "Failed to load community", e)
                 Toast.makeText(requireContext(), "Failed to load community", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun openChatWithMember(user: userModel) {
+        val intent = Intent(requireContext(), ChatActivity::class.java)
+        androidUtils.passUserModelAsIntent(intent, user)
+        startActivity(intent)
     }
 
     private fun showOwnerMoreOptionsMenu() {
@@ -710,11 +786,16 @@ class CommunitySettingsFragment : Fragment() {
                 membersList.clear()
                 var totalMembers = 0
 
+                val bannedUserIDs = community?.bannedUserIDs ?: emptyList()
+
                 for (doc in documents) {
                     val user = doc.toObject(userModel::class.java)
                     if (user != null) {
                         if (user.userID.isNullOrBlank()) {
                             user.userID = doc.id
+                        }
+                        if (!user.userID.isNullOrBlank() && bannedUserIDs.contains(user.userID)) {
+                            continue
                         }
                         membersList.add(user)
                         totalMembers++
