@@ -1,12 +1,14 @@
 package com.example.smart_chat.adapters.group
 
 import android.content.Context
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smart_chat.R
 import com.example.smart_chat.models.userModel
@@ -17,10 +19,14 @@ class GroupMemberAdapter(
     private val context: Context,
     private val currentUserIsAdmin: Boolean,
     private val currentUserID: String?,
-    private val onMemberClick: (userModel) -> Unit,
-    private val onRemoveMember: (String) -> Unit,
-    private val onBlockMember: (String) -> Unit
+    private val onChatMember: (userModel) -> Unit,
+    private val onRemoveMember: (String) -> Unit
 ) : RecyclerView.Adapter<GroupMemberAdapter.MemberViewHolder>() {
+
+    private companion object {
+        const val MENU_ID_CHAT = 1
+        const val MENU_ID_REMOVE = 2
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MemberViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -62,40 +68,62 @@ class GroupMemberAdapter(
             profileImage.setImageResource(R.drawable.ic_profile)
         }
 
-        // Click to open chat (except for yourself)
-        if (user.userID != currentUserID) {
-            holder.itemView.setOnClickListener {
-                onMemberClick(user)
-            }
-        }
+        val isCurrentUser = user.userID == currentUserID
 
-        // Show action buttons only for admins, not for current user, not for other admins
-        val canTakeAction = currentUserIsAdmin &&
-                user.userID != currentUserID &&
-                !isAdmin
-
-        if (canTakeAction) {
-            holder.blockBtn.visibility = View.VISIBLE
-            holder.blockBtn.setOnClickListener {
-                onBlockMember(user.userID ?: "")
-            }
-
-            holder.removeBtn.visibility = View.VISIBLE
-            holder.removeBtn.setOnClickListener {
-                onRemoveMember(user.userID ?: "")
-            }
+        // Show menu when tapping row or 3-dots (except for yourself)
+        if (isCurrentUser) {
+            holder.optionsBtn.visibility = View.GONE
+            holder.itemView.setOnClickListener(null)
         } else {
-            holder.blockBtn.visibility = View.GONE
-            holder.removeBtn.visibility = View.GONE
+            holder.optionsBtn.visibility = View.VISIBLE
+
+            val openMenu: (View) -> Unit = { anchor ->
+                showMemberMenu(anchor = anchor, member = user, memberIsAdmin = isAdmin)
+            }
+
+            holder.itemView.setOnClickListener {
+                openMenu(holder.optionsBtn)
+            }
+
+            holder.optionsBtn.setOnClickListener { view ->
+                openMenu(view)
+            }
         }
     }
 
     override fun getItemCount(): Int = members.size
 
+    private fun showMemberMenu(anchor: View, member: userModel, memberIsAdmin: Boolean) {
+        val popup = PopupMenu(context, anchor, Gravity.END)
+
+        popup.menu.add(0, MENU_ID_CHAT, 0, "Chat")
+
+        // Admins can remove members (but typically not other admins)
+        val canRemove = currentUserIsAdmin && !memberIsAdmin && member.userID != currentUserID
+        if (canRemove) {
+            popup.menu.add(0, MENU_ID_REMOVE, 1, "Remove")
+        }
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                MENU_ID_CHAT -> {
+                    onChatMember(member)
+                    true
+                }
+                MENU_ID_REMOVE -> {
+                    onRemoveMember(member.userID ?: "")
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popup.show()
+    }
+
     class MemberViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val memberName: TextView = itemView.findViewById(R.id.member_name)
         val memberRole: TextView = itemView.findViewById(R.id.member_role)
-        val blockBtn: ImageButton = itemView.findViewById(R.id.block_member_btn)
-        val removeBtn: ImageButton = itemView.findViewById(R.id.remove_member_btn)
+        val optionsBtn: ImageButton = itemView.findViewById(R.id.member_options_btn)
     }
 }

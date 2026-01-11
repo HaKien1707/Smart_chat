@@ -127,14 +127,11 @@ class GroupMembersActivity : AppCompatActivity() {
             this,
             isAdmin,
             FirebaseAuthentication.currentUserID(),
-            onMemberClick = { user ->
+            onChatMember = { user ->
                 openChatWithMember(user)
             },
             onRemoveMember = { userID ->
                 removeMember(userID)
-            },
-            onBlockMember = { userID ->
-                blockMember(userID)
             }
         )
 
@@ -176,29 +173,6 @@ class GroupMembersActivity : AppCompatActivity() {
                     .addOnFailureListener {
                         android.widget.Toast.makeText(this, "Failed to remove member", android.widget.Toast.LENGTH_SHORT).show()
                     }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun blockMember(userID: String) {
-        val member = membersList.find { it.first.userID == userID }?.first
-
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Block Member")
-            .setMessage("Block ${member?.username}? They will be removed from the group and won't be able to rejoin.")
-            .setPositiveButton("Block & Remove") { _, _ ->
-                FirebaseBlocking.blockUserFromGroup(
-                    groupID!!,
-                    userID,
-                    onSuccess = {
-                        android.widget.Toast.makeText(this, "Member blocked and removed", android.widget.Toast.LENGTH_SHORT).show()
-                        loadGroupDetails()
-                    },
-                    onFailure = { e ->
-                        android.widget.Toast.makeText(this, "Failed to block: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
-                    }
-                )
             }
             .setNegativeButton("Cancel", null)
             .show()

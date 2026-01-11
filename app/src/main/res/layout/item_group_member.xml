@@ -43,29 +43,15 @@
             android:layout_marginTop="2dp" />
     </LinearLayout>
 
-    <!-- Block Button -->
+    <!-- Options Button (3 dots) -->
     <ImageButton
-        android:id="@+id/block_member_btn"
+        android:id="@+id/member_options_btn"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:src="@drawable/ic_block"
+        android:src="@drawable/ic_more_vert_24"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Block member"
+        android:contentDescription="Member options"
         android:padding="8dp"
-        android:layout_marginEnd="4dp"
-        app:tint="@color/orange"
-        android:visibility="gone" />
-
-    <!-- Remove Button -->
-    <ImageButton
-        android:id="@+id/remove_member_btn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/ic_close"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Remove member"
-        android:padding="8dp"
-        app:tint="@color/red"
-        android:visibility="gone" />
+        app:tint="?android:textColorSecondary" />
 
 </LinearLayout>

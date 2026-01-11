@@ -1,5 +1,6 @@
 package com.example.smart_chat.fragment
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
@@ -24,6 +25,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smart_chat.R
+import com.example.smart_chat.activities.user_chat.ChatActivity
 import com.example.smart_chat.adapters.group.GroupMemberAdapter
 import com.example.smart_chat.adapters.shared.SharedFilesAdapter
 import com.example.smart_chat.adapters.shared.SharedLinksAdapter
@@ -36,10 +38,12 @@ import com.example.smart_chat.models.shared.SharedMediaItem
 import com.example.smart_chat.models.userModel
 import com.example.smart_chat.utils.firebase.FirebaseAuthentication
 import com.example.smart_chat.utils.firebase.FirebaseGroups
+import com.example.smart_chat.utils.firebase.FirebaseNotifications
 import com.example.smart_chat.utils.others.androidUtils
 import com.example.smart_chat.utils.shared.SharedContentClassifier
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.tabs.TabLayout
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import java.io.ByteArrayOutputStream
 
@@ -113,7 +117,6 @@ class GroupSettingsFragment : Fragment() {
         setupTabs()
         setupRecycler()
         loadGroupDetails()
-        loadMembers()
         loadSharedContent()
     }
 
@@ -239,14 +242,11 @@ class GroupSettingsFragment : Fragment() {
             context = requireContext(),
             currentUserIsAdmin = currentUserIsAdmin,
             currentUserID = FirebaseAuthentication.currentUserID(),
-            onMemberClick = { user ->
-                // TODO: Handle member click
+            onChatMember = { user ->
+                openChatWithMember(user)
             },
             onRemoveMember = { userID ->
-                // TODO: Handle remove member
-            },
-            onBlockMember = { userID ->
-                // TODO: Handle block member
+                removeMember(userID)
             }
         )
         membersRecycler.layoutManager = LinearLayoutManager(requireContext())
@@ -270,6 +270,10 @@ class GroupSettingsFragment : Fragment() {
 
                 // Check if current user is admin
                 currentUserIsAdmin = group?.adminIDs?.contains(FirebaseAuthentication.currentUserID()) == true
+
+                // Refresh UI that depends on admin state + group members
+                setupRecycler()
+                loadMembers()
             }
             .addOnFailureListener { e ->
                 Log.e("GroupSettings", "Failed to load group", e)
@@ -278,7 +282,16 @@ class GroupSettingsFragment : Fragment() {
     }
 
     private fun loadMembers() {
-        // Load all users from Firestore
+        val memberIds = group?.memberIDs?.filterNotNull()?.toSet().orEmpty()
+
+        if (memberIds.isEmpty()) {
+            membersList.clear()
+            membersCount.text = "0 members"
+            adapter?.notifyDataSetChanged()
+            return
+        }
+
+        // Load all users from Firestore, then filter to group members
         FirebaseAuthentication.allUsersCollection().get()
             .addOnSuccessListener { documents ->
                 membersList.clear()
@@ -286,8 +299,9 @@ class GroupSettingsFragment : Fragment() {
 
                 for (doc in documents) {
                     val user = doc.toObject(userModel::class.java)
-                    if (user != null) {
-                        val isAdmin = group?.adminIDs?.contains(user.userID) == true
+                    val userId = user?.userID
+                    if (userId != null && memberIds.contains(userId)) {
+                        val isAdmin = group?.adminIDs?.contains(userId) == true
                         membersList.add(Pair(user, isAdmin))
                         totalMembers++
                     }
@@ -305,6 +319,45 @@ class GroupSettingsFragment : Fragment() {
                 Log.e("GroupSettings", "Failed to load members", e)
                 Toast.makeText(requireContext(), "Failed to load members", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun openChatWithMember(user: userModel) {
+        val intent = Intent(requireContext(), ChatActivity::class.java)
+        androidUtils.passUserModelAsIntent(intent, user)
+        startActivity(intent)
+    }
+
+    private fun removeMember(userID: String) {
+        val id = groupID ?: return
+        val member = membersList.firstOrNull { it.first.userID == userID }?.first
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Remove Member")
+            .setMessage("Are you sure you want to remove ${member?.username ?: "this member"}?")
+            .setPositiveButton("Remove") { _, _ ->
+                FirebaseGroups.getGroupReference(id)
+                    .update("memberIDs", FieldValue.arrayRemove(userID))
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Member removed", Toast.LENGTH_SHORT).show()
+
+                        FirebaseNotifications.createNotification(
+                            type = "REMOVED_FROM_GROUP",
+                            recipientID = userID,
+                            senderID = FirebaseAuthentication.currentUserID() ?: "",
+                            senderName = "Admin",
+                            groupID = id,
+                            groupName = group?.groupName,
+                            message = "You have been removed from ${group?.groupName}"
+                        )
+
+                        loadGroupDetails()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(requireContext(), "Failed to remove member", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun loadSharedContent() {
