@@ -5,4 +5,11 @@
     <!-- FAB colors (dark mode) -->
     <color name="fab_bg">@color/black</color>
     <color name="fab_icon">@color/white</color>
+
+    <!-- Chat bubble colors (dark mode) -->
+    <color name="chat_bubble_me_bg">#005C4B</color>
+    <color name="chat_bubble_other_bg">#2A2A2A</color>
+    <color name="chat_bubble_me_text">#FFFFFF</color>
+    <color name="chat_bubble_other_text">#FFFFFF</color>
+    <color name="chat_bubble_meta_text">#B0B0B0</color>
 </resources>

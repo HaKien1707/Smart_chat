@@ -82,7 +82,7 @@ class CommunityMsgRecyclerAdapter(
 
             setSenderTimestampColor(holder, holder.senderMsg.currentTextColor)
 
-            holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+            holder.senderMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
             val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
             holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
 
@@ -108,7 +108,7 @@ class CommunityMsgRecyclerAdapter(
             val ts = formatTimestamp(model.timestamp?.toDate())
             holder.receiverTimestamp.text = ts
             holder.receiverTimestampOverlay.text = ts
-            setReceiverTimestampColor(holder, context.getColor(R.color.white))
+            setReceiverTimestampColor(holder, context.getColor(R.color.chat_bubble_meta_text))
 
             // Show replied message if exists
             if (!model.replyToMessageId.isNullOrEmpty()) {
@@ -140,13 +140,13 @@ class CommunityMsgRecyclerAdapter(
                         val fileName = model.fileName ?: "File"
                         val fileSize = formatFileSize(model.fileSize ?: 0)
                         holder.receiverMsg.text = "📎 $fileName\n$fileSize"
-                        holder.receiverMsg.setTextColor(context.getColor(R.color.white))
+                        holder.receiverMsg.setTextColor(context.getColor(R.color.chat_bubble_me_text))
                         holder.receiverMsg.setTypeface(null, Typeface.NORMAL)
-                        setReceiverTimestampColor(holder, context.getColor(R.color.white))
+                        setReceiverTimestampColor(holder, context.getColor(R.color.chat_bubble_meta_text))
 
-                        holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
+                        holder.receiverMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
                         holder.receiverMessageContainer.backgroundTintList =
-                            context.getColorStateList(R.color.violet)
+                            context.getColorStateList(R.color.chat_bubble_me_bg)
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
 
@@ -201,13 +201,13 @@ class CommunityMsgRecyclerAdapter(
                         holder.receiverImage.visibility = View.GONE
                         holder.receiverMsg.visibility = View.VISIBLE
                         holder.receiverMsg.text = model.msg
-                        holder.receiverMsg.setTextColor(context.getColor(R.color.white))
+                        holder.receiverMsg.setTextColor(context.getColor(R.color.chat_bubble_me_text))
                         holder.receiverMsg.setTypeface(null, Typeface.NORMAL)
-                        setReceiverTimestampColor(holder, context.getColor(R.color.white))
+                        setReceiverTimestampColor(holder, context.getColor(R.color.chat_bubble_meta_text))
 
-                        holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
+                        holder.receiverMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
                         holder.receiverMessageContainer.backgroundTintList =
-                            context.getColorStateList(R.color.violet)
+                            context.getColorStateList(R.color.chat_bubble_me_bg)
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
 
@@ -235,7 +235,7 @@ class CommunityMsgRecyclerAdapter(
             val ts = formatTimestamp(model.timestamp?.toDate())
             holder.senderTimestamp.text = ts
             holder.senderTimestampOverlay.text = ts
-            setSenderTimestampColor(holder, context.getColor(R.color.black))
+            setSenderTimestampColor(holder, context.getColor(R.color.chat_bubble_meta_text))
 
             // Show replied message if exists
             if (!model.replyToMessageId.isNullOrEmpty()) {
@@ -267,14 +267,14 @@ class CommunityMsgRecyclerAdapter(
                         val fileName = model.fileName ?: "File"
                         val fileSize = formatFileSize(model.fileSize ?: 0)
                         holder.senderMsg.text = "📎 $fileName\n$fileSize"
-                        holder.senderMsg.setTextColor(context.getColor(R.color.black))
+                        holder.senderMsg.setTextColor(context.getColor(R.color.chat_bubble_other_text))
                         holder.senderMsg.setTypeface(null, Typeface.NORMAL)
 
-                        setSenderTimestampColor(holder, context.getColor(R.color.black))
+                        setSenderTimestampColor(holder, context.getColor(R.color.chat_bubble_meta_text))
 
-                        holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+                        holder.senderMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
                         holder.senderMessageContainer.backgroundTintList =
-                            context.getColorStateList(R.color.lime)
+                            context.getColorStateList(R.color.chat_bubble_other_bg)
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
 
@@ -305,7 +305,7 @@ class CommunityMsgRecyclerAdapter(
                             holder.senderMessageContainer.setBackgroundResource(0)
                             holder.senderMessageContainer.setPadding(0, 0, 0, 0)
 
-                            setSenderTimestampColor(holder, context.getColor(R.color.black))
+                            setSenderTimestampColor(holder, context.getColor(R.color.chat_bubble_meta_text))
 
                             Glide.with(context)
                                 .load(model.imageUrl)
@@ -328,14 +328,14 @@ class CommunityMsgRecyclerAdapter(
                         holder.senderImage.visibility = View.GONE
                         holder.senderMsg.visibility = View.VISIBLE
                         holder.senderMsg.text = model.msg
-                        holder.senderMsg.setTextColor(context.getColor(R.color.black))
+                        holder.senderMsg.setTextColor(context.getColor(R.color.chat_bubble_other_text))
                         holder.senderMsg.setTypeface(null, Typeface.NORMAL)
 
-                        setSenderTimestampColor(holder, context.getColor(R.color.black))
+                        setSenderTimestampColor(holder, context.getColor(R.color.chat_bubble_meta_text))
 
-                        holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+                        holder.senderMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
                         holder.senderMessageContainer.backgroundTintList =
-                            context.getColorStateList(R.color.lime)
+                            context.getColorStateList(R.color.chat_bubble_other_bg)
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
                         holder.senderMsg.setOnLongClickListener {

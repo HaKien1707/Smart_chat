@@ -47,4 +47,11 @@
     <color name="button_text_dark">@color/white</color>
     <color name="bottom_sheet_bg_dark">#2C2C2C</color>
 
+    <!-- Chat bubble colors (light mode) -->
+    <color name="chat_bubble_me_bg">#DCF8C6</color>
+    <color name="chat_bubble_other_bg">@color/card_background_light</color>
+    <color name="chat_bubble_me_text">#000000</color>
+    <color name="chat_bubble_other_text">#000000</color>
+    <color name="chat_bubble_meta_text">#808080</color>
+
 </resources>

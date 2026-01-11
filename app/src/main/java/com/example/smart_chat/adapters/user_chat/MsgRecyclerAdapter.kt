@@ -77,7 +77,7 @@ class MsgRecyclerAdapter(
                     context.getColorStateList(R.color.cyan) // Cyan for bot messages
             }
 
-            holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+            holder.senderMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
             val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
             holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
 
@@ -155,14 +155,14 @@ class MsgRecyclerAdapter(
                         val fileName = model.fileName ?: "File"
                         val fileSize = formatFileSize(model.fileSize ?: 0)
                         holder.receiverMsg.text = "📎 $fileName\n$fileSize"
-                        holder.receiverMsg.setTextColor(context.getColor(R.color.white))
+                        holder.receiverMsg.setTextColor(context.getColor(R.color.chat_bubble_me_text))
                         holder.receiverMsg.setTypeface(null, Typeface.NORMAL)
 
-                        setReceiverTimestampColor(holder, holder.receiverMsg.currentTextColor)
+                        setReceiverTimestampColor(holder, context.getColor(R.color.chat_bubble_meta_text))
 
-                        holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
+                        holder.receiverMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
                         holder.receiverMessageContainer.backgroundTintList =
-                            context.getColorStateList(R.color.violet)
+                            context.getColorStateList(R.color.chat_bubble_me_bg)
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
 
@@ -218,14 +218,14 @@ class MsgRecyclerAdapter(
                         holder.receiverImage.visibility = View.GONE
                         holder.receiverMsg.visibility = View.VISIBLE
                         holder.receiverMsg.text = model.msg
-                        holder.receiverMsg.setTextColor(context.getColor(R.color.white))
+                        holder.receiverMsg.setTextColor(context.getColor(R.color.chat_bubble_me_text))
                         holder.receiverMsg.setTypeface(null, Typeface.NORMAL)
 
-                        setReceiverTimestampColor(holder, holder.receiverMsg.currentTextColor)
+                        setReceiverTimestampColor(holder, context.getColor(R.color.chat_bubble_meta_text))
 
-                        holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
+                        holder.receiverMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
                         holder.receiverMessageContainer.backgroundTintList =
-                            context.getColorStateList(R.color.violet)
+                            context.getColorStateList(R.color.chat_bubble_me_bg)
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
 
@@ -280,14 +280,14 @@ class MsgRecyclerAdapter(
                         val fileName = model.fileName ?: "File"
                         val fileSize = formatFileSize(model.fileSize ?: 0)
                         holder.senderMsg.text = "📎 $fileName\n$fileSize"
-                        holder.senderMsg.setTextColor(context.getColor(R.color.black))
+                        holder.senderMsg.setTextColor(context.getColor(R.color.chat_bubble_other_text))
                         holder.senderMsg.setTypeface(null, Typeface.NORMAL)
 
-                        setSenderTimestampColor(holder, holder.senderMsg.currentTextColor)
+                        setSenderTimestampColor(holder, context.getColor(R.color.chat_bubble_meta_text))
 
-                        holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+                        holder.senderMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
                         holder.senderMessageContainer.backgroundTintList =
-                            context.getColorStateList(R.color.lime)
+                            context.getColorStateList(R.color.chat_bubble_other_bg)
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
 
@@ -344,14 +344,14 @@ class MsgRecyclerAdapter(
                         holder.senderImage.visibility = View.GONE
                         holder.senderMsg.visibility = View.VISIBLE
                         holder.senderMsg.text = model.msg
-                        holder.senderMsg.setTextColor(context.getColor(R.color.black))
+                        holder.senderMsg.setTextColor(context.getColor(R.color.chat_bubble_other_text))
                         holder.senderMsg.setTypeface(null, Typeface.NORMAL)
 
-                        setSenderTimestampColor(holder, holder.senderMsg.currentTextColor)
+                        setSenderTimestampColor(holder, context.getColor(R.color.chat_bubble_meta_text))
 
-                        holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+                        holder.senderMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
                         holder.senderMessageContainer.backgroundTintList =
-                            context.getColorStateList(R.color.lime)
+                            context.getColorStateList(R.color.chat_bubble_other_bg)
                         val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                         holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
 

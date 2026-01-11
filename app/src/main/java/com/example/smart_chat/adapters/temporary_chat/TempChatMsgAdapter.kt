@@ -66,9 +66,9 @@ class TempChatMsgAdapter(
                     val fileSize = formatFileSize(message.fileSize ?: 0)
                     holder.receiverMsg.text = "📎 $fileName\n$fileSize"
 
-                    holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
+                    holder.receiverMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
                     holder.receiverMessageContainer.backgroundTintList =
-                        context.getColorStateList(R.color.violet)
+                        context.getColorStateList(R.color.chat_bubble_me_bg)
                     val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                     holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
 
@@ -123,9 +123,9 @@ class TempChatMsgAdapter(
                     holder.receiverMsg.visibility = View.VISIBLE
                     holder.receiverMsg.text = message.msg
 
-                    holder.receiverMessageContainer.setBackgroundResource(R.drawable.input_box)
+                    holder.receiverMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
                     holder.receiverMessageContainer.backgroundTintList =
-                        context.getColorStateList(R.color.violet)
+                        context.getColorStateList(R.color.chat_bubble_me_bg)
                     val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                     holder.receiverMessageContainer.setPadding(padding, padding, padding, padding)
 
@@ -168,9 +168,9 @@ class TempChatMsgAdapter(
                     val fileSize = formatFileSize(message.fileSize ?: 0)
                     holder.senderMsg.text = "📎 $fileName\n$fileSize"
 
-                    holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+                    holder.senderMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
                     holder.senderMessageContainer.backgroundTintList =
-                        context.getColorStateList(R.color.lime)
+                        context.getColorStateList(R.color.chat_bubble_other_bg)
                     val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                     holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
 
@@ -224,9 +224,9 @@ class TempChatMsgAdapter(
                     holder.senderImage.visibility = View.GONE
                     holder.senderMsg.visibility = View.VISIBLE
                     holder.senderMsg.text = message.msg
-                    holder.senderMessageContainer.setBackgroundResource(R.drawable.input_box)
+                    holder.senderMessageContainer.setBackgroundResource(R.drawable.chat_bubble)
                     holder.senderMessageContainer.backgroundTintList =
-                        context.getColorStateList(R.color.lime)
+                        context.getColorStateList(R.color.chat_bubble_other_bg)
                     val padding = context.resources.getDimensionPixelSize(R.dimen.message_padding)
                     holder.senderMessageContainer.setPadding(padding, padding, padding, padding)
                     holder.sender.setOnLongClickListener {

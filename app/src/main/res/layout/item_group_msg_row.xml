@@ -68,8 +68,8 @@
                 android:id="@+id/senderMessageContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/input_box"
-                android:backgroundTint="@color/lime"
+                android:background="@drawable/chat_bubble"
+                android:backgroundTint="@color/chat_bubble_other_bg"
                 android:padding="10dp"
                 android:layout_margin="5dp">
 
@@ -88,7 +88,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textSize="18sp"
-                            android:textColor="@color/black"
+                            android:textColor="@color/chat_bubble_other_text"
                             android:visibility="gone" />
 
                         <ImageView
@@ -104,7 +104,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="end|bottom"
                             android:textSize="11sp"
-                            android:textColor="#808080"
+                            android:textColor="@color/chat_bubble_meta_text"
                             android:text="10:30 AM"
                             android:visibility="gone" />
 
@@ -116,7 +116,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
                         android:textSize="11sp"
-                        android:textColor="@color/black"
+                        android:textColor="@color/chat_bubble_meta_text"
                         android:text="10:30 AM" />
 
                 </LinearLayout>
@@ -151,8 +151,8 @@
                 android:id="@+id/receiverMessageContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/input_box"
-                android:backgroundTint="@color/violet"
+                android:background="@drawable/chat_bubble"
+                android:backgroundTint="@color/chat_bubble_me_bg"
                 android:padding="10dp"
                 android:layout_margin="5dp">
 
@@ -171,7 +171,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textSize="18sp"
-                            android:textColor="@color/white"
+                            android:textColor="@color/chat_bubble_me_text"
                             android:visibility="gone" />
 
                         <ImageView
@@ -187,7 +187,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="end|bottom"
                             android:textSize="11sp"
-                            android:textColor="#808080"
+                            android:textColor="@color/chat_bubble_meta_text"
                             android:text="10:30 AM"
                             android:visibility="gone" />
 
@@ -199,7 +199,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
                         android:textSize="11sp"
-                        android:textColor="@color/white"
+                        android:textColor="@color/chat_bubble_meta_text"
                         android:text="10:30 AM" />
 
                 </LinearLayout>
