@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             is SettingsFragment -> setupDetailUI("Settings")
             is ProfileFragment -> setupDetailUI("Profile")
-            is FriendsListFragment -> setupDetailUI("Contacts")
+            is FriendsListFragment -> setupDetailUI("Friends")
             is DeletedChatsFragment -> setupDetailUI("Deleted Chats")
             is BlockedUsersFragment -> setupDetailUI("Blocked Users")
 
@@ -298,7 +298,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 replaceFragment(ProfileFragment(), true)
             }
             R.id.nav_contacts -> {
-                setupDetailUI("Contacts")
+                setupDetailUI("Friends")
                 replaceFragment(FriendsListFragment(), true)
             }
             R.id.nav_settings -> {

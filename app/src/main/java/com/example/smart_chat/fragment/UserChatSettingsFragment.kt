@@ -164,31 +164,87 @@ class UserChatSettingsFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            if (friendshipStatus == FirebaseFriends.FriendshipStatus.FRIENDS) {
-                FirebaseFriends.removeFriend(
-                    friendID = targetUserId,
-                    onSuccess = {
-                        friendshipStatus = FirebaseFriends.FriendshipStatus.NOT_FRIENDS
-                        updateContactsButtonUI()
-                        Toast.makeText(requireContext(), getString(R.string.remove_from_contacts), Toast.LENGTH_SHORT).show()
-                    },
-                    onFailure = {
-                        Toast.makeText(requireContext(), it.message ?: "Error", Toast.LENGTH_SHORT).show()
-                    }
-                )
-            } else {
-                val receiverName = user?.username ?: ""
-                FirebaseFriends.sendFriendRequest(
-                    receiverID = targetUserId,
-                    receiverName = receiverName,
-                    onSuccess = {
-                        Toast.makeText(requireContext(), getString(R.string.add_to_contacts), Toast.LENGTH_SHORT).show()
-                        refreshFriendshipStatus()
-                    },
-                    onFailure = {
-                        Toast.makeText(requireContext(), it.message ?: "Error", Toast.LENGTH_SHORT).show()
-                    }
-                )
+            when (friendshipStatus) {
+                FirebaseFriends.FriendshipStatus.FRIENDS -> {
+                    val displayName = user?.username ?: "this user"
+                    AlertDialog.Builder(requireContext())
+                        .setTitle(getString(R.string.remove_from_contacts))
+                        .setMessage(getString(R.string.unfriend_confirm_message, displayName))
+                        .setPositiveButton(getString(R.string.remove_from_contacts)) { _, _ ->
+                            FirebaseFriends.removeFriend(
+                                friendID = targetUserId,
+                                onSuccess = {
+                                    friendshipStatus = FirebaseFriends.FriendshipStatus.NOT_FRIENDS
+                                    updateContactsButtonUI()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        getString(R.string.remove_from_contacts),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onFailure = {
+                                    Toast.makeText(requireContext(), it.message ?: "Error", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        }
+                        .setNegativeButton(getString(R.string.cancel), null)
+                        .show()
+                }
+
+                FirebaseFriends.FriendshipStatus.REQUEST_SENT -> {
+                    FirebaseFriends.cancelFriendRequest(
+                        receiverID = targetUserId,
+                        onSuccess = {
+                            friendshipStatus = FirebaseFriends.FriendshipStatus.NOT_FRIENDS
+                            updateContactsButtonUI()
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.cancel_friend_request),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        onFailure = {
+                            Toast.makeText(requireContext(), it.message ?: "Error", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+
+                FirebaseFriends.FriendshipStatus.REQUEST_RECEIVED -> {
+                    FirebaseFriends.acceptFriendRequest(
+                        senderID = targetUserId,
+                        onSuccess = {
+                            friendshipStatus = FirebaseFriends.FriendshipStatus.FRIENDS
+                            updateContactsButtonUI()
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.accept_friend_request),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        onFailure = {
+                            Toast.makeText(requireContext(), it.message ?: "Error", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+
+                FirebaseFriends.FriendshipStatus.NOT_FRIENDS -> {
+                    val receiverName = user?.username ?: ""
+                    FirebaseFriends.sendFriendRequest(
+                        receiverID = targetUserId,
+                        receiverName = receiverName,
+                        onSuccess = {
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.add_to_contacts),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            refreshFriendshipStatus()
+                        },
+                        onFailure = {
+                            Toast.makeText(requireContext(), it.message ?: "Error", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
             }
         }
     }
@@ -204,12 +260,23 @@ class UserChatSettingsFragment : Fragment() {
     private fun updateContactsButtonUI() {
         if (!this::addToContactsText.isInitialized || !this::addToContactsIcon.isInitialized) return
 
-        if (friendshipStatus == FirebaseFriends.FriendshipStatus.FRIENDS) {
-            addToContactsText.setText(R.string.remove_from_contacts)
-            addToContactsIcon.setImageResource(R.drawable.ic_person_remove)
-        } else {
-            addToContactsText.setText(R.string.add_to_contacts)
-            addToContactsIcon.setImageResource(R.drawable.ic_add_person)
+        when (friendshipStatus) {
+            FirebaseFriends.FriendshipStatus.FRIENDS -> {
+                addToContactsText.setText(R.string.remove_from_contacts)
+                addToContactsIcon.setImageResource(R.drawable.ic_person_remove)
+            }
+            FirebaseFriends.FriendshipStatus.REQUEST_SENT -> {
+                addToContactsText.setText(R.string.cancel_friend_request)
+                addToContactsIcon.setImageResource(R.drawable.ic_close)
+            }
+            FirebaseFriends.FriendshipStatus.REQUEST_RECEIVED -> {
+                addToContactsText.setText(R.string.accept_friend_request)
+                addToContactsIcon.setImageResource(R.drawable.ic_check)
+            }
+            FirebaseFriends.FriendshipStatus.NOT_FRIENDS -> {
+                addToContactsText.setText(R.string.add_to_contacts)
+                addToContactsIcon.setImageResource(R.drawable.ic_add_person)
+            }
         }
     }
 

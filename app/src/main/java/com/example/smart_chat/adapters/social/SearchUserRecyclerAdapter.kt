@@ -374,26 +374,34 @@ class SearchUserRecyclerAdapter(
             return
         }
         AlertDialog.Builder(activity)
-            .setTitle("Remove Friend")
-            .setMessage("Remove ${model.username} from friends?")
-            .setPositiveButton("Remove") { _, _ ->
+            .setTitle(activity.getString(R.string.remove_from_contacts))
+            .setMessage(activity.getString(R.string.unfriend_confirm_message, model.username ?: ""))
+            .setPositiveButton(activity.getString(R.string.remove_from_contacts)) { _, _ ->
                 FirebaseFriends.removeFriend(
                     targetId,
                     onSuccess = {
                         activity.runOnUiThread {
-                            Toast.makeText(activity, "Friend removed", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                activity,
+                                activity.getString(R.string.unfriend_success, model.username ?: ""),
+                                Toast.LENGTH_SHORT
+                            ).show()
                             holder.removeFriendBtn.visibility = View.GONE
                             holder.addFriendBtn.visibility = View.VISIBLE
                         }
                     },
                     onFailure = { e ->
                         activity.runOnUiThread {
-                            Toast.makeText(activity, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                activity,
+                                activity.getString(R.string.unfriend_failed, e.message ?: ""),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 )
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(activity.getString(R.string.cancel), null)
             .show()
     }
 

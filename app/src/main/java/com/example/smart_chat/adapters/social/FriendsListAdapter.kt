@@ -100,27 +100,37 @@ class FriendsListAdapter(
     }
 
     private fun showRemoveFriendDialog(friend: userModel, position: Int) {
+        val displayName = friend.username ?: ""
         AlertDialog.Builder(context)
-            .setTitle("Remove Friend")
-            .setMessage("Are you sure you want to remove ${friend.username} from your friends?")
-            .setPositiveButton("Remove") { _, _ ->
+            .setTitle(context.getString(R.string.remove_from_contacts))
+            .setMessage(context.getString(R.string.unfriend_confirm_message, displayName))
+            .setPositiveButton(context.getString(R.string.remove_from_contacts)) { _, _ ->
                 removeFriend(friend, position)
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(context.getString(R.string.cancel), null)
             .show()
     }
 
     private fun removeFriend(friend: userModel, position: Int) {
+        val displayName = friend.username ?: ""
         FirebaseFriends.removeFriend(
             friend.userID ?: "",
             onSuccess = {
-                Toast.makeText(context, "${friend.username} removed from friends", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.unfriend_success, displayName),
+                    Toast.LENGTH_SHORT
+                ).show()
                 friendsList.removeAt(position)
                 notifyItemRemoved(position)
                 notifyItemRangeChanged(position, friendsList.size)
             },
             onFailure = { e ->
-                Toast.makeText(context, "Failed to remove friend: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.unfriend_failed, e.message ?: ""),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         )
     }

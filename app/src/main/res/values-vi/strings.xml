@@ -73,11 +73,20 @@
     <string name="menu_about">Giới thiệu</string>
     <string name="menu_logout">Đăng xuất</string>
     <string name="menu_users">Người dùng</string>
-    <string name="menu_contact">Liên lạc</string>
+    <string name="menu_contact">Bạn bè</string>
     <string name="menu_account">Tài khoản</string>
 
-    <string name="add_to_contacts">Thêm vào danh bạ</string>
-    <string name="remove_from_contacts">Xóa khỏi danh bạ</string>
+    <string name="add_to_contacts">Kết bạn</string>
+    <string name="remove_from_contacts">Hủy kết bạn</string>
+
+    <string name="cancel_friend_request">Hủy lời mời</string>
+    <string name="accept_friend_request">Chấp nhận lời mời</string>
+
+    <string name="unfriend_confirm_message">Bạn có chắc muốn hủy kết bạn với %1$s không?</string>
+    <string name="unfriend_success">Đã hủy kết bạn với %1$s</string>
+    <string name="unfriend_failed">Hủy kết bạn thất bại: %1$s</string>
+
+    <string name="noContactsYet">Chưa có bạn</string>
 
     <string name="confirm">Xác nhận</string>
     <string name="cancel">Hủy</string>
