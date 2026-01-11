@@ -22,8 +22,8 @@
         android:layout_alignParentBottom="true"
         android:layout_margin="20dp"
         android:src="@android:drawable/ic_input_add"
-        app:tint="@color/black"
-        app:backgroundTint="@color/lazuli"
+        app:tint="@color/fab_icon"
+        app:backgroundTint="@color/fab_bg"
         app:elevation="6dp"
         app:maxImageSize="40dp"
         android:contentDescription="@string/createGroup" />

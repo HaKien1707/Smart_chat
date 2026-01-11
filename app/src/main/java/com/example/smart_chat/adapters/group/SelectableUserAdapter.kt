@@ -14,6 +14,7 @@ import com.example.smart_chat.utils.others.androidUtils
 class SelectableUserAdapter(
     private val context: Context,
     private val selectable: Boolean,
+    private val singleSelection: Boolean = false,
     private val onSelectionChanged: ((String, Boolean) -> Unit)? = null
 ) : RecyclerView.Adapter<SelectableUserAdapter.UserViewHolder>() {
 
@@ -86,15 +87,31 @@ class SelectableUserAdapter(
 
         holder.itemView.setOnClickListener {
             if (userId.isBlank()) return@setOnClickListener
-            val newSelected = if (selectedIds.contains(userId)) {
+
+            // Toggle selection; if singleSelection is enabled, selecting a new user clears any previous selection.
+            val wasSelected = selectedIds.contains(userId)
+            if (wasSelected) {
                 selectedIds.remove(userId)
-                false
-            } else {
-                selectedIds.add(userId)
-                true
+                notifyItemChanged(position)
+                onSelectionChanged?.invoke(userId, false)
+                return@setOnClickListener
             }
+
+            var previousSelectedId: String? = null
+            if (singleSelection && selectedIds.isNotEmpty()) {
+                previousSelectedId = selectedIds.firstOrNull()
+                selectedIds.clear()
+            }
+
+            selectedIds.add(userId)
+
+            if (previousSelectedId != null) {
+                val prevPos = users.indexOfFirst { it.userID == previousSelectedId }
+                if (prevPos >= 0) notifyItemChanged(prevPos)
+            }
+
             notifyItemChanged(position)
-            onSelectionChanged?.invoke(userId, newSelected)
+            onSelectionChanged?.invoke(userId, true)
         }
     }
 

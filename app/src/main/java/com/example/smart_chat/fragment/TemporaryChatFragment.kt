@@ -8,15 +8,19 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smart_chat.R
+import android.content.Intent
 import com.example.smart_chat.adapters.temporary_chat.TemporaryChatAdapter
+import com.example.smart_chat.activities.temporary_chat.CreateTemporaryChatActivity
 import com.example.smart_chat.models.temp_chat.TemporaryChatModel
 import com.example.smart_chat.utils.firebase.FirebaseTemporaryChat
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class TemporaryChatFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
     private var adapter: TemporaryChatAdapter? = null
+    private lateinit var fabAddTempChat: FloatingActionButton
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,6 +29,11 @@ class TemporaryChatFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_temporary_chat, container, false)
 
         recyclerView = view.findViewById(R.id.temp_chat_recycler)
+        fabAddTempChat = view.findViewById(R.id.fab_add_temp_chat)
+
+        fabAddTempChat.setOnClickListener {
+            startActivity(Intent(requireContext(), CreateTemporaryChatActivity::class.java))
+        }
 
         setupRecycler()
 

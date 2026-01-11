@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
+import android.widget.RadioGroup
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -14,7 +15,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -36,11 +39,13 @@ import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
+import java.util.Date
 
 class TemporaryChatActivity : AppCompatActivity() {
 
     private var user2nd: userModel? = null
     private lateinit var backBTN: ImageButton
+    private lateinit var moreBtn: ImageButton
     private lateinit var panelName: TextView
     private lateinit var expiryTimer: TextView
     private lateinit var securityIndicator: TextView
@@ -55,6 +60,8 @@ class TemporaryChatActivity : AppCompatActivity() {
     private var tempChat: TemporaryChatModel? = null
     private lateinit var adapter: TempChatMsgAdapter
     private var countDownTimer: CountDownTimer? = null
+    private var expiresAtMillis: Long = 0L
+    private var isDeletingChat: Boolean = false
 
     private val decryptedMessages = mutableListOf<DecryptedTempMessage>()
     private var messageListener: ListenerRegistration? = null
@@ -98,6 +105,9 @@ class TemporaryChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_temporary_chat)
 
+        // Match User chat header color.
+        window.statusBarColor = ContextCompat.getColor(this, R.color.header_green)
+
         CloudinaryHelper.initCloudinary(this)
 
         user2nd = androidUtils.getUserModelFromIntent(intent)
@@ -111,6 +121,7 @@ class TemporaryChatActivity : AppCompatActivity() {
 
         // Initialize views
         backBTN = findViewById(R.id.back_btn)
+        moreBtn = findViewById(R.id.more_btn)
         panelName = findViewById(R.id.panelName)
         expiryTimer = findViewById(R.id.expiry_timer)
         securityIndicator = findViewById(R.id.security_indicator)
@@ -136,6 +147,10 @@ class TemporaryChatActivity : AppCompatActivity() {
 
         backBTN.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
+        }
+
+        moreBtn.setOnClickListener {
+            showMoreOptionsMenu()
         }
 
         panelName.text = "${user2nd?.username}"
@@ -166,6 +181,106 @@ class TemporaryChatActivity : AppCompatActivity() {
         }
 
         loadChatDetails()
+    }
+
+    private fun showMoreOptionsMenu() {
+        val popupMenu = android.widget.PopupMenu(this, moreBtn)
+        popupMenu.menuInflater.inflate(R.menu.menu_temp_chat_more, popupMenu.menu)
+
+        popupMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_extend_time -> {
+                    showExtendTimeDialog()
+                    true
+                }
+                R.id.action_delete_temp_chat -> {
+                    showDeleteTempChatDialog()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popupMenu.show()
+    }
+
+    private fun showExtendTimeDialog() {
+        val view = layoutInflater.inflate(R.layout.dialog_extend_temp_chat_time, null)
+        val radioGroup = view.findViewById<RadioGroup>(R.id.extend_time_radio_group)
+        radioGroup.check(R.id.extend_10)
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.extend_time_title))
+            .setView(view)
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                val minutesToAdd = when (radioGroup.checkedRadioButtonId) {
+                    R.id.extend_30 -> 30
+                    R.id.extend_60 -> 60
+                    else -> 10
+                }
+                extendTempChatTime(minutesToAdd)
+            }
+            .setNegativeButton(getString(R.string.cancel), null)
+            .create()
+
+        dialog.show()
+        val white = ContextCompat.getColor(this, R.color.white)
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(white)
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(white)
+    }
+
+    private fun extendTempChatTime(addMinutes: Int) {
+        if (!::chatID.isInitialized) return
+
+        val now = System.currentTimeMillis()
+        val base = maxOf(expiresAtMillis, now)
+        val newExpiresAt = base + addMinutes * 60_000L
+
+        FirebaseTemporaryChat.getTemporaryChatReference(chatID)
+            .update("expiresAt", Timestamp(Date(newExpiresAt)))
+            .addOnSuccessListener {
+                expiresAtMillis = newExpiresAt
+                tempChat?.expiresAt = Timestamp(Date(newExpiresAt))
+
+                val newRemaining = newExpiresAt - System.currentTimeMillis()
+                if (newRemaining > 0) {
+                    countDownTimer?.cancel()
+                    startCountdownTimer(newRemaining)
+                }
+
+                Toast.makeText(this, "Time extended", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Log.e("TemporaryChatActivity", "Failed to extend time", e)
+                Toast.makeText(this, "Failed to extend time", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun showDeleteTempChatDialog() {
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.delete_temp_chat_title))
+            .setMessage(getString(R.string.delete_temp_chat_message))
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                deleteTempChatAndExit()
+            }
+            .setNegativeButton(getString(R.string.cancel), null)
+            .create()
+
+        dialog.show()
+        val white = ContextCompat.getColor(this, R.color.white)
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(white)
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(white)
+    }
+
+    private fun deleteTempChatAndExit() {
+        if (!::chatID.isInitialized) {
+            finish()
+            return
+        }
+
+        isDeletingChat = true
+        FirebaseTemporaryChat.deleteTemporaryChat(chatID)
+        finish()
     }
 
     private fun pickImage() {
@@ -432,6 +547,7 @@ class TemporaryChatActivity : AppCompatActivity() {
 
                 // Start countdown timer
                 val expiresAt = tempChat?.expiresAt?.toDate()?.time ?: 0
+                expiresAtMillis = expiresAt
                 val now = System.currentTimeMillis()
                 val remainingMillis = expiresAt - now
 
@@ -451,6 +567,7 @@ class TemporaryChatActivity : AppCompatActivity() {
     }
 
     private fun startCountdownTimer(remainingMillis: Long) {
+        countDownTimer?.cancel()
         countDownTimer = object : CountDownTimer(remainingMillis, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val minutes = (millisUntilFinished / 1000) / 60
@@ -558,17 +675,15 @@ class TemporaryChatActivity : AppCompatActivity() {
         // Clear decrypted messages from RAM
         decryptedMessages.clear()
 
-        // Mark user as inactive (will delete chat if both users left)
-        if (::chatID.isInitialized) {
-            FirebaseTemporaryChat.markUserAsInactiveInTempChat(chatID) {
-                Log.d("TemporaryChatActivity", "Chat deleted - both users left")
-            }
+        // Mark user as inactive (do NOT delete chat here; chat expires via expiresAt)
+        if (::chatID.isInitialized && !isDeletingChat) {
+            FirebaseTemporaryChat.markUserAsInactiveInTempChat(chatID)
         }
     }
 
     override fun onPause() {
         super.onPause()
-        if (::chatID.isInitialized) {
+        if (::chatID.isInitialized && !isDeletingChat) {
             FirebaseTemporaryChat.markUserAsInactiveInTempChat(chatID)
         }
     }

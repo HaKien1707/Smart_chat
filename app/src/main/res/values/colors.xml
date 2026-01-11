@@ -26,6 +26,10 @@
 
     <color name="announcement_bg">#FFF3E0</color>
 
+    <!-- FAB colors (light mode) -->
+    <color name="fab_bg">@color/white</color>
+    <color name="fab_icon">@color/black</color>
+
     <!-- Light Theme Colors -->
     <color name="background_light">#FFFFFF</color>
     <color name="card_background_light">#F5F5F5</color>

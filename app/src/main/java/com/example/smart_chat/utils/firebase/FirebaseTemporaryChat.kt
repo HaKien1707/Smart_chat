@@ -67,8 +67,7 @@ object FirebaseTemporaryChat {
 
     @JvmStatic
     fun markUserAsInactiveInTempChat(
-        chatID: String,
-        onBothLeft: () -> Unit = {}
+        chatID: String
     ) {
         val currentUserID = FirebaseAuthentication.currentUserID() ?: return
 
@@ -76,17 +75,6 @@ object FirebaseTemporaryChat {
             .update("activeUsers", FieldValue.arrayRemove(currentUserID))
             .addOnSuccessListener {
                 Log.d("FirebaseTemporaryChat", "User marked as inactive")
-
-                // Check if both users have left
-                getTemporaryChatReference(chatID).get()
-                    .addOnSuccessListener { document ->
-                        val chat = document.toObject(TemporaryChatModel::class.java)
-                        if (chat?.activeUsers.isNullOrEmpty()) {
-                            // Both users have left, delete everything
-                            deleteTemporaryChat(chatID)
-                            onBothLeft()
-                        }
-                    }
             }
             .addOnFailureListener { e ->
                 Log.e("FirebaseTemporaryChat", "Failed to mark user as inactive", e)

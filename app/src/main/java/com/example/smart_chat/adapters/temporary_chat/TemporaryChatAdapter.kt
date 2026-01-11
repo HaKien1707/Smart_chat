@@ -26,6 +26,14 @@ class TemporaryChatAdapter(
 
     private val timers = mutableMapOf<String, CountDownTimer>()
 
+    private fun prefixPreview(prefix: String, message: String?): String {
+        val cleanedPrefix = prefix.trimEnd()
+        val cleanedMessage = message.orEmpty()
+        return if (cleanedMessage.isBlank()) cleanedPrefix else "$cleanedPrefix $cleanedMessage"
+    }
+
+    private val currentUserId = FirebaseAuthentication.currentUserID()
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TempChatViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_temporary_chat, parent, false)
@@ -65,7 +73,17 @@ class TemporaryChatAdapter(
                 val otherUser = userDoc.toObject(userModel::class.java)
 
                 holder.username.text = otherUser?.username ?: "Unknown"
-                holder.lastMsg.text = model.lastMsg ?: "No messages yet"
+
+                val lastMessageText = if (!model.lastMsg.isNullOrBlank()) {
+                    if (model.lastMsgSenderID == currentUserId) {
+                        prefixPreview(context.getString(R.string.you_prefix), model.lastMsg)
+                    } else {
+                        model.lastMsg
+                    }
+                } else {
+                    "No messages yet"
+                }
+                holder.lastMsg.text = lastMessageText
 
                 // Load profile image
                 if (!otherUser?.profileImage.isNullOrBlank()) {

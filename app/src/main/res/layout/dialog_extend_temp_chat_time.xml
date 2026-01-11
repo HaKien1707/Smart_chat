@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
+
+    <TextView
+        android:id="@+id/extend_time_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/extend_time_message"
+        android:textColor="?android:textColorSecondary"
+        android:textSize="14sp" />
+
+    <RadioGroup
+        android:id="@+id/extend_time_radio_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp">
+
+        <RadioButton
+            android:id="@+id/extend_10"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="10 minutes" />
+
+        <RadioButton
+            android:id="@+id/extend_30"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="30 minutes" />
+
+        <RadioButton
+            android:id="@+id/extend_60"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="60 minutes" />
+
+    </RadioGroup>
+
+</LinearLayout>
