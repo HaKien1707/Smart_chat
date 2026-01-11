@@ -3,6 +3,7 @@ package com.example.smart_chat.adapters.social
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smart_chat.R
 import com.example.smart_chat.activities.user_chat.ChatActivity
@@ -53,6 +55,11 @@ class SearchUserRecyclerAdapter(
         } else {
             holder.itemView.alpha = 1.0f
 
+            // Reset button click listeners (will be set based on status)
+            holder.addFriendBtn.setOnClickListener(null)
+            holder.removeFriendBtn.setOnClickListener(null)
+            holder.blockBtn.setOnClickListener(null)
+
             // Check if blocked by other user
             FirebaseBlocking.isBlockedByUser(model.userID ?: "") { isBlockedBy ->
                 if (isBlockedBy) {
@@ -73,12 +80,56 @@ class SearchUserRecyclerAdapter(
                     activity.runOnUiThread {
                         holder.statusText.visibility = View.GONE
 
+                        fun setAddFriendAsSend() {
+                            holder.addFriendBtn.visibility = View.VISIBLE
+                            holder.addFriendBtn.setImageResource(R.drawable.ic_person_add)
+                            holder.addFriendBtn.backgroundTintList = ColorStateList.valueOf(
+                                ContextCompat.getColor(activity, R.color.green)
+                            )
+                            holder.addFriendBtn.contentDescription = "Add Friend"
+                            holder.addFriendBtn.setOnClickListener {
+                                sendFriendRequest(model, holder)
+                            }
+                        }
+
+                        fun setAddFriendAsCancelRequest() {
+                            holder.addFriendBtn.visibility = View.VISIBLE
+                            holder.addFriendBtn.setImageResource(R.drawable.ic_close)
+                            holder.addFriendBtn.backgroundTintList = ColorStateList.valueOf(
+                                ContextCompat.getColor(activity, R.color.orange)
+                            )
+                            holder.addFriendBtn.contentDescription = "Cancel Friend Request"
+                            holder.addFriendBtn.setOnClickListener {
+                                cancelFriendRequest(model, holder)
+                            }
+                        }
+
+                        fun setAddFriendAsAcceptRequest() {
+                            holder.addFriendBtn.visibility = View.VISIBLE
+                            holder.addFriendBtn.setImageResource(R.drawable.ic_check)
+                            holder.addFriendBtn.backgroundTintList = ColorStateList.valueOf(
+                                ContextCompat.getColor(activity, R.color.green)
+                            )
+                            holder.addFriendBtn.contentDescription = "Accept Friend Request"
+                            holder.addFriendBtn.setOnClickListener {
+                                acceptFriendRequest(model, holder)
+                            }
+                        }
+
                         when (status) {
                             FirebaseFriends.FriendshipStatus.FRIENDS -> {
                                 // Friends - show remove friend and block
                                 holder.addFriendBtn.visibility = View.GONE
                                 holder.removeFriendBtn.visibility = View.VISIBLE
                                 holder.blockBtn.visibility = View.VISIBLE
+
+                                holder.removeFriendBtn.setOnClickListener {
+                                    removeFriend(model, holder)
+                                }
+
+                                holder.blockBtn.setOnClickListener {
+                                    blockUser(model, holder)
+                                }
 
                                 holder.itemView.setOnClickListener {
                                     val intent = Intent(activity, ChatActivity::class.java)
@@ -87,32 +138,42 @@ class SearchUserRecyclerAdapter(
                                 }
                             }
                             FirebaseFriends.FriendshipStatus.REQUEST_SENT -> {
-                                // Request sent - HIDE add friend button
-                                holder.addFriendBtn.visibility = View.GONE
+                                // Request sent - show cancel request button in add-friend position
+                                setAddFriendAsCancelRequest()
                                 holder.removeFriendBtn.visibility = View.GONE
                                 holder.blockBtn.visibility = View.VISIBLE
                                 holder.statusText.visibility = View.VISIBLE
                                 holder.statusText.text = "Friend request sent"
 
+                                holder.blockBtn.setOnClickListener {
+                                    blockUser(model, holder)
+                                }
+
                                 holder.itemView.setOnClickListener(null)
                             }
                             FirebaseFriends.FriendshipStatus.REQUEST_RECEIVED -> {
                                 // Request received - show accept option
-                                holder.addFriendBtn.visibility = View.VISIBLE
-                                holder.addFriendBtn.setImageResource(R.drawable.ic_check) // Change to checkmark icon
+                                setAddFriendAsAcceptRequest()
                                 holder.removeFriendBtn.visibility = View.GONE
                                 holder.blockBtn.visibility = View.VISIBLE
                                 holder.statusText.visibility = View.VISIBLE
                                 holder.statusText.text = "Wants to be friends"
 
+                                holder.blockBtn.setOnClickListener {
+                                    blockUser(model, holder)
+                                }
+
                                 holder.itemView.setOnClickListener(null)
                             }
                             FirebaseFriends.FriendshipStatus.NOT_FRIENDS -> {
                                 // Not friends - show add friend and block
-                                holder.addFriendBtn.visibility = View.VISIBLE
-                                holder.addFriendBtn.setImageResource(R.drawable.ic_person_add) // Reset icon
+                                setAddFriendAsSend()
                                 holder.removeFriendBtn.visibility = View.GONE
                                 holder.blockBtn.visibility = View.VISIBLE
+
+                                holder.blockBtn.setOnClickListener {
+                                    blockUser(model, holder)
+                                }
 
                                 holder.itemView.setOnClickListener {
                                     val intent = Intent(activity, ChatActivity::class.java)
@@ -124,19 +185,6 @@ class SearchUserRecyclerAdapter(
                     }
                 }
             }
-
-            // Button click listeners
-            holder.addFriendBtn.setOnClickListener {
-                sendFriendRequest(model, holder)
-            }
-
-            holder.removeFriendBtn.setOnClickListener {
-                removeFriend(model, holder)
-            }
-
-            holder.blockBtn.setOnClickListener {
-                blockUser(model, holder)
-            }
         }
     }
 
@@ -147,10 +195,78 @@ class SearchUserRecyclerAdapter(
             onSuccess = {
                 activity.runOnUiThread {
                     Toast.makeText(activity, "Friend request sent", Toast.LENGTH_SHORT).show()
-                    // Hide button and show status
-                    holder.addFriendBtn.visibility = View.GONE
                     holder.statusText.visibility = View.VISIBLE
                     holder.statusText.text = "Friend request sent"
+
+                    // Switch add-friend button into cancel-request mode (same position)
+                    holder.addFriendBtn.visibility = View.VISIBLE
+                    holder.addFriendBtn.setImageResource(R.drawable.ic_close)
+                    holder.addFriendBtn.backgroundTintList = ColorStateList.valueOf(
+                        ContextCompat.getColor(activity, R.color.orange)
+                    )
+                    holder.addFriendBtn.setOnClickListener {
+                        cancelFriendRequest(model, holder)
+                    }
+                }
+            },
+            onFailure = { e ->
+                activity.runOnUiThread {
+                    Toast.makeText(activity, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+    }
+
+    private fun cancelFriendRequest(model: userModel, holder: UserModelViewHolder) {
+        FirebaseFriends.cancelFriendRequest(
+            model.userID ?: "",
+            onSuccess = {
+                activity.runOnUiThread {
+                    Toast.makeText(activity, "Request cancelled", Toast.LENGTH_SHORT).show()
+                    holder.statusText.visibility = View.GONE
+
+                    // Revert button to send-friend-request mode
+                    holder.addFriendBtn.visibility = View.VISIBLE
+                    holder.addFriendBtn.setImageResource(R.drawable.ic_person_add)
+                    holder.addFriendBtn.backgroundTintList = ColorStateList.valueOf(
+                        ContextCompat.getColor(activity, R.color.green)
+                    )
+                    holder.addFriendBtn.setOnClickListener {
+                        sendFriendRequest(model, holder)
+                    }
+                }
+            },
+            onFailure = { e ->
+                activity.runOnUiThread {
+                    Toast.makeText(activity, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+    }
+
+    private fun acceptFriendRequest(model: userModel, holder: UserModelViewHolder) {
+        FirebaseFriends.acceptFriendRequest(
+            senderID = model.userID ?: "",
+            onSuccess = {
+                activity.runOnUiThread {
+                    Toast.makeText(activity, "Friend request accepted", Toast.LENGTH_SHORT).show()
+                    holder.statusText.visibility = View.GONE
+                    holder.addFriendBtn.visibility = View.GONE
+                    holder.removeFriendBtn.visibility = View.VISIBLE
+                    holder.blockBtn.visibility = View.VISIBLE
+
+                    holder.removeFriendBtn.setOnClickListener {
+                        removeFriend(model, holder)
+                    }
+                    holder.blockBtn.setOnClickListener {
+                        blockUser(model, holder)
+                    }
+
+                    holder.itemView.setOnClickListener {
+                        val intent = Intent(activity, ChatActivity::class.java)
+                        androidUtils.passUserModelAsIntent(intent, model)
+                        activity.startActivity(intent)
+                    }
                 }
             },
             onFailure = { e ->
