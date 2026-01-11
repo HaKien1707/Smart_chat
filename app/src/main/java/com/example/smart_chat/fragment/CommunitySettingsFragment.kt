@@ -188,9 +188,55 @@ class CommunitySettingsFragment : Fragment() {
         }
 
         leaveBtn.setOnClickListener {
-            // TODO: Implement leave community
-            Toast.makeText(requireContext(), "Leave community", Toast.LENGTH_SHORT).show()
+            handleLeaveCommunity()
         }
+    }
+
+    private fun handleLeaveCommunity() {
+        if (currentUserIsOwner) {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Cannot leave")
+                .setMessage("You can't leave this community because you are the owner.")
+                .setPositiveButton("OK", null)
+                .show()
+                .apply {
+                    getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                }
+            return
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Leave community")
+            .setMessage("Do you want to leave this community?")
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("OK") { _, _ ->
+                val id = communityID ?: return@setPositiveButton
+                val currentUserId = FirebaseAuthentication.currentUserID() ?: return@setPositiveButton
+
+                val updates = mutableMapOf<String, Any>(
+                    "bannedUserIDs" to FieldValue.arrayUnion(currentUserId)
+                )
+
+                // If an admin leaves, remove their admin role too.
+                if (currentUserIsAdmin) {
+                    updates["adminIDs"] = FieldValue.arrayRemove(currentUserId)
+                }
+
+                FirebaseCommunity.getCommunityReference(id)
+                    .update(updates)
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Left community", Toast.LENGTH_SHORT).show()
+                        activity?.finish()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .show()
+            .apply {
+                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+            }
     }
 
     private fun setupTabs() {
