@@ -69,6 +69,7 @@ class CommunitySettingsFragment : Fragment() {
     private var adapter: CommunityMemberAdapter? = null
 
     private var currentUserIsOwner: Boolean = false
+    private var currentUserIsAdmin: Boolean = false
     private var muteUntil: Long? = null
 
     private lateinit var mediaAdapter: SharedMediaAdapter
@@ -169,7 +170,7 @@ class CommunitySettingsFragment : Fragment() {
         }
 
         moreBtn.setOnClickListener {
-            if (!currentUserIsOwner) return@setOnClickListener
+            if (!currentUserIsOwner && !currentUserIsAdmin) return@setOnClickListener
             showOwnerMoreOptionsMenu()
         }
 
@@ -438,9 +439,12 @@ class CommunitySettingsFragment : Fragment() {
                     communityImage.setImageResource(R.drawable.ic_community)
                 }
 
+                val currentUserId = FirebaseAuthentication.currentUserID()
                 val ownerId = community?.ownerID ?: community?.adminID
-                currentUserIsOwner = ownerId == FirebaseAuthentication.currentUserID()
-                moreBtn.visibility = if (currentUserIsOwner) View.VISIBLE else View.GONE
+                val adminIds = community?.adminIDs?.filterNotNull()?.toSet().orEmpty()
+                currentUserIsOwner = !ownerId.isNullOrBlank() && ownerId == currentUserId
+                currentUserIsAdmin = adminIds.contains(currentUserId)
+                moreBtn.visibility = if (currentUserIsOwner || currentUserIsAdmin) View.VISIBLE else View.GONE
 
                 // Enforce exactly one owner and keep adminIDs excluding owner (backfill legacy docs).
                 if (!ownerId.isNullOrBlank()) {
@@ -459,7 +463,6 @@ class CommunitySettingsFragment : Fragment() {
                     }
                 }
 
-                val adminIds = community?.adminIDs?.filterNotNull()?.toSet().orEmpty()
                 adapter?.updateRoles(ownerId, adminIds)
 
                 // Refresh ordering/labels immediately after role changes.
@@ -710,6 +713,9 @@ class CommunitySettingsFragment : Fragment() {
                 for (doc in documents) {
                     val user = doc.toObject(userModel::class.java)
                     if (user != null) {
+                        if (user.userID.isNullOrBlank()) {
+                            user.userID = doc.id
+                        }
                         membersList.add(user)
                         totalMembers++
                     }

@@ -186,7 +186,7 @@ class GroupSettingsFragment : Fragment() {
         }
 
         moreBtn.setOnClickListener {
-            if (!currentUserIsOwner) return@setOnClickListener
+            if (!currentUserIsAdmin) return@setOnClickListener
             showOwnerMoreOptionsMenu()
         }
 
@@ -375,7 +375,7 @@ class GroupSettingsFragment : Fragment() {
                 // Staff permissions (owner OR admin)
                 currentUserIsAdmin = currentUserIsOwner || isAdmin
 
-                moreBtn.visibility = if (currentUserIsOwner) View.VISIBLE else View.GONE
+                moreBtn.visibility = if (currentUserIsAdmin) View.VISIBLE else View.GONE
 
                 addMembersBtn.visibility = if (currentUserIsAdmin) View.VISIBLE else View.GONE
 
@@ -672,7 +672,10 @@ class GroupSettingsFragment : Fragment() {
 
                 for (doc in documents) {
                     val user = doc.toObject(userModel::class.java)
-                    val userId = user?.userID
+                    if (user.userID.isNullOrBlank()) {
+                        user.userID = doc.id
+                    }
+                    val userId = user.userID
                     if (userId != null && memberIds.contains(userId)) {
                         val isAdmin = userId != group?.ownerID && group?.adminIDs?.contains(userId) == true
                         membersList.add(Pair(user, isAdmin))

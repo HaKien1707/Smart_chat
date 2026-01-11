@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:text="Admin"
             android:textSize="12sp"
-            android:textColor="@color/lazuli"
+            android:textColor="@color/button_green"
             android:visibility="gone"
             android:layout_marginTop="2dp" />
     </LinearLayout>

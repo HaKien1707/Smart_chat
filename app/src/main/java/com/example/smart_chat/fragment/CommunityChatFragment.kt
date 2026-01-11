@@ -237,9 +237,8 @@ class CommunityChatFragment : Fragment() {
                     communityImage.setImageResource(R.drawable.ic_community)
                 }
 
-                // Show/hide settings button based on admin status
-                val isAdmin = community?.adminID == FirebaseAuthentication.currentUserID()
-                communitySettingsBtn.visibility = if (isAdmin) View.VISIBLE else View.VISIBLE
+                // Settings screen should be accessible for all members.
+                communitySettingsBtn.visibility = View.VISIBLE
             }
             .addOnFailureListener { e ->
                 Log.e("CommunityChatFragment", "Failed to load community: ${e.message}")
