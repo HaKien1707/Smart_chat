@@ -19,12 +19,22 @@ class SelectableUserAdapter(
 
     private val users = mutableListOf<userModel>()
     private val selectedIds = linkedSetOf<String>()
+    private val disabledIds = linkedSetOf<String>()
+    private var disabledSubtitle: String? = null
 
-    fun submitUsers(newUsers: List<userModel>, selectedUserIds: Set<String> = emptySet()) {
+    fun submitUsers(
+        newUsers: List<userModel>,
+        selectedUserIds: Set<String> = emptySet(),
+        disabledUserIds: Set<String> = emptySet(),
+        disabledSubtitle: String? = null
+    ) {
         users.clear()
         users.addAll(newUsers)
         selectedIds.clear()
         selectedIds.addAll(selectedUserIds)
+        disabledIds.clear()
+        disabledIds.addAll(disabledUserIds)
+        this.disabledSubtitle = disabledSubtitle
         notifyDataSetChanged()
     }
 
@@ -38,9 +48,14 @@ class SelectableUserAdapter(
         val user = users[position]
         val userId = user.userID.orEmpty()
         val isSelected = userId.isNotBlank() && selectedIds.contains(userId)
+        val isDisabled = userId.isNotBlank() && disabledIds.contains(userId)
 
         holder.title.text = user.username ?: ""
-        holder.subtitle.text = user.phoneNumber ?: ""
+        holder.subtitle.text = if (isDisabled) {
+            disabledSubtitle ?: ""
+        } else {
+            user.phoneNumber ?: ""
+        }
 
         if (!user.profileImage.isNullOrBlank()) {
             androidUtils.setProfileImageFromBase64(context, user.profileImage, holder.avatar)
@@ -50,9 +65,16 @@ class SelectableUserAdapter(
 
         holder.check.visibility = if (isSelected) View.VISIBLE else View.INVISIBLE
 
+        holder.itemView.alpha = if (isDisabled) 0.6f else 1f
+
         if (!selectable) {
             holder.itemView.isClickable = false
             holder.itemView.isFocusable = false
+            return
+        }
+
+        if (isDisabled) {
+            holder.itemView.setOnClickListener(null)
             return
         }
 

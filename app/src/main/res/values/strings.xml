@@ -65,6 +65,8 @@
     <string name="newGroupSubtitle">up to 200000 members</string>
     <string name="newChannel">New Community</string>
     <string name="noContactsYet">No contacts yet</string>
+    <string name="noUsersToAdd">No users to add</string>
+    <string name="alreadyInGroup">Already in group</string>
     <string name="groupNameHint">Group name</string>
     <string name="channelNameHint">Community name</string>
     <string name="description">Description</string>

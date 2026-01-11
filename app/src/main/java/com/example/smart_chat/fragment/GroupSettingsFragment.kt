@@ -17,6 +17,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -25,6 +26,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smart_chat.R
+import com.example.smart_chat.activities.group_chat.AddMembersActivity
 import com.example.smart_chat.activities.user_chat.ChatActivity
 import com.example.smart_chat.adapters.group.GroupMemberAdapter
 import com.example.smart_chat.adapters.shared.SharedFilesAdapter
@@ -86,6 +88,13 @@ class GroupSettingsFragment : Fragment() {
                 if (uri != null) {
                     updateGroupImage(uri)
                 }
+            }
+        }
+
+    private val addMembersLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode == android.app.Activity.RESULT_OK) {
+                loadGroupDetails()
             }
         }
 
@@ -179,8 +188,15 @@ class GroupSettingsFragment : Fragment() {
         }
 
         addMembersBtn.setOnClickListener {
-            // TODO: Implement add members
-            Toast.makeText(requireContext(), "Add members", Toast.LENGTH_SHORT).show()
+            if (!currentUserIsAdmin) {
+                Toast.makeText(requireContext(), "Only admins can add members", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val id = groupID ?: return@setOnClickListener
+            val intent = Intent(requireContext(), AddMembersActivity::class.java)
+            intent.putExtra("groupID", id)
+            addMembersLauncher.launch(intent)
         }
     }
 
@@ -270,6 +286,8 @@ class GroupSettingsFragment : Fragment() {
 
                 // Check if current user is admin
                 currentUserIsAdmin = group?.adminIDs?.contains(FirebaseAuthentication.currentUserID()) == true
+
+                addMembersBtn.visibility = if (currentUserIsAdmin) View.VISIBLE else View.GONE
 
                 // Refresh UI that depends on admin state + group members
                 setupRecycler()

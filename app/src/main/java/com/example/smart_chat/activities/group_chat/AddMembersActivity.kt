@@ -1,33 +1,43 @@
 package com.example.smart_chat.activities.group_chat
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
-import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.LinearLayout
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smart_chat.R
-import com.example.smart_chat.adapters.group.SelectGroupMemberAdapter
 import com.example.smart_chat.models.group.groupModel
 import com.example.smart_chat.models.userModel
 import com.example.smart_chat.utils.UI.LanguageManager
 import com.example.smart_chat.utils.UI.ThemeManager
 import com.example.smart_chat.utils.firebase.*
+import com.google.firebase.firestore.FieldValue
 
 class AddMembersActivity : AppCompatActivity() {
 
     private lateinit var backBtn: ImageButton
-    private lateinit var memberRecycler: RecyclerView
-    private lateinit var emptyState: LinearLayout
-    private lateinit var addBtn: Button
+    private lateinit var searchInput: EditText
+    private lateinit var recycler: RecyclerView
+    private lateinit var emptyStateIcon: ImageView
+    private lateinit var emptyStateText: TextView
+    private lateinit var doneBtn: ImageButton
 
     private var groupID: String? = null
     private var group: groupModel? = null
-    private val selectedMembers = mutableListOf<String>()
-    private lateinit var memberAdapter: SelectGroupMemberAdapter
+
+    private var allUsers: List<userModel> = emptyList()
+    private var usersNotInGroup: List<userModel> = emptyList()
+    private var existingMemberIds: Set<String> = emptySet()
+    private val selectedUserIds = linkedSetOf<String>()
+
+    private lateinit var adapter: com.example.smart_chat.adapters.group.SelectableUserAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Apply theme and language
@@ -46,17 +56,38 @@ class AddMembersActivity : AppCompatActivity() {
         }
 
         backBtn = findViewById(R.id.back_btn)
-        memberRecycler = findViewById(R.id.member_recycler)
-        emptyState = findViewById(R.id.empty_state)
-        addBtn = findViewById(R.id.add_btn)
+        searchInput = findViewById(R.id.search_input)
+        recycler = findViewById(R.id.user_recycler)
+        emptyStateIcon = findViewById(R.id.empty_state_icon)
+        emptyStateText = findViewById(R.id.empty_state_text)
+        doneBtn = findViewById(R.id.next_btn)
 
         backBtn.setOnClickListener { finish() }
 
-        addBtn.setOnClickListener {
-            addSelectedMembers()
-        }
+        doneBtn.setOnClickListener { addSelectedMembers() }
+
+        adapter = com.example.smart_chat.adapters.group.SelectableUserAdapter(
+            context = this,
+            selectable = true,
+            onSelectionChanged = { userId, isSelected ->
+                if (isSelected) selectedUserIds.add(userId) else selectedUserIds.remove(userId)
+                updateDoneState()
+            }
+        )
+
+        recycler.layoutManager = LinearLayoutManager(this)
+        recycler.adapter = adapter
+
+        searchInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                applyFilter(s?.toString().orEmpty())
+            }
+        })
 
         loadGroupAndUsers()
+        updateDoneState()
     }
 
     private fun loadGroupAndUsers() {
@@ -81,7 +112,9 @@ class AddMembersActivity : AppCompatActivity() {
     }
 
     private fun loadAvailableUsers() {
-        val existingMemberIDs = group?.memberIDs ?: listOf()
+        val currentUserId = FirebaseAuthentication.currentUserID()
+        val blockedIDs = group?.blockedUserIDs ?: emptyList()
+        existingMemberIds = group?.memberIDs?.filterNotNull()?.toSet().orEmpty()
 
         FirebaseAuthentication.allUsersCollection()
             .get()
@@ -90,62 +123,92 @@ class AddMembersActivity : AppCompatActivity() {
 
                 for (doc in documents) {
                     val user = doc.toObject(userModel::class.java)
-                    // Add user if they're not already in the group and not the current user
-                    if (user.userID !in existingMemberIDs &&
-                        user.userID != FirebaseAuthentication.currentUserID()) {
+                    val userId = user.userID
+                    // Match Create Group behavior: show all users except current user.
+                    // Also hide blocked users.
+                    if (!userId.isNullOrBlank() &&
+                        userId != currentUserId &&
+                        !blockedIDs.contains(userId)) {
                         availableUsers.add(user)
                     }
                 }
 
-                if (availableUsers.isEmpty()) {
-                    showEmptyState()
+                allUsers = availableUsers
+                usersNotInGroup = availableUsers.filter { user ->
+                    val id = user.userID
+                    !id.isNullOrBlank() && !existingMemberIds.contains(id)
                 }
 
-                setupMemberRecycler(availableUsers)
+                applyFilter(searchInput.text?.toString().orEmpty())
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Failed to load users", Toast.LENGTH_SHORT).show()
-                finish()
+                allUsers = emptyList()
+                usersNotInGroup = emptyList()
+                existingMemberIds = group?.memberIDs?.filterNotNull()?.toSet().orEmpty()
+                applyFilter(searchInput.text?.toString().orEmpty())
             }
     }
 
-    private fun setupMemberRecycler(users: List<userModel>) {
-        memberAdapter = SelectGroupMemberAdapter(users, this) { userID, isSelected ->
-            if (isSelected) {
-                selectedMembers.add(userID)
-            } else {
-                selectedMembers.remove(userID)
-            }
-            updateAddButton()
-        }
+    private fun applyFilter(query: String) {
+        val q = query.trim().lowercase()
+        val source = if (q.isBlank()) usersNotInGroup else allUsers
 
-        memberRecycler.layoutManager = LinearLayoutManager(this)
-        memberRecycler.adapter = memberAdapter
-    }
-
-    private fun updateAddButton() {
-        addBtn.isEnabled = selectedMembers.isNotEmpty()
-        addBtn.text = if (selectedMembers.isNotEmpty()) {
-            "Add ${selectedMembers.size} member${if (selectedMembers.size > 1) "s" else ""}"
+        val filtered = if (q.isBlank()) {
+            source
         } else {
-            "Select members to add"
+            source.filter { user ->
+                val name = user.username?.lowercase().orEmpty()
+                val phone = user.phoneNumber?.lowercase().orEmpty()
+                name.contains(q) || phone.contains(q)
+            }
         }
+
+        val disabledIds = if (q.isBlank()) {
+            emptySet()
+        } else {
+            filtered.mapNotNull { it.userID }.filter { existingMemberIds.contains(it) }.toSet()
+        }
+
+        adapter.submitUsers(
+            newUsers = filtered,
+            selectedUserIds = selectedUserIds,
+            disabledUserIds = disabledIds,
+            disabledSubtitle = if (disabledIds.isNotEmpty()) getString(R.string.alreadyInGroup) else null
+        )
+
+        val isEmpty = filtered.isEmpty()
+        emptyStateIcon.visibility = if (isEmpty) View.VISIBLE else View.GONE
+        emptyStateText.visibility = if (isEmpty) View.VISIBLE else View.GONE
+        recycler.visibility = if (isEmpty) View.GONE else View.VISIBLE
+    }
+
+    private fun updateDoneState() {
+        val enabled = selectedUserIds.isNotEmpty()
+        doneBtn.isEnabled = enabled
+        doneBtn.alpha = if (enabled) 1f else 0.4f
     }
 
     private fun addSelectedMembers() {
-        if (selectedMembers.isEmpty()) return
+        if (selectedUserIds.isEmpty()) return
 
-        addBtn.isEnabled = false
-        addBtn.text = getString(R.string.adding)
+        doneBtn.isEnabled = false
+        doneBtn.alpha = 0.4f
 
-        val updatedMembers = group?.memberIDs?.toMutableList() ?: mutableListOf()
-        updatedMembers.addAll(selectedMembers)
+        val existingMemberIDs = group?.memberIDs?.filterNotNull()?.toSet().orEmpty()
+        val toAdd = selectedUserIds.filter { !existingMemberIDs.contains(it) }
+
+        if (toAdd.isEmpty()) {
+            Toast.makeText(this, "No new members selected", Toast.LENGTH_SHORT).show()
+            updateDoneState()
+            return
+        }
 
         FirebaseGroups.getGroupReference(groupID!!)
-            .update("memberIDs", updatedMembers)
+            .update("memberIDs", FieldValue.arrayUnion(*toAdd.toTypedArray()))
             .addOnSuccessListener {
                 // Send notification to each added member
-                selectedMembers.forEach { memberID ->
+                toAdd.forEach { memberID ->
                     FirebaseNotifications.createNotification(
                         type = "ADDED_TO_GROUP",
                         recipientID = memberID,
@@ -159,21 +222,15 @@ class AddMembersActivity : AppCompatActivity() {
 
                 Toast.makeText(
                     this,
-                    "Added ${selectedMembers.size} member${if (selectedMembers.size > 1) "s" else ""}",
+                    "Added ${toAdd.size} member${if (toAdd.size > 1) "s" else ""}",
                     Toast.LENGTH_SHORT
                 ).show()
+                setResult(RESULT_OK)
                 finish()
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Failed to add members: ${e.message}", Toast.LENGTH_SHORT).show()
-                addBtn.isEnabled = true
-                updateAddButton()
+                updateDoneState()
             }
-    }
-
-    private fun showEmptyState() {
-        emptyState.visibility = View.VISIBLE
-        memberRecycler.visibility = View.GONE
-        addBtn.visibility = View.GONE
     }
 }

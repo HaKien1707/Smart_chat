@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".activities.group_chat.AddMembersActivity">
+    android:background="?attr/backgroundColor">
 
-    <!-- Top Panel -->
+    <!-- Header (Telegram-like) -->
     <RelativeLayout
+        android:id="@+id/panel"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/lazuli"
-        android:padding="10dp">
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/header_green"
+        android:elevation="4dp">
 
         <ImageButton
             android:id="@+id/back_btn"
@@ -19,72 +19,92 @@
             android:layout_height="48dp"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:background="@drawable/ic_back"
-            android:contentDescription="@string/backBTN" />
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="12dp"
+            android:src="@drawable/ic_arrow_back_24"
+            android:contentDescription="@string/backBTN"
+            app:tint="@color/white" />
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="@string/addMember"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@color/black" />
+            android:layout_toEndOf="@id/back_btn"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/addMember"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
     </RelativeLayout>
 
-    <!-- Instructions -->
-    <TextView
+    <!-- Search input (below header) -->
+    <EditText
+        android:id="@+id/search_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/selectMember"
-        android:textSize="18sp"
-        android:padding="15dp"
-        android:background="@android:color/white"
-        android:textColor="@android:color/darker_gray" />
+        android:layout_below="@id/panel"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="8dp"
+        android:background="?attr/inputBoxBackground"
+        android:hint="@string/search"
+        android:inputType="text"
+        android:maxLines="1"
+        android:padding="14dp"
+        android:textColor="?attr/editTextColor"
+        android:textColorHint="?android:textColorSecondary" />
 
-    <!-- Member List -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/member_recycler"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="10dp" />
-
-    <!-- Add Button -->
-    <Button
-        android:id="@+id/add_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="15dp"
-        android:background="@drawable/round_corner_button"
-        android:text="@string/confirm"
-        android:textSize="16sp"
-        android:padding="15dp"
-        android:enabled="false" />
-
-    <!-- Empty State -->
-    <LinearLayout
-        android:id="@+id/empty_state"
+        android:id="@+id/user_recycler"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:visibility="gone">
+        android:layout_below="@id/search_input"
+        android:layout_above="@id/next_btn"
+        android:paddingTop="4dp" />
 
-        <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/ic_block"
-            android:alpha="0.3"
-            android:contentDescription="No blocked members" />
+    <!-- Empty state -->
+    <ImageView
+        android:id="@+id/empty_state_icon"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_centerInParent="true"
+        android:src="@drawable/ic_profile"
+        android:visibility="gone"
+        app:tint="?android:textColorSecondary" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="No blocked members"
-            android:textSize="18sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="16dp" />
-    </LinearLayout>
+    <TextView
+        android:id="@+id/empty_state_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/empty_state_icon"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="12dp"
+        android:text="@string/noUsersToAdd"
+        android:textColor="?android:textColorSecondary"
+        android:textSize="16sp"
+        android:visibility="gone" />
 
-</LinearLayout>
+    <!-- Done (bottom right) -->
+    <ImageButton
+        android:id="@+id/next_btn"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="18dp"
+        android:background="@drawable/circle_bg"
+        android:src="@drawable/ic_check"
+        android:contentDescription="@string/confirm"
+        app:tint="@color/white"
+        android:backgroundTint="@color/header_green" />
+
+</RelativeLayout>
