@@ -121,7 +121,7 @@
             android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_send"
-            app:tint="@color/button_green" />
+            app:tint="@color/chat_composer_icon_tint" />
 
         <RelativeLayout
             android:id="@+id/chatBoxContainer"
@@ -154,7 +154,7 @@
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_attach_file"
-                app:tint="@color/button_green"
+                app:tint="@color/chat_composer_icon_tint"
                 android:contentDescription="Send File" />
 
             <ImageButton
@@ -165,7 +165,7 @@
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_image"
-                app:tint="@color/button_green"
+                app:tint="@color/chat_composer_icon_tint"
                 android:contentDescription="@string/sendImage" />
         </RelativeLayout>
 

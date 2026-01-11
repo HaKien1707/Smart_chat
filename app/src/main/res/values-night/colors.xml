@@ -12,4 +12,7 @@
     <color name="chat_bubble_me_text">#FFFFFF</color>
     <color name="chat_bubble_other_text">#FFFFFF</color>
     <color name="chat_bubble_meta_text">#B0B0B0</color>
+
+    <!-- Chat composer (dark mode) - keep existing green icons -->
+    <color name="chat_composer_icon_tint">@color/button_green</color>
 </resources>

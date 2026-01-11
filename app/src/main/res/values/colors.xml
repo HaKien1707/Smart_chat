@@ -54,4 +54,8 @@
     <color name="chat_bubble_other_text">#000000</color>
     <color name="chat_bubble_meta_text">#808080</color>
 
+    <!-- Chat composer (light mode) -->
+    <color name="chat_composer_icon_tint">@color/black</color>
+    <color name="chat_input_bg_light">#F0F0F0</color>
+
 </resources>

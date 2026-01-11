@@ -116,7 +116,7 @@
                 android:src="@drawable/ic_attach_file"
                 android:layout_toStartOf="@id/send_image_btn"
                 android:layout_centerVertical="true"
-                app:tint="@color/button_green"
+                app:tint="@color/chat_composer_icon_tint"
                 android:contentDescription="Send File" />
 
             <ImageButton
@@ -127,7 +127,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="8dp"
                 android:src="@drawable/ic_image"
-                app:tint="@color/button_green"
+                app:tint="@color/chat_composer_icon_tint"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/sendImage" />
         </RelativeLayout>
@@ -140,7 +140,7 @@
             android:layout_centerVertical="true"
             android:src="@drawable/ic_send"
             android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="@color/button_green"
+            app:tint="@color/chat_composer_icon_tint"
             android:contentDescription="send" />
 
     </RelativeLayout>
