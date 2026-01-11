@@ -52,7 +52,13 @@ class SelectableUserAdapter(
 
         holder.title.text = user.username ?: ""
         holder.subtitle.text = if (isDisabled) {
-            disabledSubtitle ?: ""
+            val phone = user.phoneNumber?.trim().orEmpty()
+            val label = disabledSubtitle.orEmpty()
+            when {
+                phone.isNotBlank() && label.isNotBlank() -> "$phone • $label"
+                phone.isNotBlank() -> phone
+                else -> label
+            }
         } else {
             user.phoneNumber ?: ""
         }
