@@ -11,7 +11,7 @@
     <!-- Profile Image -->
     <include
         android:id="@+id/profile_image_container"
-        layout="@layout/profile_image_holder"
+        layout="@layout/profile_image_holder_header"
         android:layout_width="50dp"
         android:layout_height="50dp" />
 
