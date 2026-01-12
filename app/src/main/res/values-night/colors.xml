@@ -2,9 +2,6 @@
 <resources>
     <color name="button_background">@color/button_background_dark</color>
 
-    <!-- Member role (Owner/Admin) - dark mode -->
-    <color name="member_role_color">@color/button_green</color>
-
     <!-- Settings accent (dark mode): keep button green -->
     <color name="settings_accent">@color/button_green</color>
 

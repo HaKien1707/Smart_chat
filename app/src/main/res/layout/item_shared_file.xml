@@ -12,7 +12,7 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:contentDescription="File"
-        android:tint="@color/button_green" />
+        android:tint="@color/settings_accent" />
 
     <LinearLayout
         android:layout_width="0dp"
