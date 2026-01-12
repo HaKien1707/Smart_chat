@@ -256,7 +256,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_add_person"
-                    android:tint="@color/button_green" />
+                    android:tint="@color/settings_accent" />
 
                 <TextView
                     android:id="@+id/add_to_contacts_text"
@@ -264,7 +264,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/add_to_contacts"
                     android:textSize="16sp"
-                    android:textColor="@color/button_green"
+                    android:textColor="@color/settings_accent"
                     android:layout_marginStart="32dp" />
 
             </LinearLayout>
@@ -281,7 +281,7 @@
                 android:layout_height="wrap_content"
                 android:text="Shared Media"
                 android:textSize="14sp"
-                android:textColor="@color/button_green"
+                android:textColor="@color/settings_accent"
                 android:textStyle="bold"
                 android:padding="16dp" />
 
@@ -293,9 +293,9 @@
                 android:background="?attr/backgroundColor"
                 app:tabMode="fixed"
                 app:tabGravity="fill"
-                app:tabIndicatorColor="@color/button_green"
+                app:tabIndicatorColor="@color/settings_accent"
                 app:tabTextColor="?android:textColorSecondary"
-                app:tabSelectedTextColor="@color/button_green"
+                app:tabSelectedTextColor="@color/settings_accent"
                 app:tabIndicatorHeight="2dp" />
 
             <!-- Content Container for Media -->

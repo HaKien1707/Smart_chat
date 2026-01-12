@@ -5,6 +5,9 @@
     <!-- Member role (Owner/Admin) - dark mode -->
     <color name="member_role_color">@color/button_green</color>
 
+    <!-- Settings accent (dark mode): keep button green -->
+    <color name="settings_accent">@color/button_green</color>
+
     <!-- FAB colors (dark mode) -->
     <color name="fab_bg">@color/black</color>
     <color name="fab_icon">@color/white</color>
