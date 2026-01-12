@@ -25,7 +25,6 @@ import com.example.smart_chat.fragment.ChatFragment
 import com.example.smart_chat.fragment.GroupFragment
 import com.example.smart_chat.fragment.ProfileFragment
 import com.example.smart_chat.fragment.FriendsListFragment
-import com.example.smart_chat.fragment.DeletedChatsFragment
 import com.example.smart_chat.models.userModel
 import com.example.smart_chat.utils.others.androidUtils
 import com.google.android.material.navigation.NavigationView
@@ -139,7 +138,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             is SettingsFragment -> setupDetailUI("Settings")
             is ProfileFragment -> setupDetailUI("Profile")
             is FriendsListFragment -> setupDetailUI("Friends")
-            is DeletedChatsFragment -> setupDetailUI("Deleted Chats")
             is BlockedUsersFragment -> setupDetailUI("Blocked Users")
 
             else -> setupMainUI()
@@ -304,10 +302,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_settings -> {
                 setupDetailUI("Settings")
                 replaceFragment(SettingsFragment(), true)
-            }
-            R.id.nav_deleted_chats -> {
-                setupDetailUI("Deleted Chats")
-                replaceFragment(DeletedChatsFragment(), true)
             }
             R.id.nav_logout -> {
                 logoutUser()
