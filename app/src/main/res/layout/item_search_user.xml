@@ -113,7 +113,7 @@
                 android:background="@drawable/circle_bg"
                 android:backgroundTint="@color/orange"
                 android:src="@drawable/ic_block"
-                android:contentDescription="Block User"
+                android:contentDescription="@string/block_user_title"
                 android:padding="8dp"
                 android:layout_marginTop="4dp"
                 android:visibility="gone"

@@ -135,10 +135,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 binding.panel.visibility = View.GONE
             }
 
-            is SettingsFragment -> setupDetailUI("Settings")
-            is ProfileFragment -> setupDetailUI("Profile")
-            is FriendsListFragment -> setupDetailUI("Friends")
-            is BlockedUsersFragment -> setupDetailUI("Blocked Users")
+            is SettingsFragment -> setupDetailUI(getString(R.string.menu_settings))
+            is ProfileFragment -> setupDetailUI(getString(R.string.menu_profile))
+            is FriendsListFragment -> setupDetailUI(getString(R.string.menu_contact))
+            is BlockedUsersFragment -> setupDetailUI(getString(R.string.userBlocked))
 
             else -> setupMainUI()
         }

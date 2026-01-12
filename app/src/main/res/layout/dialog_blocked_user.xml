@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Blocked Users"
+        android:text="@string/blocked_users_title"
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp"/>
@@ -18,7 +18,7 @@
         android:id="@+id/select_all_checkbox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select All"
+        android:text="@string/select_all"
         android:textStyle="bold"
         android:visibility="gone"
         android:layout_marginBottom="8dp"/>
@@ -28,7 +28,7 @@
         android:id="@+id/empty_blocked_state"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:text="No user blocked"
+        android:text="@string/no_user_blocked"
         android:textSize="16sp"
         android:textColor="@android:color/darker_gray"
         android:gravity="center"
@@ -43,7 +43,7 @@
         android:id="@+id/unblock_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Unblock Selected Users"
+        android:text="@string/unblock_selected_users"
         android:background="@drawable/round_corner_button"
         android:layout_marginTop="16dp"
         android:enabled="false"/>

@@ -195,9 +195,9 @@ class CommunitySettingsFragment : Fragment() {
     private fun handleLeaveCommunity() {
         if (currentUserIsOwner) {
             AlertDialog.Builder(requireContext())
-                .setTitle("Cannot leave")
-                .setMessage("You can't leave this community because you are the owner.")
-                .setPositiveButton("OK", null)
+                .setTitle(getString(R.string.cannot_leave))
+                .setMessage(getString(R.string.cannot_leave_community_owner_message))
+                .setPositiveButton(getString(R.string.ok), null)
                 .show()
                 .apply {
                     getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
@@ -206,10 +206,10 @@ class CommunitySettingsFragment : Fragment() {
         }
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Leave community")
-            .setMessage("Do you want to leave this community?")
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("OK") { _, _ ->
+            .setTitle(getString(R.string.leave_community_title))
+            .setMessage(getString(R.string.leave_community_message))
+            .setNegativeButton(getString(R.string.cancel), null)
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val id = communityID ?: return@setPositiveButton
                 val currentUserId = FirebaseAuthentication.currentUserID() ?: return@setPositiveButton
 
@@ -225,11 +225,11 @@ class CommunitySettingsFragment : Fragment() {
                 FirebaseCommunity.getCommunityReference(id)
                     .update(updates)
                     .addOnSuccessListener {
-                        Toast.makeText(requireContext(), "Left community", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.left_community), Toast.LENGTH_SHORT).show()
                         activity?.finish()
                     }
                     .addOnFailureListener {
-                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
                     }
             }
             .show()
@@ -240,10 +240,10 @@ class CommunitySettingsFragment : Fragment() {
     }
 
     private fun setupTabs() {
-        tabs.addTab(tabs.newTab().setText("Members"))
-        tabs.addTab(tabs.newTab().setText("Media"))
-        tabs.addTab(tabs.newTab().setText("Links"))
-        tabs.addTab(tabs.newTab().setText("Files"))
+        tabs.addTab(tabs.newTab().setText(getString(R.string.tab_members)))
+        tabs.addTab(tabs.newTab().setText(getString(R.string.tab_media)))
+        tabs.addTab(tabs.newTab().setText(getString(R.string.tab_links)))
+        tabs.addTab(tabs.newTab().setText(getString(R.string.tab_files)))
 
         membersRecycler.visibility = View.VISIBLE
         sharedRecycler.visibility = View.GONE
@@ -333,10 +333,10 @@ class CommunitySettingsFragment : Fragment() {
         if (currentUserIsAdmin && !currentUserIsOwner && isAdminMember) return
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Remove member")
-            .setMessage("Remove ${user.username ?: "this member"} from this community?")
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Remove") { _, _ ->
+            .setTitle(getString(R.string.remove_member_title))
+            .setMessage(getString(R.string.remove_member_message, user.username ?: getString(R.string.this_user)))
+            .setNegativeButton(getString(R.string.cancel), null)
+            .setPositiveButton(getString(R.string.remove_action)) { _, _ ->
                 val updates = mutableMapOf<String, Any>(
                     "bannedUserIDs" to FieldValue.arrayUnion(memberId)
                 )
@@ -349,7 +349,7 @@ class CommunitySettingsFragment : Fragment() {
                 FirebaseCommunity.getCommunityReference(id)
                     .update(updates)
                     .addOnSuccessListener {
-                        Toast.makeText(requireContext(), "Member removed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.member_removed), Toast.LENGTH_SHORT).show()
 
                         FirebaseNotifications.createNotification(
                             type = "BANNED_FROM_COMMUNITY",
@@ -364,7 +364,7 @@ class CommunitySettingsFragment : Fragment() {
                         loadCommunityDetails()
                     }
                     .addOnFailureListener {
-                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
                     }
             }
             .show()
@@ -383,11 +383,11 @@ class CommunitySettingsFragment : Fragment() {
         FirebaseCommunity.getCommunityReference(id)
             .update("adminIDs", FieldValue.arrayUnion(userId))
             .addOnSuccessListener {
-                Toast.makeText(requireContext(), "Admin added", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.admin_added), Toast.LENGTH_SHORT).show()
                 loadCommunityDetails()
             }
             .addOnFailureListener {
-                Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -400,11 +400,11 @@ class CommunitySettingsFragment : Fragment() {
         FirebaseCommunity.getCommunityReference(id)
             .update("adminIDs", FieldValue.arrayRemove(userId))
             .addOnSuccessListener {
-                Toast.makeText(requireContext(), "Admin removed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.admin_removed), Toast.LENGTH_SHORT).show()
                 loadCommunityDetails()
             }
             .addOnFailureListener {
-                Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -481,11 +481,11 @@ class CommunitySettingsFragment : Fragment() {
 
     private fun showMediaTab() {
         if (!sharedLoaded) {
-            showEmptyState("Loading...")
+            showEmptyState(getString(R.string.loading))
             return
         }
         if (sharedMediaItems.isEmpty()) {
-            showEmptyState("No shared media yet")
+            showEmptyState(getString(R.string.no_shared_media_yet))
             return
         }
 
@@ -498,11 +498,11 @@ class CommunitySettingsFragment : Fragment() {
 
     private fun showLinksTab() {
         if (!sharedLoaded) {
-            showEmptyState("Loading...")
+            showEmptyState(getString(R.string.loading))
             return
         }
         if (sharedLinkItems.isEmpty()) {
-            showEmptyState("No shared links yet")
+            showEmptyState(getString(R.string.no_shared_links_yet))
             return
         }
 
@@ -515,11 +515,11 @@ class CommunitySettingsFragment : Fragment() {
 
     private fun showFilesTab() {
         if (!sharedLoaded) {
-            showEmptyState("Loading...")
+            showEmptyState(getString(R.string.loading))
             return
         }
         if (sharedFileItems.isEmpty()) {
-            showEmptyState("No shared files yet")
+            showEmptyState(getString(R.string.no_shared_files_yet))
             return
         }
 
@@ -624,25 +624,28 @@ class CommunitySettingsFragment : Fragment() {
     private fun showCommunityTypeDialog() {
         val id = communityID ?: return
         val currentType = (community?.communityType ?: "public").lowercase()
-        val options = arrayOf("Public", "Private")
+        val options = arrayOf(
+            getString(R.string.community_public),
+            getString(R.string.community_private)
+        )
         var selectedIndex = if (currentType == "private") 1 else 0
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Community type")
+            .setTitle(getString(R.string.community_type_title))
             .setSingleChoiceItems(options, selectedIndex) { _, which ->
                 selectedIndex = which
             }
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("OK") { _, _ ->
+            .setNegativeButton(getString(R.string.cancel), null)
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val newType = if (selectedIndex == 1) "private" else "public"
                 FirebaseCommunity.getCommunityReference(id)
                     .update("communityType", newType)
                     .addOnSuccessListener {
                         community?.communityType = newType
-                        Toast.makeText(requireContext(), "Updated", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.updated), Toast.LENGTH_SHORT).show()
                     }
                     .addOnFailureListener {
-                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
                     }
             }
             .show()
@@ -668,7 +671,7 @@ class CommunitySettingsFragment : Fragment() {
             .distinctBy { it.first }
 
         if (candidates.isEmpty()) {
-            Toast.makeText(requireContext(), "No users to promote", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.no_users_to_promote), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -676,12 +679,12 @@ class CommunitySettingsFragment : Fragment() {
         val checked = BooleanArray(candidates.size)
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Add admin")
+            .setTitle(getString(R.string.add_admin_title))
             .setMultiChoiceItems(names, checked) { _, which, isChecked ->
                 checked[which] = isChecked
             }
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("OK") { _, _ ->
+            .setNegativeButton(getString(R.string.cancel), null)
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val selectedIds = candidates
                     .filterIndexed { index, _ -> checked[index] }
                     .map { it.first }
@@ -691,12 +694,12 @@ class CommunitySettingsFragment : Fragment() {
                 FirebaseCommunity.getCommunityReference(id)
                     .update("adminIDs", FieldValue.arrayUnion(*selectedIds.toTypedArray()))
                     .addOnSuccessListener {
-                        Toast.makeText(requireContext(), "Admins updated", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.admins_updated), Toast.LENGTH_SHORT).show()
                         // Refresh cached community object
                         loadCommunityDetails()
                     }
                     .addOnFailureListener {
-                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
                     }
             }
             .show()
@@ -709,18 +712,18 @@ class CommunitySettingsFragment : Fragment() {
     private fun showDeleteCommunityDialog() {
         val id = communityID ?: return
         AlertDialog.Builder(requireContext())
-            .setTitle("Delete community")
-            .setMessage("Delete this community? This cannot be undone.")
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Delete") { _, _ ->
+            .setTitle(getString(R.string.delete_community_title))
+            .setMessage(getString(R.string.delete_community_message))
+            .setNegativeButton(getString(R.string.cancel), null)
+            .setPositiveButton(getString(R.string.delete_action)) { _, _ ->
                 FirebaseCommunity.getCommunityReference(id)
                     .delete()
                     .addOnSuccessListener {
-                        Toast.makeText(requireContext(), "Community deleted", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.community_deleted), Toast.LENGTH_SHORT).show()
                         activity?.finish()
                     }
                     .addOnFailureListener {
-                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
                     }
             }
             .show()
@@ -768,7 +771,7 @@ class CommunitySettingsFragment : Fragment() {
                 .addOnSuccessListener {
                     muteUntil = 0L
                     updateMuteUI()
-                    Toast.makeText(requireContext(), "Notifications enabled", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.notifications_enabled), Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener {
                     Log.e(
@@ -776,7 +779,7 @@ class CommunitySettingsFragment : Fragment() {
                         "Failed to unmute at communities/$id/mutes/$currentUserId",
                         it
                     )
-                    Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
                 }
             return
         }
@@ -786,7 +789,7 @@ class CommunitySettingsFragment : Fragment() {
                 .addOnSuccessListener {
                     muteUntil = selectedUntil
                     updateMuteUI()
-                    Toast.makeText(requireContext(), "Notifications muted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.notifications_muted), Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener {
                     Log.e(
@@ -794,22 +797,26 @@ class CommunitySettingsFragment : Fragment() {
                         "Failed to mute at communities/$id/mutes/$currentUserId",
                         it
                     )
-                    Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
                 }
         }
     }
 
     private fun showMuteDialog(onOk: (Long) -> Unit) {
-        val options = arrayOf("5 minutes", "15 minutes", "Until I change")
+        val options = arrayOf(
+            getString(R.string.mute_5_minutes),
+            getString(R.string.mute_15_minutes),
+            getString(R.string.mute_until_i_change)
+        )
         var selectedIndex = 0
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Mute notifications")
+            .setTitle(getString(R.string.mute_notifications_title))
             .setSingleChoiceItems(options, selectedIndex) { _, which ->
                 selectedIndex = which
             }
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("OK") { _, _ ->
+            .setNegativeButton(getString(R.string.cancel), null)
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val now = System.currentTimeMillis()
                 val until = when (selectedIndex) {
                     0 -> now + 5 * 60 * 1000L
@@ -867,7 +874,7 @@ class CommunitySettingsFragment : Fragment() {
             }
             .addOnFailureListener { e ->
                 Log.e("CommunitySettings", "Failed to load members", e)
-                Toast.makeText(requireContext(), "Failed to load members", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.failed_to_load_members), Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -878,15 +885,15 @@ class CommunitySettingsFragment : Fragment() {
         }
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Edit Community Name")
+            .setTitle(getString(R.string.edit_community_name))
             .setView(editText)
-            .setPositiveButton("Save") { _, _ ->
+            .setPositiveButton(getString(R.string.saveBTN)) { _, _ ->
                 val newName = editText.text.toString().trim()
                 if (newName.isNotEmpty() && newName != community?.communityName) {
                     updateCommunityName(newName)
                 }
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show().apply {
                 getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
                 getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
@@ -896,13 +903,13 @@ class CommunitySettingsFragment : Fragment() {
     private fun updateCommunityName(newName: String) {
         FirebaseCommunity.getCommunityReference(communityID!!).update("communityName", newName)
             .addOnSuccessListener {
-                Toast.makeText(requireContext(), "Community name updated", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.community_name_updated), Toast.LENGTH_SHORT).show()
                 communityName.text = newName
                 community?.communityName = newName
             }
             .addOnFailureListener { e ->
                 Log.e("CommunitySettings", "Failed to update name", e)
-                Toast.makeText(requireContext(), "Failed to update name", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.failed_to_update_name), Toast.LENGTH_SHORT).show()
             }
     }
 

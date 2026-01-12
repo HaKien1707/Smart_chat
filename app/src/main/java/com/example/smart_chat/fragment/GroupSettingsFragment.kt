@@ -177,7 +177,11 @@ class GroupSettingsFragment : Fragment() {
                     .maxResultSize(512, 512)
                     .createIntent { intent -> imagePickerLauncher.launch(intent) }
             } else {
-                Toast.makeText(requireContext(), "Only admins can change group photo", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.only_admins_can_change_group_photo),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -205,7 +209,7 @@ class GroupSettingsFragment : Fragment() {
 
         addMembersBtn.setOnClickListener {
             if (!currentUserIsAdmin) {
-                Toast.makeText(requireContext(), "Only admins can add members", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.only_admins_can_add_members), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -217,10 +221,10 @@ class GroupSettingsFragment : Fragment() {
     }
 
     private fun setupTabs() {
-        tabs.addTab(tabs.newTab().setText("Members"))
-        tabs.addTab(tabs.newTab().setText("Media"))
-        tabs.addTab(tabs.newTab().setText("Links"))
-        tabs.addTab(tabs.newTab().setText("Files"))
+        tabs.addTab(tabs.newTab().setText(getString(R.string.tab_members)))
+        tabs.addTab(tabs.newTab().setText(getString(R.string.tab_media)))
+        tabs.addTab(tabs.newTab().setText(getString(R.string.tab_links)))
+        tabs.addTab(tabs.newTab().setText(getString(R.string.tab_files)))
 
         // Set default visibility for members tab
         membersRecycler.visibility = View.VISIBLE
@@ -303,11 +307,11 @@ class GroupSettingsFragment : Fragment() {
         FirebaseGroups.getGroupReference(id)
             .update("adminIDs", FieldValue.arrayUnion(userId))
             .addOnSuccessListener {
-                Toast.makeText(requireContext(), "Admin added", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.admin_added), Toast.LENGTH_SHORT).show()
                 loadGroupDetails()
             }
             .addOnFailureListener {
-                Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -321,11 +325,11 @@ class GroupSettingsFragment : Fragment() {
         FirebaseGroups.getGroupReference(id)
             .update("adminIDs", FieldValue.arrayRemove(userId))
             .addOnSuccessListener {
-                Toast.makeText(requireContext(), "Admin removed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.admin_removed), Toast.LENGTH_SHORT).show()
                 loadGroupDetails()
             }
             .addOnFailureListener {
-                Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -385,7 +389,7 @@ class GroupSettingsFragment : Fragment() {
             }
             .addOnFailureListener { e ->
                 Log.e("GroupSettings", "Failed to load group", e)
-                Toast.makeText(requireContext(), "Failed to load group", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.failed_to_load_group), Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -422,7 +426,7 @@ class GroupSettingsFragment : Fragment() {
             .distinctBy { it.first }
 
         if (candidateUsers.isEmpty()) {
-            Toast.makeText(requireContext(), "No members to promote", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.no_members_to_promote), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -430,12 +434,12 @@ class GroupSettingsFragment : Fragment() {
         val checked = BooleanArray(candidateUsers.size)
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Add admin")
+            .setTitle(getString(R.string.add_admin_title))
             .setMultiChoiceItems(names, checked) { _, which, isChecked ->
                 checked[which] = isChecked
             }
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("OK") { _, _ ->
+            .setNegativeButton(getString(R.string.cancel), null)
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val selectedIds = candidateUsers
                     .filterIndexed { index, _ -> checked[index] }
                     .map { it.first }
@@ -446,11 +450,11 @@ class GroupSettingsFragment : Fragment() {
                 FirebaseGroups.getGroupReference(id)
                     .update("adminIDs", FieldValue.arrayUnion(*selectedIds.toTypedArray()))
                     .addOnSuccessListener {
-                        Toast.makeText(requireContext(), "Admins updated", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.admins_updated), Toast.LENGTH_SHORT).show()
                         loadGroupDetails()
                     }
                     .addOnFailureListener {
-                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
                     }
             }
             .show()
@@ -463,18 +467,18 @@ class GroupSettingsFragment : Fragment() {
     private fun showDeleteGroupDialog() {
         val id = groupID ?: return
         AlertDialog.Builder(requireContext())
-            .setTitle("Delete group")
-            .setMessage("Delete this group? This cannot be undone.")
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Delete") { _, _ ->
+            .setTitle(getString(R.string.delete_group_title))
+            .setMessage(getString(R.string.delete_group_message))
+            .setNegativeButton(getString(R.string.cancel), null)
+            .setPositiveButton(getString(R.string.delete_action)) { _, _ ->
                 FirebaseGroups.getGroupReference(id)
                     .delete()
                     .addOnSuccessListener {
-                        Toast.makeText(requireContext(), "Group deleted", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.group_deleted), Toast.LENGTH_SHORT).show()
                         activity?.finish()
                     }
                     .addOnFailureListener {
-                        Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
                     }
             }
             .show()
@@ -518,7 +522,7 @@ class GroupSettingsFragment : Fragment() {
                 .addOnSuccessListener {
                     muteUntil = 0L
                     updateMuteUI()
-                    Toast.makeText(requireContext(), "Notifications enabled", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.notifications_enabled), Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener {
                     Log.e(
@@ -526,7 +530,7 @@ class GroupSettingsFragment : Fragment() {
                         "Failed to unmute at chatgroups/$id/mutes/$currentUserId",
                         it
                     )
-                    Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
                 }
             return
         }
@@ -539,7 +543,7 @@ class GroupSettingsFragment : Fragment() {
                 .addOnSuccessListener {
                     muteUntil = selectedUntil
                     updateMuteUI()
-                    Toast.makeText(requireContext(), "Notifications muted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.notifications_muted), Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener {
                     Log.e(
@@ -547,22 +551,26 @@ class GroupSettingsFragment : Fragment() {
                         "Failed to mute at chatgroups/$id/mutes/$currentUserId",
                         it
                     )
-                    Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), it.message ?: getString(R.string.failed), Toast.LENGTH_SHORT).show()
                 }
         }
     }
 
     private fun showMuteDialog(onOk: (Long) -> Unit) {
-        val options = arrayOf("5 minutes", "15 minutes", "Until I change")
+        val options = arrayOf(
+            getString(R.string.mute_5_minutes),
+            getString(R.string.mute_15_minutes),
+            getString(R.string.mute_until_i_change)
+        )
         var selectedIndex = 0
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Mute notifications")
+            .setTitle(getString(R.string.mute_notifications_title))
             .setSingleChoiceItems(options, selectedIndex) { _, which ->
                 selectedIndex = which
             }
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("OK") { _, _ ->
+            .setNegativeButton(getString(R.string.cancel), null)
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val now = System.currentTimeMillis()
                 val until = when (selectedIndex) {
                     0 -> now + 5 * 60 * 1000L
@@ -580,10 +588,10 @@ class GroupSettingsFragment : Fragment() {
 
     private fun confirmLeaveGroup() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Leave group")
-            .setMessage("Leave this group?")
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("OK") { _, _ ->
+            .setTitle(getString(R.string.leaveGroup))
+            .setMessage(getString(R.string.leave_group_message))
+            .setNegativeButton(getString(R.string.cancel), null)
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 leaveGroup()
             }
             .show()
@@ -646,11 +654,16 @@ class GroupSettingsFragment : Fragment() {
             null
         }
             .addOnSuccessListener {
-                Toast.makeText(requireContext(), "Left group", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.left_group), Toast.LENGTH_SHORT)
+                    .show()
                 activity?.finish()
             }
             .addOnFailureListener {
-                Toast.makeText(requireContext(), it.message ?: "Failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    it.message ?: getString(R.string.failed),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }
 
@@ -659,7 +672,7 @@ class GroupSettingsFragment : Fragment() {
 
         if (memberIds.isEmpty()) {
             membersList.clear()
-            membersCount.text = "0 members"
+            membersCount.text = resources.getQuantityString(R.plurals.memberCount, 0, 0)
             adapter?.notifyDataSetChanged()
             return
         }
@@ -696,12 +709,13 @@ class GroupSettingsFragment : Fragment() {
                     }.thenBy { it.first.username ?: "" }
                 )
 
-                membersCount.text = "$totalMembers members"
+                membersCount.text = resources.getQuantityString(R.plurals.memberCount, totalMembers, totalMembers)
                 adapter?.notifyDataSetChanged()
             }
             .addOnFailureListener { e ->
                 Log.e("GroupSettings", "Failed to load members", e)
-                Toast.makeText(requireContext(), "Failed to load members", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.failed_to_load_members), Toast.LENGTH_SHORT)
+                    .show()
             }
     }
 
@@ -714,33 +728,41 @@ class GroupSettingsFragment : Fragment() {
     private fun removeMember(userID: String) {
         val id = groupID ?: return
         val member = membersList.firstOrNull { it.first.userID == userID }?.first
+        val memberName = member?.username ?: getString(R.string.this_member)
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Remove Member")
-            .setMessage("Are you sure you want to remove ${member?.username ?: "this member"}?")
-            .setPositiveButton("Remove") { _, _ ->
+            .setTitle(getString(R.string.remove_member_title))
+            .setMessage(getString(R.string.remove_group_member_message, memberName))
+            .setPositiveButton(getString(R.string.remove_action)) { _, _ ->
                 FirebaseGroups.getGroupReference(id)
                     .update("memberIDs", FieldValue.arrayRemove(userID))
                     .addOnSuccessListener {
-                        Toast.makeText(requireContext(), "Member removed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.member_removed), Toast.LENGTH_SHORT)
+                            .show()
+
+                        val groupNameForNotification =
+                            group?.groupName ?: getString(R.string.this_group)
 
                         FirebaseNotifications.createNotification(
                             type = "REMOVED_FROM_GROUP",
                             recipientID = userID,
                             senderID = FirebaseAuthentication.currentUserID() ?: "",
-                            senderName = "Admin",
+                            senderName = getString(R.string.admin_label),
                             groupID = id,
                             groupName = group?.groupName,
-                            message = "You have been removed from ${group?.groupName}"
+                            message = getString(
+                                R.string.removed_from_group_notification,
+                                groupNameForNotification
+                            )
                         )
 
                         loadGroupDetails()
                     }
                     .addOnFailureListener {
-                        Toast.makeText(requireContext(), "Failed to remove member", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.failed_to_remove_member), Toast.LENGTH_SHORT).show()
                     }
             }
-            .setNegativeButton("Cancel", null)
+                    .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
@@ -889,15 +911,15 @@ class GroupSettingsFragment : Fragment() {
         }
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Edit Group Name")
+            .setTitle(getString(R.string.edit_group_name))
             .setView(editText)
-            .setPositiveButton("Save") { _, _ ->
+            .setPositiveButton(getString(R.string.saveBTN)) { _, _ ->
                 val newName = editText.text.toString().trim()
                 if (newName.isNotEmpty() && newName != group?.groupName) {
                     updateGroupName(newName)
                 }
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show().apply {
                 getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
                 getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
@@ -907,13 +929,13 @@ class GroupSettingsFragment : Fragment() {
     private fun updateGroupName(newName: String) {
         FirebaseGroups.getGroupReference(groupID!!).update("groupName", newName)
             .addOnSuccessListener {
-                Toast.makeText(requireContext(), "Group name updated", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.group_name_updated), Toast.LENGTH_SHORT).show()
                 groupName.text = newName
                 group?.groupName = newName
             }
             .addOnFailureListener { e ->
                 Log.e("GroupSettings", "Failed to update name", e)
-                Toast.makeText(requireContext(), "Failed to update name", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.failed_to_update_name), Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -929,14 +951,16 @@ class GroupSettingsFragment : Fragment() {
             FirebaseGroups.getGroupReference(groupID!!).update("groupImage", base64)
                 .addOnSuccessListener {
                     androidUtils.setProfileImageFromBase64(requireContext(), base64, groupImage)
-                    Toast.makeText(requireContext(), "Group photo updated", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.group_photo_updated), Toast.LENGTH_SHORT)
+                        .show()
                 }
                 .addOnFailureListener {
-                    Toast.makeText(requireContext(), "Failed to update photo", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.failed_to_update_photo), Toast.LENGTH_SHORT)
+                        .show()
                 }
         } catch (e: Exception) {
             Log.e("GroupSettings", "Failed to update image", e)
-            Toast.makeText(requireContext(), "Failed to update photo", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.failed_to_update_photo), Toast.LENGTH_SHORT).show()
         }
     }
 }

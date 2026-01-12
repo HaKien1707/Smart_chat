@@ -3,17 +3,17 @@
     
     <item
         android:id="@+id/action_block_user"
-        android:title="Block User"
+        android:title="@string/block_user_title"
         android:icon="@drawable/ic_block" />
     
     <item
         android:id="@+id/action_report_user"
-        android:title="Report User"
+        android:title="@string/report_user_title"
         android:icon="@drawable/ic_report" />
     
     <item
         android:id="@+id/action_delete_chat"
-        android:title="Delete Chat"
+        android:title="@string/delete_chat_title"
         android:icon="@drawable/ic_delete" />
     
 </menu>

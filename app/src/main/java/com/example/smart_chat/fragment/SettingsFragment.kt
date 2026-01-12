@@ -47,7 +47,7 @@ class SettingsFragment : Fragment() {
             val mainActivity = activity as? MainActivity
             mainActivity?.let {
                 it.replaceFragment(BlockedUsersFragment(), addToBackStack = true)
-                it.setupDetailUI("Blocked Users")
+                it.setupDetailUI(getString(R.string.userBlocked))
             }
         }
 
@@ -67,9 +67,9 @@ class SettingsFragment : Fragment() {
     private fun updateLanguageValue() {
         val currentLang = LanguageManager.getLanguage(requireContext())
         languageValue.text = when (currentLang) {
-            "en" -> "English"
-            "vi" -> "Tiếng Việt"
-            else -> "English"
+            "en" -> getString(R.string.language_english)
+            "vi" -> getString(R.string.language_vietnamese)
+            else -> getString(R.string.language_english)
         }
     }
 
@@ -105,14 +105,14 @@ class SettingsFragment : Fragment() {
                 // DON'T dismiss - let user click outside or press back
                 // dialog.dismiss() // REMOVED
             }
-            .setPositiveButton("Close") { dialog, _ ->
+            .setPositiveButton(getString(R.string.close)) { dialog, _ ->
                 dialog.dismiss()
             }
             .show()
     }
 
     private fun showLanguageDialog() {
-        val languages = arrayOf("English", "Tiếng Việt")
+        val languages = arrayOf(getString(R.string.language_english), getString(R.string.language_vietnamese))
         val languageCodes = arrayOf("en", "vi")
 
         val currentLang = LanguageManager.getLanguage(requireContext())

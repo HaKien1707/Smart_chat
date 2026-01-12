@@ -162,7 +162,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Privacy"
+            android:text="@string/privacy"
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="?android:textColorSecondary"
@@ -193,7 +193,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_block"
-                    android:contentDescription="Blocked Users"
+                    android:contentDescription="@string/blocked_users_title"
                     app:tint="?android:textColorPrimary" />
 
                 <LinearLayout
@@ -206,14 +206,14 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Blocked Users"
+                        android:text="@string/blocked_users_title"
                         android:textSize="16sp"
                         android:textColor="?android:textColorPrimary" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Manage blocked users"
+                        android:text="@string/blocked_users_manage"
                         android:textSize="14sp"
                         android:textColor="?android:textColorSecondary"
                         android:layout_marginTop="4dp" />

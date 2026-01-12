@@ -559,12 +559,12 @@ class UserChatSettingsFragment : Fragment() {
 
     private fun showFilesTab() {
         if (!sharedLoaded) {
-            showEmptyState("Loading...")
+            showEmptyState(getString(R.string.loading))
             return
         }
 
         if (sharedFileItems.isEmpty()) {
-            showEmptyState("No shared files yet")
+            showEmptyState(getString(R.string.no_shared_files_yet))
             return
         }
 
@@ -609,34 +609,34 @@ class UserChatSettingsFragment : Fragment() {
     private fun showBlockUserDialog() {
         val targetUserID = userID
         if (targetUserID.isNullOrBlank()) {
-            Toast.makeText(requireContext(), "User not found", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.user_not_found), Toast.LENGTH_SHORT).show()
             return
         }
 
-        val targetName = user?.username ?: "this user"
+        val targetName = user?.username ?: getString(R.string.this_user)
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Block User")
-            .setMessage("Block $targetName? They will be added to your blocked users list.")
-            .setPositiveButton("Block") { _, _ ->
+            .setTitle(getString(R.string.block_user_title))
+            .setMessage(getString(R.string.block_user_message, targetName))
+            .setPositiveButton(getString(R.string.block_action)) { _, _ ->
                 FirebaseBlocking.blockUser(
                     targetUserID,
                     onSuccess = {
-                        Toast.makeText(requireContext(), "$targetName blocked", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.blocked_user_success, targetName), Toast.LENGTH_SHORT).show()
                         activity?.finish()
                     },
                     onFailure = { e ->
-                        Toast.makeText(requireContext(), "Failed to block: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.failed_to_block, e.message ?: ""), Toast.LENGTH_SHORT).show()
                     }
                 )
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
     private fun showReportUserDialog() {
         // TODO: Show report dialog
-        Toast.makeText(requireContext(), "Report user dialog", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), getString(R.string.report_user_title), Toast.LENGTH_SHORT).show()
     }
 
     private fun showDeleteChatDialog() {
@@ -644,29 +644,29 @@ class UserChatSettingsFragment : Fragment() {
         val otherUserID = userID
 
         if (currentUserID.isNullOrBlank() || otherUserID.isNullOrBlank()) {
-            Toast.makeText(requireContext(), "Chat not available", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.chat_not_available), Toast.LENGTH_SHORT).show()
             return
         }
 
         val chatRoomID = FirebaseChat.getChatRoomID(currentUserID, otherUserID)
-        val targetName = user?.username ?: "this user"
+        val targetName = user?.username ?: getString(R.string.this_user)
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Delete Chat")
-            .setMessage("This chat will be moved to Deleted Chats. You can recover it later.")
-            .setPositiveButton("Delete") { _, _ ->
+            .setTitle(getString(R.string.delete_chat_title))
+            .setMessage(getString(R.string.delete_chat_message))
+            .setPositiveButton(getString(R.string.delete_action)) { _, _ ->
                 FirebaseChat.softDeleteChatRoom(
                     chatRoomID,
                     onSuccess = {
-                        Toast.makeText(requireContext(), "Chat deleted", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.chat_deleted), Toast.LENGTH_SHORT).show()
                         activity?.finish()
                     },
                     onFailure = { e ->
-                        Toast.makeText(requireContext(), "Failed to delete chat: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.failed_to_delete_chat, e.message ?: ""), Toast.LENGTH_SHORT).show()
                     }
                 )
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 

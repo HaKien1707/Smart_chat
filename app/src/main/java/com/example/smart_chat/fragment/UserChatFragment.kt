@@ -362,7 +362,7 @@ class UserChatFragment : Fragment() {
         val messageText = msgInput.text.toString().trim()
 
         if (messageText.isEmpty()) {
-            msgInput.error = "Enter a message"
+            msgInput.error = getString(R.string.enter_a_message)
             return
         }
 

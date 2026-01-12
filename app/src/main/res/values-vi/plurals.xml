@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="memberCount">
+        <item quantity="one">%d thành viên</item>
+        <item quantity="other">%d thành viên</item>
+    </plurals>
+</resources>

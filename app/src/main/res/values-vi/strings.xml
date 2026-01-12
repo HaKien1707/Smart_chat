@@ -50,19 +50,35 @@
     <string name="blocked">Bạn đã bị chặn</string>
     <string name="block">Đã chặn người dùng</string>
     <string name="youBlockedThisUser">Bạn đã chặn người dùng này</string>
-    <string name="userBlocked">Blocked users</string>
-    <string name="NoBlockedUsers">No blocked users</string>
-    <string name="unblock">Unblock</string>
-    <string name="UsersBlockAppearHere">Users you block will appear here</string>
+    <string name="userBlocked">Người dùng bị chặn</string>
+    <string name="NoBlockedUsers">Chưa có người dùng bị chặn</string>
+    <string name="unblock">Bỏ chặn</string>
+    <string name="UsersBlockAppearHere">Những người bạn chặn sẽ xuất hiện ở đây</string>
 
     <string name="loginPhoneNumber">Số điện thoại của bạn</string>
 
     <string name="searchUser">Tìm người dùng</string>
     <string name="createGroup">Tạo nhóm</string>
+    <string name="createCommunity">Tạo cộng đồng</string>
+
+    <string name="newGroup">Nhóm mới</string>
+    <string name="newGroupSubtitle">tối đa 200000 thành viên</string>
+    <string name="ok">OK</string>
+    <string name="add_temp_chat">Thêm chat tạm</string>
+    <string name="temp_chat">Chat tạm</string>
+    <string name="add">Thêm</string>
+    <string name="newChannel">Cộng đồng mới</string>
+    <string name="noUsersToAdd">Không có người dùng để thêm</string>
+    <string name="alreadyInGroup">Đã ở trong nhóm</string>
+    <string name="groupNameHint">Tên nhóm</string>
+    <string name="channelNameHint">Tên cộng đồng</string>
+    <string name="description">Mô tả</string>
+    <string name="descriptionOptional">Bạn có thể thêm mô tả (không bắt buộc) cho cộng đồng.</string>
+    <string name="search">Tìm kiếm</string>
 
     <string name="searchBTN">Tìm kiếm</string>
     <string name="backBTN">Quay lại</string>
-    <string name="saveBTN">Save</string>
+    <string name="saveBTN">Lưu</string>
     <string name="sendBTN">Gửi</string>
 
     <string name="menu_chat">Trò chuyện</string>
@@ -99,7 +115,14 @@
     <string name="signUp">Đăng ký</string>
     <string name="friendRequest">Lời mời kết bạn</string>
     <string name="youAreBlocked">Bạn đã bị chặn bởi người dùng này</string>
-    <string name="tapToChange">Tap to change</string>
+    <string name="tapToChange">Nhấn để thay đổi</string>
+
+    <string name="extend_temp_chat_time">Thêm thời gian</string>
+    <string name="delete_temp_chat">Xóa chat tạm</string>
+    <string name="extend_time_title">Thêm thời gian</string>
+    <string name="extend_time_message">Chọn khoảng thời gian muốn thêm</string>
+    <string name="delete_temp_chat_title">Xóa chat tạm</string>
+    <string name="delete_temp_chat_message">Bạn có muốn xóa chat tạm này không?</string>
 
     <!-- Legal -->
     <string name="welcome_legal_text">Bằng việc nhấn vào “Bắt đầu nhắn tin”, bạn đồng ý với &lt;b>Điều khoản dịch vụ&lt;/b> và xác nhận đã đọc &lt;b>Chính sách bảo mật&lt;/b> của chúng tôi.</string>
@@ -135,5 +158,118 @@
     <string name="title_activity_fullscreen_image">FullscreenImageActivity</string>
     <string name="dummy_button">Nút mẫu</string>
     <string name="dummy_content">NỘI DUNG\nMẪU</string>
+
+    <!-- Common UI -->
+    <string name="close">Đóng</string>
+    <string name="privacy">Quyền riêng tư</string>
+    <string name="blocked_users_manage">Quản lý người dùng bị chặn</string>
+    <string name="language_english">Tiếng Anh</string>
+    <string name="language_vietnamese">Tiếng Việt</string>
+
+    <!-- Tabs / shared content -->
+    <string name="tab_members">Thành viên</string>
+    <string name="tab_media">Phương tiện</string>
+    <string name="tab_links">Liên kết</string>
+    <string name="tab_files">Tệp</string>
+    <string name="shared_media">Nội dung đã chia sẻ</string>
+    <string name="loading">Đang tải…</string>
+    <string name="no_shared_media_yet">Chưa có nội dung media được chia sẻ</string>
+    <string name="no_shared_links_yet">Chưa có liên kết được chia sẻ</string>
+    <string name="no_shared_files_yet">Chưa có tệp được chia sẻ</string>
+
+    <!-- Actions -->
+    <string name="action_message">Nhắn tin</string>
+    <string name="action_mute">Tắt thông báo</string>
+    <string name="action_call">Gọi</string>
+    <string name="action_leave">Rời</string>
+    <string name="block_action">Chặn</string>
+    <string name="delete_action">Xóa</string>
+    <string name="remove_action">Gỡ</string>
+    <string name="menu_temp_chats">Chat tạm</string>
+
+    <!-- Dialogs / toasts -->
+    <string name="mute_notifications_title">Tắt thông báo</string>
+    <string name="notifications_enabled">Đã bật thông báo</string>
+    <string name="notifications_muted">Đã tắt thông báo</string>
+    <string name="mute_5_minutes">5 phút</string>
+    <string name="mute_15_minutes">15 phút</string>
+    <string name="mute_until_i_change">Cho đến khi tôi bật lại</string>
+    <string name="failed">Thất bại</string>
+    <string name="error">Lỗi</string>
+    <string name="enter_a_message">Nhập tin nhắn</string>
+
+    <!-- User chat settings -->
+    <string name="block_user_title">Chặn người dùng</string>
+    <string name="report_user_title">Báo cáo người dùng</string>
+    <string name="delete_chat_title">Xóa đoạn chat</string>
+    <string name="delete_group_title">Xóa nhóm</string>
+    <string name="delete_group_message">Xóa nhóm này? Thao tác này không thể hoàn tác.</string>
+    <string name="group_deleted">Đã xóa nhóm</string>
+    <string name="leave_group_message">Rời nhóm này?</string>
+    <string name="left_group">Đã rời nhóm</string>
+    <string name="failed_to_remove_member">Gỡ thành viên thất bại</string>
+    <string name="edit_group_name">Sửa tên nhóm</string>
+    <string name="group_name_updated">Đã cập nhật tên nhóm</string>
+    <string name="only_admins_can_change_group_photo">Chỉ quản trị viên mới có thể thay đổi ảnh nhóm</string>
+    <string name="group_photo_updated">Đã cập nhật ảnh nhóm</string>
+    <string name="failed_to_update_photo">Cập nhật ảnh thất bại</string>
+    <string name="remove_group_member_message">Bạn có chắc muốn gỡ %1$s không?</string>
+    <string name="this_member">thành viên này</string>
+    <string name="this_group">nhóm này</string>
+    <string name="admin_label">Quản trị viên</string>
+    <string name="removed_from_group_notification">Bạn đã bị gỡ khỏi %1$s</string>
+    <string name="only_admins_can_add_members">Chỉ quản trị viên mới có thể thêm thành viên</string>
+    <string name="admin_added">Đã thêm quản trị viên</string>
+    <string name="admin_removed">Đã xóa quyền quản trị viên</string>
+    <string name="admins_updated">Đã cập nhật quản trị viên</string>
+    <string name="no_members_to_promote">Không có thành viên để thăng cấp</string>
+    <string name="add_admin_title">Thêm quản trị viên</string>
+    <string name="failed_to_load_group">Tải nhóm thất bại</string>
+    <string name="user_not_found">Không tìm thấy người dùng</string>
+    <string name="chat_not_available">Chat không khả dụng</string>
+    <string name="this_user">người dùng này</string>
+    <string name="block_user_message">Chặn %1$s? Người này sẽ được thêm vào danh sách bị chặn của bạn.</string>
+    <string name="blocked_user_success">Đã chặn %1$s</string>
+    <string name="failed_to_block">Chặn thất bại: %1$s</string>
+    <string name="delete_chat_message">Đoạn chat sẽ được chuyển vào Chat đã xóa. Bạn có thể khôi phục sau.</string>
+    <string name="chat_deleted">Đã xóa chat</string>
+    <string name="failed_to_delete_chat">Xóa chat thất bại: %1$s</string>
+
+    <!-- Community settings -->
+    <string name="failed_to_load_community">Tải cộng đồng thất bại</string>
+    <string name="left_community">Đã rời cộng đồng</string>
+    <string name="cannot_leave">Không thể rời</string>
+    <string name="cannot_leave_community_owner_message">Bạn không thể rời cộng đồng này vì bạn là chủ sở hữu.</string>
+    <string name="leave_community_title">Rời cộng đồng</string>
+    <string name="leave_community_message">Bạn có muốn rời cộng đồng này không?</string>
+    <string name="remove_member_title">Gỡ thành viên</string>
+    <string name="remove_member_message">Gỡ %1$s khỏi cộng đồng này?</string>
+    <string name="member_removed">Đã gỡ thành viên</string>
+    <string name="failed_to_load_members">Tải danh sách thành viên thất bại</string>
+    <string name="edit_community_name">Sửa tên cộng đồng</string>
+    <string name="community_name_updated">Đã cập nhật tên cộng đồng</string>
+    <string name="failed_to_update_name">Cập nhật tên thất bại</string>
+    <string name="no_users_to_promote">Không có người dùng để thăng cấp</string>
+    <string name="delete_community_title">Xóa cộng đồng</string>
+    <string name="delete_community_message">Xóa cộng đồng này? Thao tác này không thể hoàn tác.</string>
+    <string name="community_deleted">Đã xóa cộng đồng</string>
+    <string name="community_type_title">Loại cộng đồng</string>
+    <string name="community_public">Công khai</string>
+    <string name="community_private">Riêng tư</string>
+    <string name="updated">Đã cập nhật</string>
+
+    <!-- Accessibility / placeholders -->
+    <string name="cd_back">Quay lại</string>
+    <string name="cd_more_options">Tùy chọn thêm</string>
+    <string name="cd_user_profile_image">Ảnh hồ sơ người dùng</string>
+    <string name="user_name_placeholder">Tên người dùng</string>
+    <string name="user_status_placeholder">truy cập gần đây</string>
+    <string name="username_label">Tên người dùng</string>
+
+    <!-- Blocked users dialog -->
+    <string name="blocked_users_title">Người dùng bị chặn</string>
+    <string name="select_all">Chọn tất cả</string>
+    <string name="no_user_blocked">Chưa chặn người dùng nào</string>
+    <string name="unblock_selected_users">Bỏ chặn người dùng đã chọn</string>
 
 </resources>
