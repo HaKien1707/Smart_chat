@@ -1,5 +1,24 @@
 <resources>
 
+    <style name="ThemeOverlay.SmartChat.AlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="buttonBarPositiveButtonStyle">@style/SmartChat.DialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/SmartChat.DialogButton</item>
+        <item name="buttonBarNeutralButtonStyle">@style/SmartChat.DialogButton</item>
+
+        <!-- Fallback for AppCompat AlertDialog implementations -->
+        <item name="android:buttonBarPositiveButtonStyle">@style/SmartChat.DialogButton.AppCompat</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/SmartChat.DialogButton.AppCompat</item>
+        <item name="android:buttonBarNeutralButtonStyle">@style/SmartChat.DialogButton.AppCompat</item>
+    </style>
+
+    <style name="SmartChat.DialogButton" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/settings_accent</item>
+    </style>
+
+    <style name="SmartChat.DialogButton.AppCompat" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/settings_accent</item>
+    </style>
+
     <style name="Widget.Theme.Smart_Chat.ActionBar.Fullscreen" parent="Widget.AppCompat.ActionBar">
         <item name="android:background">@color/black_overlay</item>
     </style>

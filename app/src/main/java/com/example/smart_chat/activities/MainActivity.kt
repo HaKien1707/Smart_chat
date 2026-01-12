@@ -313,7 +313,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun logoutUser() {
         // Show confirmation dialog
-        val dialog = AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
             .setTitle(R.string.logout)
             .setMessage(R.string.logout_msg)
             .setPositiveButton(android.R.string.yes) { _, _ ->
@@ -324,10 +324,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 dialog.dismiss()
             }
             .show()
-        
-        // Set button text color to white
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(android.graphics.Color.WHITE)
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.WHITE)
     }
 
     private fun performLogout() {
