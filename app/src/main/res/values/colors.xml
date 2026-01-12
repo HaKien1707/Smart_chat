@@ -24,6 +24,9 @@
     <color name="button_green">#25D366</color>
     <color name="header_green">#075E54</color>
 
+    <!-- Member role (Owner/Admin) - light mode -->
+    <color name="member_role_color">@color/header_green</color>
+
     <color name="announcement_bg">#FFF3E0</color>
 
     <!-- FAB colors (light mode) -->

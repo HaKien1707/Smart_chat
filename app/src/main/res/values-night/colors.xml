@@ -2,6 +2,9 @@
 <resources>
     <color name="button_background">@color/button_background_dark</color>
 
+    <!-- Member role (Owner/Admin) - dark mode -->
+    <color name="member_role_color">@color/button_green</color>
+
     <!-- FAB colors (dark mode) -->
     <color name="fab_bg">@color/black</color>
     <color name="fab_icon">@color/white</color>

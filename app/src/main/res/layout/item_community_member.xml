@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="horizontal"
     android:padding="12dp"
+    android:gravity="center_vertical"
     android:background="?attr/selectableItemBackground">
 
     <!-- Profile Image -->
@@ -10,20 +13,15 @@
         android:id="@+id/profile_image_container"
         layout="@layout/profile_image_holder_header"
         android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_alignParentStart="true"
-        android:layout_centerVertical="true" />
+        android:layout_height="50dp" />
 
     <!-- Member Info -->
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/profile_image_container"
-        android:layout_toStartOf="@id/owner_label"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="8dp"
-        android:orientation="vertical">
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp">
 
         <TextView
             android:id="@+id/member_name"
@@ -31,47 +29,33 @@
             android:layout_height="wrap_content"
             android:text="Member Name"
             android:textSize="16sp"
+            android:textStyle="bold"
             android:textColor="?android:textColorPrimary"
             android:maxLines="1"
             android:ellipsize="end" />
 
         <TextView
-            android:id="@+id/member_status"
+            android:id="@+id/member_role"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="last seen recently"
-            android:textSize="14sp"
-            android:textColor="?android:textColorSecondary"
+            android:text="Admin"
+            android:textSize="12sp"
+            android:textColor="@color/member_role_color"
+            android:visibility="gone"
             android:layout_marginTop="2dp"
             android:maxLines="1"
             android:ellipsize="end" />
     </LinearLayout>
-
-    <!-- Owner Label -->
-    <TextView
-        android:id="@+id/owner_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:layout_marginEnd="48dp"
-        android:text="Owner"
-        android:textSize="14sp"
-        android:textColor="@color/button_green"
-        android:visibility="gone" />
 
     <!-- Options Button (3 dots) -->
     <ImageButton
         android:id="@+id/member_options_btn"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
         android:src="@drawable/ic_more_vert_24"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="Member options"
         android:padding="8dp"
-        android:tint="?android:textColorSecondary"
-        android:visibility="gone" />
+        app:tint="?android:textColorSecondary" />
 
-</RelativeLayout>
+</LinearLayout>

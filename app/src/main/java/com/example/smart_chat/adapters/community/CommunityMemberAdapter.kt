@@ -49,23 +49,14 @@ class CommunityMemberAdapter(
             displayName
         }
 
-        // Set status - show "last seen recently" for all users
-        holder.memberStatus.text = "last seen recently"
-        holder.memberStatus.setTextColor(
-            context.getColor(android.R.color.darker_gray)
-        )
-
         val isOwner = userId != null && userId == ownerID
         val isAdmin = userId != null && adminIDs.contains(userId)
 
-        if (isOwner) {
-            holder.ownerLabel.visibility = View.VISIBLE
-            holder.ownerLabel.text = "Owner"
-        } else if (isAdmin) {
-            holder.ownerLabel.visibility = View.VISIBLE
-            holder.ownerLabel.text = "Admin"
+        if (isOwner || isAdmin) {
+            holder.memberRole.visibility = View.VISIBLE
+            holder.memberRole.text = if (isOwner) "Owner" else "Admin"
         } else {
-            holder.ownerLabel.visibility = View.GONE
+            holder.memberRole.visibility = View.GONE
         }
 
         val currentUserIsOwner = ownerID != null && ownerID == currentUserID
@@ -75,16 +66,25 @@ class CommunityMemberAdapter(
         if (isCurrentUser) {
             holder.optionsBtn.visibility = View.GONE
             holder.optionsBtn.setOnClickListener(null)
+            holder.itemView.setOnClickListener(null)
         } else {
-            // Always show 3-dots for other members; actions depend on role.
             holder.optionsBtn.visibility = View.VISIBLE
-            holder.optionsBtn.setOnClickListener {
+
+            val openMenu: (View) -> Unit = { anchor ->
                 showMemberMenu(
-                    anchor = holder.optionsBtn,
+                    anchor = anchor,
                     member = member,
                     currentUserIsOwner = currentUserIsOwner,
                     currentUserIsAdmin = currentUserIsAdmin
                 )
+            }
+
+            holder.itemView.setOnClickListener {
+                openMenu(holder.optionsBtn)
+            }
+
+            holder.optionsBtn.setOnClickListener { view ->
+                openMenu(view)
             }
         }
 
@@ -171,8 +171,7 @@ class CommunityMemberAdapter(
     class MemberViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val profileImageContainer: View = itemView.findViewById(R.id.profile_image_container)
         val memberName: TextView = itemView.findViewById(R.id.member_name)
-        val memberStatus: TextView = itemView.findViewById(R.id.member_status)
-        val ownerLabel: TextView = itemView.findViewById(R.id.owner_label)
+        val memberRole: TextView = itemView.findViewById(R.id.member_role)
         val optionsBtn: ImageButton = itemView.findViewById(R.id.member_options_btn)
     }
 }
