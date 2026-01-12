@@ -14,12 +14,15 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.smart_chat.R
+import com.example.smart_chat.activities.MainActivity
 import com.example.smart_chat.utils.UI.LanguageManager
 import com.example.smart_chat.utils.security.PasswordUtils
 import com.example.smart_chat.utils.UI.ThemeManager
 import com.example.smart_chat.utils.others.androidUtils
 import com.example.smart_chat.utils.firebase.FirebaseAuthentication
 import com.github.dhaval2404.imagepicker.ImagePicker
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.SetOptions
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -78,6 +81,10 @@ class SignUpActivity : AppCompatActivity() {
         nextBtn.setOnClickListener {
             validateAndProceed()
         }
+    }
+
+    fun onLoginClick(view: View) {
+        finish()
     }
 
     private fun validateAndProceed() {
@@ -142,8 +149,8 @@ class SignUpActivity : AppCompatActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
-                    // Everything is valid, proceed to OTP
-                    proceedToOTP()
+                    // Everything is valid, create account (OTP already verified in previous step)
+                    createAccount()
                 }
             }
             .addOnFailureListener { e ->
@@ -152,11 +159,16 @@ class SignUpActivity : AppCompatActivity() {
             }
     }
 
-    private fun proceedToOTP() {
+    private fun createAccount() {
+        val userId = FirebaseAuthentication.currentUserID()
+        if (userId.isNullOrBlank()) {
+            Toast.makeText(this, "Missing authentication. Please verify OTP again.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val username = inputUsername.text.toString().trim()
         val password = inputPassword.text.toString().trim()
 
-        // Hash password
         val hashedPassword = try {
             PasswordUtils.hashPassword(password)
         } catch (e: Exception) {
@@ -164,17 +176,32 @@ class SignUpActivity : AppCompatActivity() {
             return
         }
 
-        // Go to OTP with all data
-        val intent = Intent(this, otpActivity::class.java).apply {
-            putExtra("phoneNumber", phoneNumber)
-            putExtra("countryCode", countryCode)
-            putExtra("username", username)
-            putExtra("password", hashedPassword)
-            putExtra("profileImage", profileImageBase64)
-            putExtra("isSignUp", true) // Flag to indicate sign up flow
-        }
-        startActivity(intent)
-        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+        val data = hashMapOf(
+            "userID" to userId,
+            "username" to username,
+            "phoneNumber" to (phoneNumber ?: ""),
+            "password" to hashedPassword,
+            "nationality" to countryCode,
+            "profileImage" to profileImageBase64,
+            "blockedUsers" to emptyList<String?>(),
+            "createdAt" to Timestamp.now()
+        )
+
+        setInProgress(true)
+        FirebaseAuthentication.allUsersCollection()
+            .document(userId)
+            .set(data, SetOptions.merge())
+            .addOnSuccessListener {
+                setInProgress(false)
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+            .addOnFailureListener { e ->
+                setInProgress(false)
+                Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            }
     }
 
     private fun setInProgress(inProgress: Boolean) {

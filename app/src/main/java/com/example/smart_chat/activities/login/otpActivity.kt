@@ -10,7 +10,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.smart_chat.R
-import com.example.smart_chat.activities.MainActivity
 import com.example.smart_chat.utils.UI.LanguageManager
 import com.example.smart_chat.utils.UI.ThemeManager
 import com.google.firebase.FirebaseException
@@ -53,6 +52,11 @@ class otpActivity : AppCompatActivity() {
         inputOTP = findViewById(R.id.inputOTP)
         confirmOtpBTN = findViewById(R.id.confirm_OTP_btn)
         textResendOTP = findViewById(R.id.resendOTP)
+
+        if (isSignUp) {
+            inputOTP.setText("000000")
+            inputOTP.setSelection(inputOTP.text.length)
+        }
 
         sendOTP(phoneNumber, false)
 
@@ -132,9 +136,10 @@ class otpActivity : AppCompatActivity() {
                     startActivity(intent)
                     finish()
                 } else {
-                    // Existing user logged in, go to MainActivity
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    // Existing user: go to password step
+                    val intent = Intent(this, PasswordSignInActivity::class.java).apply {
+                        putExtra("phoneNumber", phoneNumber)
+                    }
                     startActivity(intent)
                     finish()
                 }

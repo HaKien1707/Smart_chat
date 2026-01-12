@@ -12,6 +12,10 @@
     <string name="resendOTP">Send OTP again</string>
     <string name="enter_username">Enter your username</string>
     <string name="enter_password">Enter your password</string>
+    <string name="incorrect_password">Incorrect password</string>
+    <string name="missing_authentication">Missing authentication</string>
+    <string name="account_not_found">Account not found. Please sign up.</string>
+    <string name="account_no_password">Account has no password. Please sign up.</string>
     <string name="confirm_password">Confirm your password</string>
     <string name="enterUsername">Enter username</string>
     <string name="noUserMatch">No users match the result</string>
