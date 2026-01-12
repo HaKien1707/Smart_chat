@@ -28,7 +28,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Connect with friends securely"
+        android:text="@string/welcome_subtitle_secure"
         android:textSize="16sp"
         android:textColor="@color/black"
         android:layout_marginTop="10dp"/>
@@ -52,7 +52,8 @@
         android:id="@+id/start_messaging_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="START MESSAGING"
+        android:text="@string/start_messaging"
+        android:textAllCaps="true"
         android:paddingHorizontal="32dp"
         android:paddingVertical="12dp"
         android:layout_marginBottom="40dp"/>

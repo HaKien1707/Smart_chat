@@ -150,6 +150,9 @@
 
     <!-- Legal -->
     <string name="welcome_legal_text">Bằng việc nhấn vào “Bắt đầu nhắn tin”, bạn đồng ý với &lt;b>Điều khoản dịch vụ&lt;/b> và xác nhận đã đọc &lt;b>Chính sách bảo mật&lt;/b> của chúng tôi.</string>
+    <string name="welcome_subtitle_secure">Kết nối an toàn với bạn bè</string>
+    <string name="start_messaging">Bắt đầu nhắn tin</string>
+    <string name="already_have_account_log_in">Đã có tài khoản? Đăng nhập</string>
     <string name="terms_of_service_title">Điều khoản dịch vụ</string>
     <string name="terms_of_service_content">Đây là nội dung mẫu cho Điều khoản dịch vụ của bạn. Vui lòng thay thế bằng điều khoản thực tế.</string>
     <string name="privacy_policy_title">Chính sách bảo mật</string>
@@ -302,6 +305,7 @@
     <string name="cd_back">Quay lại</string>
     <string name="cd_edit">Chỉnh sửa</string>
     <string name="cd_more_options">Tùy chọn thêm</string>
+        <string name="cd_edit_profile">Chỉnh sửa hồ sơ</string>
     <string name="cd_user_profile_image">Ảnh hồ sơ người dùng</string>
     <string name="cd_community_image">Ảnh cộng đồng</string>
     <string name="user_name_placeholder">Tên người dùng</string>

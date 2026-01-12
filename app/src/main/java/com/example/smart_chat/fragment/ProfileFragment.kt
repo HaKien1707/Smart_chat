@@ -253,7 +253,7 @@ class ProfileFragment : Fragment() {
 
                 changePassword(oldPassword, newPassword, confirmPassword)
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
