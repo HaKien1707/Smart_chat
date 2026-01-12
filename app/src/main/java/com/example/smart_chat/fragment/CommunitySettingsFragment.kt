@@ -869,7 +869,7 @@ class CommunitySettingsFragment : Fragment() {
                     }.thenBy { it.username ?: "" }
                 )
 
-                membersCount.text = "$totalMembers members"
+                membersCount.text = resources.getQuantityString(R.plurals.memberCount, totalMembers, totalMembers)
                 adapter?.notifyDataSetChanged()
             }
             .addOnFailureListener { e ->

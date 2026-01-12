@@ -34,6 +34,7 @@
     <string name="leaveGroup">Leave group</string>
     <string name="deleteGroup">⚠️ Delete group</string>
     <string name="admin">Admin</string>
+    <string name="owner">Owner</string>
     <string name="more">More</string>
     <string name="noFriend">No friend yet</string>
     <string name="searchFriend">Search for users to add friends</string>
@@ -74,6 +75,7 @@
     <string name="groupNameHint">Group name</string>
     <string name="channelNameHint">Community name</string>
     <string name="description">Description</string>
+    <string name="invite_link">Invite Link</string>
     <string name="descriptionOptional">You can provide an optional description for your community.</string>
     <string name="search">Search</string>
 
@@ -105,6 +107,21 @@
 
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
+
+    <!-- Generic status/labels -->
+    <string name="unknown">Unknown</string>
+    <string name="you_in_parentheses">(You)</string>
+
+    <!-- Actions -->
+    <string name="leave">Leave</string>
+    <string name="action_chat">Chat</string>
+    <string name="action_add_admin">Add admin</string>
+    <string name="action_remove_admin">Remove from admin</string>
+
+    <!-- Temporary chat -->
+    <string name="no_messages_yet">No messages yet</string>
+    <string name="temp_chat_expired">Expired</string>
+    <string name="temp_chat_remaining_format">%1$02d:%2$02d remaining</string>
 
     <string name="extend_temp_chat_time">Add time</string>
     <string name="delete_temp_chat">Delete temp chat</string>
@@ -182,10 +199,26 @@
     <string name="action_mute">Mute</string>
     <string name="action_call">Call</string>
     <string name="action_leave">Leave</string>
+    <string name="action_reply">Reply</string>
+    <string name="action_forward">Forward</string>
     <string name="block_action">Block</string>
     <string name="delete_action">Delete</string>
     <string name="remove_action">Remove</string>
     <string name="menu_temp_chats">Temp chats</string>
+
+    <!-- Temporary chat -->
+    <string name="temporary_chat_title">Temporary Chat</string>
+    <string name="create_temporary_chat_title">Create Temporary Chat</string>
+    <string name="temp_chat_auto_delete_info">Temporary chats will automatically delete after 5 minutes</string>
+    <string name="temp_chat_security_indicator">🔒 Encrypted • Expires in 5 min</string>
+    <string name="select_a_friend">Select a friend:</string>
+    <string name="no_friends_available">No friends available</string>
+    <string name="add_friends_first">Add some friends first!</string>
+    <string name="cannot_forward_temp_messages">Cannot forward temporary messages for security reasons</string>
+    <string name="failed_to_create_temp_chat">Failed to create temporary chat: %1$s</string>
+    <string name="creating_encrypted_chat">Creating encrypted chat...</string>
+    <string name="encrypted_chat_created_expires">🔒 Encrypted chat created (expires in 5 minutes)</string>
+    <string name="temp_messages_auto_deleted">Temporary messages are auto-deleted</string>
 
     <!-- Dialogs / toasts -->
     <string name="mute_notifications_title">Mute notifications</string>
@@ -260,8 +293,10 @@
 
     <!-- Accessibility / placeholders -->
     <string name="cd_back">Back</string>
+    <string name="cd_edit">Edit</string>
     <string name="cd_more_options">More options</string>
     <string name="cd_user_profile_image">User profile image</string>
+    <string name="cd_community_image">Community image</string>
     <string name="user_name_placeholder">User Name</string>
     <string name="user_status_placeholder">last seen a long time ago</string>
     <string name="username_label">Username</string>

@@ -147,7 +147,7 @@ class CreateTemporaryChatActivity : AppCompatActivity() {
 
     private fun createTemporaryChat(user: userModel) {
         // Show loading state
-        Toast.makeText(this, "Creating encrypted chat...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.creating_encrypted_chat), Toast.LENGTH_SHORT).show()
 
         FirebaseTemporaryChat.createTemporaryChat(
             user.userID ?: "",
@@ -155,7 +155,7 @@ class CreateTemporaryChatActivity : AppCompatActivity() {
                 // Chat created successfully with encryption key
                 Toast.makeText(
                     this,
-                    "🔒 Encrypted chat created (expires in 5 minutes)",
+                    getString(R.string.encrypted_chat_created_expires),
                     Toast.LENGTH_LONG
                 ).show()
 
@@ -170,9 +170,10 @@ class CreateTemporaryChatActivity : AppCompatActivity() {
             },
             onFailure = { e ->
                 Log.e("CreateTempChat", "Failed to create chat", e)
+                val reason = e.message ?: getString(R.string.failed)
                 Toast.makeText(
                     this,
-                    "Failed to create temporary chat: ${e.message}",
+                    getString(R.string.failed_to_create_temp_chat, reason),
                     Toast.LENGTH_SHORT
                 ).show()
             }

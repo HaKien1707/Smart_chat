@@ -45,7 +45,7 @@
             android:layout_marginEnd="8dp"
             android:singleLine="true"
             android:ellipsize="end"
-            android:text="Temporary Chat"
+            android:text="@string/temporary_chat_title"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -80,7 +80,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:text="🔒 Encrypted • Expires in 5 min"
+            android:text="@string/temp_chat_security_indicator"
             android:textSize="12sp"
             android:textColor="?android:textColorSecondary"
             android:visibility="visible" />

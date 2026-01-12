@@ -281,9 +281,9 @@ class UserChatSettingsFragment : Fragment() {
     }
 
     private fun setupTabs() {
-        tabs.addTab(tabs.newTab().setText("Media"))
-        tabs.addTab(tabs.newTab().setText("Links"))
-        tabs.addTab(tabs.newTab().setText("Files"))
+        tabs.addTab(tabs.newTab().setText(getString(R.string.tab_media)))
+        tabs.addTab(tabs.newTab().setText(getString(R.string.tab_links)))
+        tabs.addTab(tabs.newTab().setText(getString(R.string.tab_files)))
 
         tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -517,18 +517,18 @@ class UserChatSettingsFragment : Fragment() {
             .addOnFailureListener { e ->
                 Log.e("UserChatSettings", "Failed to load shared content", e)
                 sharedLoaded = true
-                showEmptyState("No shared media yet")
+                showEmptyState(getString(R.string.no_shared_media_yet))
             }
     }
 
     private fun showMediaTab() {
         if (!sharedLoaded) {
-            showEmptyState("Loading...")
+            showEmptyState(getString(R.string.loading))
             return
         }
 
         if (sharedMediaItems.isEmpty()) {
-            showEmptyState("No shared media yet")
+            showEmptyState(getString(R.string.no_shared_media_yet))
             return
         }
 
@@ -541,12 +541,12 @@ class UserChatSettingsFragment : Fragment() {
 
     private fun showLinksTab() {
         if (!sharedLoaded) {
-            showEmptyState("Loading...")
+            showEmptyState(getString(R.string.loading))
             return
         }
 
         if (sharedLinkItems.isEmpty()) {
-            showEmptyState("No shared links yet")
+            showEmptyState(getString(R.string.no_shared_links_yet))
             return
         }
 

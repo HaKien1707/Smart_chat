@@ -25,14 +25,14 @@
             android:layout_height="20dp"
             android:src="@drawable/ic_reply"
             app:tint="@color/popup_icon_tint"
-            android:contentDescription="Reply" />
+            android:contentDescription="@string/action_reply" />
 
         <TextView
             android:id="@+id/option_reply"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:text="Reply"
+            android:text="@string/action_reply"
             android:textSize="16sp"
             android:textColor="?android:textColorPrimary" />
     </LinearLayout>
@@ -61,14 +61,14 @@
             android:layout_height="20dp"
             android:src="@drawable/ic_forward"
             app:tint="@color/popup_icon_tint"
-            android:contentDescription="Forward" />
+            android:contentDescription="@string/action_forward" />
 
         <TextView
             android:id="@+id/option_forward"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:text="Forward"
+            android:text="@string/action_forward"
             android:textSize="16sp"
             android:textColor="?android:textColorPrimary" />
     </LinearLayout>
@@ -97,14 +97,14 @@
             android:layout_height="20dp"
             android:src="@drawable/ic_delete"
             app:tint="@color/red"
-            android:contentDescription="Delete" />
+            android:contentDescription="@string/delete_action" />
 
         <TextView
             android:id="@+id/option_delete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:text="Delete"
+            android:text="@string/delete_action"
             android:textSize="16sp"
             android:textColor="@color/red" />
     </LinearLayout>

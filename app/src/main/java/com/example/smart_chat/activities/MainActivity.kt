@@ -219,7 +219,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun updateTitle(itemId: Int) {
         val title = when (itemId) {
-            R.id.menu_temporary_chat -> "Temporary Chat"
+            R.id.menu_temporary_chat -> getString(R.string.temporary_chat_title)
             R.id.menu_notifications -> getString(R.string.notification)
             else -> getString(R.string.title) // Default to app name
         }

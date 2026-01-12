@@ -155,7 +155,7 @@ class TemporaryChatActivity : AppCompatActivity() {
 
         panelName.text = "${user2nd?.username}"
 
-        securityIndicator.text = "🔒 Encrypted • Expires in 5 min"
+        securityIndicator.text = getString(R.string.temp_chat_security_indicator)
         securityIndicator.visibility = View.VISIBLE
 
         val imageUrl = user2nd?.profileImage

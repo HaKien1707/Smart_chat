@@ -54,7 +54,7 @@ class TemporaryChatAdapter(
 
         // If expired, skip binding and delete
         if (remainingMillis <= 0) {
-            holder.expiryTimer.text = "Expired"
+            holder.expiryTimer.text = context.getString(R.string.temp_chat_expired)
             model.chatID?.let {
                 // Delete this specific chat
                 FirebaseTemporaryChat.getTemporaryChatReference(it).delete()
@@ -72,7 +72,7 @@ class TemporaryChatAdapter(
 
                 val otherUser = userDoc.toObject(userModel::class.java)
 
-                holder.username.text = otherUser?.username ?: "Unknown"
+                holder.username.text = otherUser?.username ?: context.getString(R.string.unknown)
 
                 val lastMessageText = if (!model.lastMsg.isNullOrBlank()) {
                     if (model.lastMsgSenderID == currentUserId) {
@@ -81,7 +81,7 @@ class TemporaryChatAdapter(
                         model.lastMsg
                     }
                 } else {
-                    "No messages yet"
+                    context.getString(R.string.no_messages_yet)
                 }
                 holder.lastMsg.text = lastMessageText
 
@@ -126,12 +126,12 @@ class TemporaryChatAdapter(
 
                 val minutes = (millisUntilFinished / 1000) / 60
                 val seconds = (millisUntilFinished / 1000) % 60
-                holder.expiryTimer.text = String.format("%02d:%02d remaining", minutes, seconds)
+                holder.expiryTimer.text = context.getString(R.string.temp_chat_remaining_format, minutes, seconds)
             }
 
             override fun onFinish() {
                 if (holder.bindingAdapterPosition != RecyclerView.NO_POSITION) {
-                    holder.expiryTimer.text = "Expired"
+                    holder.expiryTimer.text = context.getString(R.string.temp_chat_expired)
                 }
                 // Delete the chat
                 FirebaseTemporaryChat.getTemporaryChatReference(chatID).delete()

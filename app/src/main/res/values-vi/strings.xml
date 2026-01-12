@@ -33,7 +33,8 @@
     <string name="AddMember">➕ Thêm thành viên</string>
     <string name="leaveGroup">Rời nhóm</string>
     <string name="deleteGroup">⚠️ Xóa nhóm</string>
-    <string name="admin">Admin</string>
+    <string name="admin">Quản trị viên</string>
+    <string name="owner">Chủ sở hữu</string>
     <string name="more">Thêm</string>
     <string name="noFriend">Chưa có bạn</string>
     <string name="searchFriend">Tìm bạn</string>
@@ -73,6 +74,7 @@
     <string name="groupNameHint">Tên nhóm</string>
     <string name="channelNameHint">Tên cộng đồng</string>
     <string name="description">Mô tả</string>
+    <string name="invite_link">Liên kết mời</string>
     <string name="descriptionOptional">Bạn có thể thêm mô tả (không bắt buộc) cho cộng đồng.</string>
     <string name="search">Tìm kiếm</string>
 
@@ -106,6 +108,21 @@
 
     <string name="confirm">Xác nhận</string>
     <string name="cancel">Hủy</string>
+
+    <!-- Generic status/labels -->
+    <string name="unknown">Không rõ</string>
+    <string name="you_in_parentheses">(Bạn)</string>
+
+    <!-- Actions -->
+    <string name="leave">Rời</string>
+    <string name="action_chat">Nhắn tin</string>
+    <string name="action_add_admin">Thêm quản trị viên</string>
+    <string name="action_remove_admin">Gỡ quyền quản trị</string>
+
+    <!-- Temporary chat -->
+    <string name="no_messages_yet">Chưa có tin nhắn</string>
+    <string name="temp_chat_expired">Hết hạn</string>
+    <string name="temp_chat_remaining_format">Còn %1$02d:%2$02d</string>
     <string name="writeMSG">Nhập tin nhắn ở đây…</string>
     <string name="logout">Đăng xuất</string>
     <string name="login">Đăng nhập</string>
@@ -182,10 +199,26 @@
     <string name="action_mute">Tắt thông báo</string>
     <string name="action_call">Gọi</string>
     <string name="action_leave">Rời</string>
+    <string name="action_reply">Trả lời</string>
+    <string name="action_forward">Chuyển tiếp</string>
     <string name="block_action">Chặn</string>
     <string name="delete_action">Xóa</string>
     <string name="remove_action">Gỡ</string>
     <string name="menu_temp_chats">Chat tạm</string>
+
+    <!-- Temporary chat -->
+    <string name="temporary_chat_title">Chat tạm</string>
+    <string name="create_temporary_chat_title">Tạo chat tạm</string>
+    <string name="temp_chat_auto_delete_info">Chat tạm sẽ tự động xóa sau 5 phút</string>
+    <string name="temp_chat_security_indicator">🔒 Mã hóa • Hết hạn sau 5 phút</string>
+    <string name="select_a_friend">Chọn một người bạn:</string>
+    <string name="no_friends_available">Không có bạn bè</string>
+    <string name="add_friends_first">Hãy thêm bạn bè trước!</string>
+    <string name="cannot_forward_temp_messages">Không thể chuyển tiếp tin nhắn tạm vì lý do bảo mật</string>
+    <string name="failed_to_create_temp_chat">Tạo chat tạm thất bại: %1$s</string>
+    <string name="creating_encrypted_chat">Đang tạo chat mã hóa...</string>
+    <string name="encrypted_chat_created_expires">🔒 Đã tạo chat mã hóa (hết hạn sau 5 phút)</string>
+    <string name="temp_messages_auto_deleted">Tin nhắn tạm sẽ tự động xóa</string>
 
     <!-- Dialogs / toasts -->
     <string name="mute_notifications_title">Tắt thông báo</string>
@@ -260,8 +293,10 @@
 
     <!-- Accessibility / placeholders -->
     <string name="cd_back">Quay lại</string>
+    <string name="cd_edit">Chỉnh sửa</string>
     <string name="cd_more_options">Tùy chọn thêm</string>
     <string name="cd_user_profile_image">Ảnh hồ sơ người dùng</string>
+    <string name="cd_community_image">Ảnh cộng đồng</string>
     <string name="user_name_placeholder">Tên người dùng</string>
     <string name="user_status_placeholder">truy cập gần đây</string>
     <string name="username_label">Tên người dùng</string>

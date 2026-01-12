@@ -839,11 +839,11 @@ class GroupSettingsFragment : Fragment() {
 
     private fun showMediaTab() {
         if (!sharedLoaded) {
-            showEmptyState("Loading...")
+            showEmptyState(getString(R.string.loading))
             return
         }
         if (sharedMediaItems.isEmpty()) {
-            showEmptyState("No shared media yet")
+            showEmptyState(getString(R.string.no_shared_media_yet))
             return
         }
 
@@ -856,11 +856,11 @@ class GroupSettingsFragment : Fragment() {
 
     private fun showLinksTab() {
         if (!sharedLoaded) {
-            showEmptyState("Loading...")
+            showEmptyState(getString(R.string.loading))
             return
         }
         if (sharedLinkItems.isEmpty()) {
-            showEmptyState("No shared links yet")
+            showEmptyState(getString(R.string.no_shared_links_yet))
             return
         }
 
@@ -873,11 +873,11 @@ class GroupSettingsFragment : Fragment() {
 
     private fun showFilesTab() {
         if (!sharedLoaded) {
-            showEmptyState("Loading...")
+            showEmptyState(getString(R.string.loading))
             return
         }
         if (sharedFileItems.isEmpty()) {
-            showEmptyState("No shared files yet")
+            showEmptyState(getString(R.string.no_shared_files_yet))
             return
         }
 

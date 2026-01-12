@@ -262,13 +262,17 @@ class TempChatMsgAdapter(
             onForward = {
                 Toast.makeText(
                     context,
-                    "Cannot forward temporary messages for security reasons",
+                    context.getString(R.string.cannot_forward_temp_messages),
                     Toast.LENGTH_SHORT
                 ).show()
             },
             onDelete = {
                 // Temp chat messages can't be deleted individually
-                Toast.makeText(context, "Temporary messages are auto-deleted", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.temp_messages_auto_deleted),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         )
     }

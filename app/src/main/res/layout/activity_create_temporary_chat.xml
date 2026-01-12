@@ -20,13 +20,13 @@
             android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_back"
-            android:contentDescription="Back" />
+            android:contentDescription="@string/cd_back" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="Create Temporary Chat"
+            android:text="@string/create_temporary_chat_title"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/black" />
@@ -62,7 +62,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="12dp"
-                android:text="Temporary chats will automatically delete after 5 minutes"
+                android:text="@string/temp_chat_auto_delete_info"
                 android:textSize="14sp"
                 android:textColor="?android:textColorPrimary" />
 
@@ -78,7 +78,7 @@
         android:layout_below="@id/info_banner"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
-        android:text="Select a friend:"
+        android:text="@string/select_a_friend"
         android:textSize="16sp"
         android:textStyle="bold"
         android:textColor="?android:textColorPrimary" />
@@ -104,14 +104,14 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No friends available"
+            android:text="@string/no_friends_available"
             android:textSize="18sp"
             android:textColor="?android:textColorSecondary" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add some friends first!"
+            android:text="@string/add_friends_first"
             android:textSize="14sp"
             android:textColor="?android:textColorSecondary"
             android:layout_marginTop="8dp" />

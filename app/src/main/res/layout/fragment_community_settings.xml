@@ -40,7 +40,7 @@
                     android:padding="12dp"
                     android:src="@drawable/ic_arrow_back_24"
                     app:tint="@color/white"
-                    android:contentDescription="Back" />
+                    android:contentDescription="@string/cd_back" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -57,7 +57,7 @@
                         android:padding="12dp"
                         android:src="@drawable/ic_edit"
                         android:tint="@color/white"
-                        android:contentDescription="Edit" />
+                        android:contentDescription="@string/cd_edit" />
 
                     <ImageButton
                         android:id="@+id/more_btn"
@@ -67,7 +67,7 @@
                         android:padding="12dp"
                         android:src="@drawable/ic_more_vert_24"
                         android:tint="@color/white"
-                        android:contentDescription="More" />
+                        android:contentDescription="@string/cd_more_options" />
 
                 </LinearLayout>
 
@@ -93,14 +93,14 @@
                 android:src="@drawable/ic_community"
                 android:background="@drawable/circle_bg"
                 android:scaleType="centerCrop"
-                android:contentDescription="Community image" />
+                android:contentDescription="@string/cd_community_image" />
 
             <!-- Community Name -->
             <TextView
                 android:id="@+id/community_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Community Name"
+                android:text=""
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/white"
@@ -114,7 +114,7 @@
                 android:id="@+id/members_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="143 members"
+                android:text=""
                 android:textSize="14sp"
                 android:textColor="#E0FFFFFF"
                 android:layout_marginTop="4dp" />
@@ -204,7 +204,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Leave"
+                    android:text="@string/leave"
                     android:textSize="12sp"
                     android:textColor="@color/white"
                     android:layout_marginTop="4dp" />
@@ -239,7 +239,7 @@
                     android:id="@+id/description_value"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Description"
+                    android:text=""
                     android:textSize="16sp"
                     android:textColor="?android:textColorPrimary"
                     android:maxLines="3"
@@ -248,7 +248,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Description"
+                    android:text="@string/description"
                     android:textSize="12sp"
                     android:textColor="?android:textColorSecondary"
                     android:layout_marginTop="4dp" />
@@ -277,7 +277,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Invite Link"
+                    android:text="@string/invite_link"
                     android:textSize="12sp"
                     android:textColor="?android:textColorSecondary"
                     android:layout_marginTop="4dp" />
