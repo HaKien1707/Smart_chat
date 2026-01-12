@@ -23,7 +23,7 @@
             android:text="Replying to message"
             android:textSize="12sp"
             android:textStyle="bold"
-            android:textColor="@color/violet" />
+            android:textColor="@color/reply_header_text" />
 
         <ImageButton
             android:id="@+id/cancel_reply_btn"
@@ -41,7 +41,7 @@
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
-        android:background="@color/violet" />
+        android:background="@color/header_green" />
 
     <!-- Reply content container -->
     <LinearLayout
@@ -56,7 +56,7 @@
         <View
             android:layout_width="3dp"
             android:layout_height="match_parent"
-            android:background="@color/violet"
+            android:background="@color/header_green"
             android:layout_marginEnd="8dp" />
 
         <!-- Text content -->

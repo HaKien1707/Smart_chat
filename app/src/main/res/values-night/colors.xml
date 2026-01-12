@@ -15,4 +15,12 @@
 
     <!-- Chat composer (dark mode) - keep existing green icons -->
     <color name="chat_composer_icon_tint">@color/button_green</color>
+
+    <!-- Popup (message options) -->
+    <color name="popup_icon_tint">@color/white</color>
+    <color name="popup_divider">#3A3A3A</color>
+    <color name="popup_stroke">#3A3A3A</color>
+
+    <!-- Reply preview -->
+    <color name="reply_header_text">@color/white</color>
 </resources>

@@ -58,4 +58,12 @@
     <color name="chat_composer_icon_tint">@color/black</color>
     <color name="chat_input_bg_light">#F0F0F0</color>
 
+    <!-- Popup (message options) -->
+    <color name="popup_icon_tint">@color/black</color>
+    <color name="popup_divider">#E0E0E0</color>
+    <color name="popup_stroke">#E0E0E0</color>
+
+    <!-- Reply preview -->
+    <color name="reply_header_text">@color/black</color>
+
 </resources>
