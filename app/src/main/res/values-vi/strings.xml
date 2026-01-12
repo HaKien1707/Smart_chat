@@ -12,11 +12,14 @@
     <string name="resendOTP">Gửi lại OTP</string>
     <string name="enter_username">Nhập tên người dùng của bạn</string>
     <string name="enter_password">Nhập mật khẩu của bạn</string>
+    <string name="full_name">Họ và tên</string>
+    <string name="full_name_hint">Nhập tên của bạn</string>
     <string name="incorrect_password">Mật khẩu không đúng</string>
     <string name="missing_authentication">Thiếu xác thực</string>
     <string name="account_not_found">Không tìm thấy tài khoản. Vui lòng đăng ký.</string>
     <string name="account_no_password">Tài khoản chưa có mật khẩu. Vui lòng đăng ký.</string>
     <string name="confirm_password">Xác nhận mật khẩu của bạn</string>
+    <string name="demo_register_no_navigation">Demo: nút đăng ký không chuyển trang.</string>
     <string name="enterUsername">Nhập tên người dùng</string>
     <string name="noUserMatch">Không có người dùng nào khớp</string>
     <string name="noGroup">Không tìm thấy nhóm</string>

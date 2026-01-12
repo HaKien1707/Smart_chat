@@ -6,6 +6,7 @@ import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -37,6 +38,10 @@ class PasswordSignInActivity : AppCompatActivity() {
         inputPassword = findViewById(R.id.inputPassword)
         confirmBtn = findViewById(R.id.confirm_btn)
         progressBar = findViewById(R.id.progressBar)
+
+        findViewById<ImageButton>(R.id.back_btn).setOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
 
         confirmBtn.setOnClickListener {
             val password = inputPassword.text.toString().trim()

@@ -1,40 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
     android:background="@color/lazuli"
-    android:weightSum="100"
+    android:fillViewport="true"
     tools:context="com.example.smart_chat.activities.login.otpActivity">
 
-    <ImageView
-        android:id="@+id/icon"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:background="@drawable/ic_otp"
-        android:layout_marginTop="100dp"
-        android:layout_weight="10" />
-
-    <!-- OTP INPUT aligned with phoneNumberSection from page 1 -->
     <LinearLayout
-        android:id="@+id/otpSection"
+        android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="100dp"
-        android:layout_marginHorizontal="10dp"
-        android:layout_weight="25"
-        android:gravity="center">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Back -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp">
+
+            <ImageButton
+                android:id="@+id/back_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Back"
+                android:src="@drawable/ic_arrow_back_24" />
+        </FrameLayout>
+
+        <ImageView
+            android:id="@+id/icon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/ic_otp"
+            android:layout_marginTop="40dp" />
 
         <EditText
             android:id="@+id/inputOTP"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginHorizontal="20dp"
             android:background="?attr/inputBoxBackground"
             android:textColor="?attr/editTextColor"
             android:textColorHint="?android:textColorSecondary"
@@ -44,57 +53,63 @@
             android:padding="15dp"
             android:textSize="20sp"
             android:gravity="center" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/confirm_OTP_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:text="@string/confirm"
+            android:paddingHorizontal="32dp"
+            android:paddingVertical="12dp" />
+
+        <TextView
+            android:id="@+id/resendOTP"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/resendOTP"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:textSize="15sp" />
+
+        <!-- Spacer to push page indicator down -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="50dp" />
+
+        <!-- Page Indicator (Step 2 active) -->
+        <LinearLayout
+            android:id="@+id/pageNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="40dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <RelativeLayout
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/circle_bg"
+                android:backgroundTint="@color/gray" />
+
+            <RelativeLayout
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/circle_bg"
+                android:backgroundTint="@color/green" />
+
+            <RelativeLayout
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/circle_bg"
+                android:backgroundTint="@color/gray" />
+        </LinearLayout>
+
     </LinearLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/confirm_OTP_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:text="@string/confirm"
-        android:paddingHorizontal="32dp"
-        android:paddingVertical="12dp" />
-
-    <TextView
-        android:id="@+id/resendOTP"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/resendOTP"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:textColor="@color/black"
-        android:textSize="15sp" />
-
-    <!-- Page Indicator -->
-    <LinearLayout
-        android:id="@+id/pageNumber"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
-        android:gravity="center"
-        android:layout_weight="20"
-        android:orientation="horizontal">
-
-        <RelativeLayout
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_margin="8dp"
-            android:background="@drawable/circle_bg"
-            android:backgroundTint="@color/gray"/>
-
-        <RelativeLayout
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_margin="8dp"
-            android:background="@drawable/circle_bg"
-            android:backgroundTint="@color/green"/>
-
-        <RelativeLayout
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_margin="8dp"
-            android:background="@drawable/circle_bg"
-            android:backgroundTint="@color/gray"/>
-    </LinearLayout>
-
-</LinearLayout>
+</ScrollView>

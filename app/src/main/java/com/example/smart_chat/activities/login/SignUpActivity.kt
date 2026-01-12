@@ -7,12 +7,14 @@ import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.example.smart_chat.BuildConfig
 import com.example.smart_chat.R
 import com.example.smart_chat.activities.MainActivity
 import com.example.smart_chat.utils.UI.LanguageManager
@@ -27,6 +29,7 @@ import com.google.firebase.firestore.SetOptions
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var profileImage: ImageView
+    private lateinit var inputFullName: EditText
     private lateinit var inputUsername: EditText
     private lateinit var inputPassword: EditText
     private lateinit var inputConfirmPassword: EditText
@@ -64,11 +67,16 @@ class SignUpActivity : AppCompatActivity() {
         countryCode = intent.getStringExtra("countryCode")
 
         profileImage = findViewById(R.id.profile_image)
+        inputFullName = findViewById(R.id.inputFullName)
         inputUsername = findViewById(R.id.inputUsername)
         inputPassword = findViewById(R.id.inputPassword)
         inputConfirmPassword = findViewById(R.id.inputConfirmPassword)
         nextBtn = findViewById(R.id.next_btn)
         progressBar = findViewById(R.id.progressBar)
+
+        findViewById<ImageButton>(R.id.back_btn).setOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
 
         profileImage.setOnClickListener {
             ImagePicker.with(this)
@@ -88,6 +96,14 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun validateAndProceed() {
+        // Validate full name
+        val fullName = inputFullName.text.toString().trim()
+        if (fullName.isEmpty()) {
+            inputFullName.error = getString(R.string.full_name_hint)
+            inputFullName.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake))
+            return
+        }
+
         // Validate username
         val username = inputUsername.text.toString().trim()
         if (username.isEmpty()) {
@@ -122,6 +138,12 @@ class SignUpActivity : AppCompatActivity() {
         if (password != confirmPassword) {
             inputConfirmPassword.error = "Passwords don't match"
             inputConfirmPassword.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake))
+            return
+        }
+
+        // DEMO: do not create account or navigate anywhere.
+        if (BuildConfig.DEBUG) {
+            Toast.makeText(this, getString(R.string.demo_register_no_navigation), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -160,6 +182,11 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun createAccount() {
+        if (BuildConfig.DEBUG) {
+            Toast.makeText(this, getString(R.string.demo_register_no_navigation), Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val userId = FirebaseAuthentication.currentUserID()
         if (userId.isNullOrBlank()) {
             Toast.makeText(this, "Missing authentication. Please verify OTP again.", Toast.LENGTH_SHORT).show()
@@ -167,6 +194,7 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         val username = inputUsername.text.toString().trim()
+        val fullName = inputFullName.text.toString().trim()
         val password = inputPassword.text.toString().trim()
 
         val hashedPassword = try {
@@ -178,6 +206,7 @@ class SignUpActivity : AppCompatActivity() {
 
         val data = hashMapOf(
             "userID" to userId,
+            "name" to fullName,
             "username" to username,
             "phoneNumber" to (phoneNumber ?: ""),
             "password" to hashedPassword,

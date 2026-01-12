@@ -15,13 +15,30 @@
         android:orientation="vertical"
         android:gravity="center_horizontal">
 
+        <!-- Back -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp">
+
+            <ImageButton
+                android:id="@+id/back_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Back"
+                android:src="@drawable/ic_arrow_back_24" />
+        </FrameLayout>
+
         <!-- Icon -->
         <ImageView
             android:id="@+id/icon"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:background="@drawable/ic_phone"
-            android:layout_marginTop="80dp"
+            android:layout_marginTop="40dp"
             android:contentDescription="Phone Icon"/>
 
         <!-- Title -->
