@@ -17,6 +17,13 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            app:contentInsetStart="0dp"
+            app:contentInsetStartWithNavigation="0dp"
+            app:contentInsetEnd="0dp"
+            app:contentInsetLeft="0dp"
+            app:contentInsetRight="0dp"
             app:layout_scrollFlags="scroll|enterAlways">
 
             <RelativeLayout
@@ -40,14 +47,14 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
-                    android:orientation="horizontal"
-                    android:layout_marginEnd="4dp">
+                    android:orientation="horizontal">
 
                     <ImageButton
                         android:id="@+id/edit_btn"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="12dp"
                         android:src="@drawable/ic_edit"
                         app:tint="@color/white"
                         android:contentDescription="Edit" />
@@ -57,6 +64,7 @@
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="12dp"
                         android:src="@drawable/ic_more_vert_24"
                         app:tint="@color/white"
                         android:contentDescription="More" />
