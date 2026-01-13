@@ -65,14 +65,14 @@
             android:layout_height="120dp"
             android:src="@drawable/ic_no_requests"
             android:contentDescription="@string/noFriendRequest"
-            app:tint="@color/gray" />
+            app:tint="?android:attr/textColorSecondary" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/noFriendRequest"
             android:textSize="18sp"
-            android:textColor="@color/gray"
+            android:textColor="?android:attr/textColorSecondary"
             android:layout_marginTop="16dp" />
 
     </LinearLayout>
