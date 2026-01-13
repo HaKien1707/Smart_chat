@@ -79,9 +79,9 @@ class SearchUserFragment : Fragment() {
     }
 
     private fun setupTabs() {
-        searchTabs.addTab(searchTabs.newTab().setText("People"))
-        searchTabs.addTab(searchTabs.newTab().setText("Communities"))
-        searchTabs.addTab(searchTabs.newTab().setText("Groups"))
+        searchTabs.addTab(searchTabs.newTab().setText(getString(R.string.tab_people)))
+        searchTabs.addTab(searchTabs.newTab().setText(getString(R.string.tab_communities)))
+        searchTabs.addTab(searchTabs.newTab().setText(getString(R.string.tab_groups)))
 
         searchTabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -142,7 +142,7 @@ class SearchUserFragment : Fragment() {
                 val isEmpty = (peopleAdapter?.getFilteredItemCount() ?: 0) == 0
                 if (currentTabPosition == 0) {
                     emptyStateText.visibility = if (isEmpty) View.VISIBLE else View.GONE
-                    emptyStateText.text = "No users found"
+                    emptyStateText.text = getString(R.string.no_results_found)
                     peopleList.visibility = if (isEmpty) View.GONE else View.VISIBLE
                 }
             }
@@ -152,7 +152,7 @@ class SearchUserFragment : Fragment() {
         val isEmptyNow = (peopleAdapter?.getFilteredItemCount() ?: 0) == 0
         if (currentTabPosition == 0) {
             emptyStateText.visibility = if (isEmptyNow) View.VISIBLE else View.GONE
-            emptyStateText.text = "No users found"
+            emptyStateText.text = getString(R.string.no_results_found)
             peopleList.visibility = if (isEmptyNow) View.GONE else View.VISIBLE
         }
     }
@@ -190,7 +190,7 @@ class SearchUserFragment : Fragment() {
                 val isEmpty = communitiesAdapter?.itemCount == 0
                 if (currentTabPosition == 1) {
                     emptyStateText.visibility = if (isEmpty) View.VISIBLE else View.GONE
-                    emptyStateText.text = "No communities found"
+                    emptyStateText.text = getString(R.string.no_results_found)
                     communitiesList.visibility = if (isEmpty) View.GONE else View.VISIBLE
                 }
             }
@@ -230,7 +230,7 @@ class SearchUserFragment : Fragment() {
                 val isEmpty = groupsAdapter?.itemCount == 0
                 if (currentTabPosition == 2) {
                     emptyStateText.visibility = if (isEmpty) View.VISIBLE else View.GONE
-                    emptyStateText.text = "No groups found"
+                    emptyStateText.text = getString(R.string.no_results_found)
                     groupsList.visibility = if (isEmpty) View.GONE else View.VISIBLE
                 }
             }

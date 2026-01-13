@@ -41,6 +41,17 @@
     <string name="leaveGroup">Rời nhóm</string>
     <string name="deleteGroup">⚠️ Xóa nhóm</string>
     <string name="admin">Quản trị viên</string>
+    <string name="tab_people">Người</string>
+    <string name="tab_communities">Cộng đồng</string>
+    <string name="tab_groups">Nhóm</string>
+    <string name="no_results_found">Không tìm thấy kết quả</string>
+    <string name="add_friend">Thêm bạn</string>
+    <string name="error_loading_group">Lỗi tải nhóm</string>
+    <string name="group_not_found">Không tìm thấy nhóm</string>
+    <string name="failed_to_load_group">Tải nhóm thất bại</string>
+    <string name="failed_to_load_users">Tải danh sách người dùng thất bại</string>
+    <string name="no_new_members_selected">Chưa chọn thành viên mới</string>
+    <string name="added_to_group_message">Bạn đã được thêm vào %1$s</string>
     <string name="owner">Chủ sở hữu</string>
     <string name="more">Thêm</string>
     <string name="noFriend">Chưa có bạn</string>
@@ -106,6 +117,16 @@
 
     <string name="cancel_friend_request">Hủy lời mời</string>
     <string name="accept_friend_request">Chấp nhận lời mời</string>
+    <string name="reject_friend_request">Từ chối</string>
+
+    <!-- Notifications -->
+    <string name="friend_request_received_description">đã gửi cho bạn một lời mời kết bạn</string>
+    <string name="just_now">Vừa xong</string>
+    <string name="minutes_ago">%1$dm trước</string>
+    <string name="hours_ago">%1$dh trước</string>
+    <string name="days_ago">%1$dd trước</string>
+    <string name="cd_notification_icon">Biểu tượng thông báo</string>
+    <string name="cd_dismiss_notification">Ẩn thông báo</string>
 
     <string name="unfriend_confirm_message">Bạn có chắc muốn hủy kết bạn với %1$s không?</string>
     <string name="unfriend_success">Đã hủy kết bạn với %1$s</string>
@@ -267,7 +288,6 @@
     <string name="admins_updated">Đã cập nhật quản trị viên</string>
     <string name="no_members_to_promote">Không có thành viên để thăng cấp</string>
     <string name="add_admin_title">Thêm quản trị viên</string>
-    <string name="failed_to_load_group">Tải nhóm thất bại</string>
     <string name="user_not_found">Không tìm thấy người dùng</string>
     <string name="chat_not_available">Chat không khả dụng</string>
     <string name="this_user">người dùng này</string>
@@ -311,6 +331,13 @@
     <string name="user_name_placeholder">Tên người dùng</string>
     <string name="user_status_placeholder">truy cập gần đây</string>
     <string name="username_label">Tên người dùng</string>
+    <string name="phone_number_label">Số điện thoại</string>
+    <string name="email_optional_label">Email (không bắt buộc)</string>
+    <string name="password_label">Mật khẩu</string>
+    <string name="nationality_label">Quốc tịch</string>
+    <string name="email_hint_example">vd@email.com</string>
+    <string name="password_hint_mask">********</string>
+    <string name="country_hint">Quốc gia</string>
 
     <!-- Blocked users dialog -->
     <string name="blocked_users_title">Người dùng bị chặn</string>

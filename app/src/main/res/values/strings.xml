@@ -41,6 +41,17 @@
     <string name="leaveGroup">Leave group</string>
     <string name="deleteGroup">⚠️ Delete group</string>
     <string name="admin">Admin</string>
+    <string name="tab_people">People</string>
+    <string name="tab_communities">Communities</string>
+    <string name="tab_groups">Groups</string>
+    <string name="no_results_found">No results found</string>
+    <string name="add_friend">Add friend</string>
+    <string name="error_loading_group">Error loading group</string>
+    <string name="group_not_found">Group not found</string>
+    <string name="failed_to_load_group">Failed to load group</string>
+    <string name="failed_to_load_users">Failed to load users</string>
+    <string name="no_new_members_selected">No new members selected</string>
+    <string name="added_to_group_message">You have been added to %1$s</string>
     <string name="owner">Owner</string>
     <string name="more">More</string>
     <string name="noFriend">No friend yet</string>
@@ -107,6 +118,16 @@
 
     <string name="cancel_friend_request">Cancel request</string>
     <string name="accept_friend_request">Accept request</string>
+    <string name="reject_friend_request">Reject</string>
+
+    <!-- Notifications -->
+    <string name="friend_request_received_description">sent you a friend request</string>
+    <string name="just_now">Just now</string>
+    <string name="minutes_ago">%1$dm ago</string>
+    <string name="hours_ago">%1$dh ago</string>
+    <string name="days_ago">%1$dd ago</string>
+    <string name="cd_notification_icon">Notification icon</string>
+    <string name="cd_dismiss_notification">Dismiss notification</string>
 
     <string name="unfriend_confirm_message">Are you sure you want to remove %1$s as your friend?</string>
     <string name="unfriend_success">Unfriended %1$s</string>
@@ -267,7 +288,6 @@
     <string name="admins_updated">Admins updated</string>
     <string name="no_members_to_promote">No members to promote</string>
     <string name="add_admin_title">Add admin</string>
-    <string name="failed_to_load_group">Failed to load group</string>
     <string name="user_not_found">User not found</string>
     <string name="chat_not_available">Chat not available</string>
     <string name="this_user">this user</string>
@@ -305,12 +325,19 @@
     <string name="cd_back">Back</string>
     <string name="cd_edit">Edit</string>
     <string name="cd_more_options">More options</string>
-        <string name="cd_edit_profile">Edit profile</string>
+    <string name="cd_edit_profile">Edit profile</string>
     <string name="cd_user_profile_image">User profile image</string>
     <string name="cd_community_image">Community image</string>
     <string name="user_name_placeholder">User Name</string>
     <string name="user_status_placeholder">last seen a long time ago</string>
     <string name="username_label">Username</string>
+    <string name="phone_number_label">Phone Number</string>
+    <string name="email_optional_label">Email (Optional)</string>
+    <string name="password_label">Password</string>
+    <string name="nationality_label">Nationality</string>
+    <string name="email_hint_example">example@email.com</string>
+    <string name="password_hint_mask">********</string>
+    <string name="country_hint">Country</string>
 
     <!-- Blocked users dialog -->
     <string name="blocked_users_title">Blocked Users</string>

@@ -50,7 +50,7 @@ class AddMembersActivity : AppCompatActivity() {
         groupID = intent.getStringExtra("groupID")
 
         if (groupID == null) {
-            Toast.makeText(this, "Error loading group", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_loading_group), Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -97,7 +97,7 @@ class AddMembersActivity : AppCompatActivity() {
                 group = document.toObject(groupModel::class.java)
 
                 if (group == null) {
-                    Toast.makeText(this, "Group not found", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.group_not_found), Toast.LENGTH_SHORT).show()
                     finish()
                     return@addOnSuccessListener
                 }
@@ -106,7 +106,7 @@ class AddMembersActivity : AppCompatActivity() {
                 loadAvailableUsers()
             }
             .addOnFailureListener {
-                Toast.makeText(this, "Failed to load group", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.failed_to_load_group), Toast.LENGTH_SHORT).show()
                 finish()
             }
     }
@@ -142,7 +142,7 @@ class AddMembersActivity : AppCompatActivity() {
                 applyFilter(searchInput.text?.toString().orEmpty())
             }
             .addOnFailureListener {
-                Toast.makeText(this, "Failed to load users", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.failed_to_load_users), Toast.LENGTH_SHORT).show()
                 allUsers = emptyList()
                 usersNotInGroup = emptyList()
                 existingMemberIds = group?.memberIDs?.filterNotNull()?.toSet().orEmpty()
@@ -199,7 +199,7 @@ class AddMembersActivity : AppCompatActivity() {
         val toAdd = selectedUserIds.filter { !existingMemberIDs.contains(it) }
 
         if (toAdd.isEmpty()) {
-            Toast.makeText(this, "No new members selected", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.no_new_members_selected), Toast.LENGTH_SHORT).show()
             updateDoneState()
             return
         }
@@ -213,10 +213,10 @@ class AddMembersActivity : AppCompatActivity() {
                         type = "ADDED_TO_GROUP",
                         recipientID = memberID,
                         senderID = FirebaseAuthentication.currentUserID() ?: "",
-                        senderName = "Admin",
+                        senderName = getString(R.string.admin),
                         groupID = groupID,
                         groupName = group?.groupName,
-                        message = "You have been added to ${group?.groupName}"
+                        message = getString(R.string.added_to_group_message, group?.groupName.orEmpty())
                     )
                 }
 

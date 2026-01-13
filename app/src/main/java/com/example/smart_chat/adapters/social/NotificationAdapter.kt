@@ -88,8 +88,8 @@ class NotificationAdapter(
         }
         val notificationDocId = notification.notification?.notificationID ?: requestId
 
-        holder.userName.text = user?.username ?: "Unknown"
-        holder.requestDescription.text = "sent you a friend request"
+        holder.userName.text = user?.username ?: context.getString(R.string.unknown)
+        holder.requestDescription.text = context.getString(R.string.friend_request_received_description)
 
         // Timestamp
         val timestampDate = notification.friendRequest?.timestamp?.toDate() ?: notification.notification?.timestamp?.toDate()
@@ -407,10 +407,10 @@ class NotificationAdapter(
         val diff = now - date.time
 
         return when {
-            diff < 60_000 -> "Just now"
-            diff < 3600_000 -> "${diff / 60_000}m ago"
-            diff < 86400_000 -> "${diff / 3600_000}h ago"
-            diff < 604800_000 -> "${diff / 86400_000}d ago"
+            diff < 60_000 -> context.getString(R.string.just_now)
+            diff < 3600_000 -> context.getString(R.string.minutes_ago, diff / 60_000)
+            diff < 86400_000 -> context.getString(R.string.hours_ago, diff / 3600_000)
+            diff < 604800_000 -> context.getString(R.string.days_ago, diff / 86400_000)
             else -> SimpleDateFormat("MMM d", Locale.getDefault()).format(date)
         }
     }
