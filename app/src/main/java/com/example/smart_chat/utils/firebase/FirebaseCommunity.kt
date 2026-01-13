@@ -47,6 +47,7 @@ object FirebaseCommunity {
         community.ownerID = currentUserID
         community.adminIDs = mutableListOf()
         community.communityType = "public"
+        community.memberIDs = mutableListOf(currentUserID)
 
         getCommunityReference(communityID).set(community)
             .addOnSuccessListener { onSuccess(communityID) }

@@ -40,6 +40,7 @@ import com.example.smart_chat.utils.others.androidUtils
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.launch
 
@@ -206,6 +207,10 @@ class CommunityChatFragment : Fragment() {
                         Toast.LENGTH_LONG
                     ).show()
                     activity?.finish()
+                } else {
+                    // Treat opening a community as joining it.
+                    FirebaseCommunity.getCommunityReference(communityID!!)
+                        .update("memberIDs", FieldValue.arrayUnion(currentUserID))
                 }
             }
         }

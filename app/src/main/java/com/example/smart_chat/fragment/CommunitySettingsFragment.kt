@@ -44,6 +44,7 @@ import com.example.smart_chat.utils.others.androidUtils
 import com.example.smart_chat.utils.shared.SharedContentClassifier
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.tabs.TabLayout
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import java.io.ByteArrayOutputStream
@@ -215,7 +216,7 @@ class CommunitySettingsFragment : Fragment() {
                 val currentUserId = FirebaseAuthentication.currentUserID() ?: return@setPositiveButton
 
                 val updates = mutableMapOf<String, Any>(
-                    "bannedUserIDs" to FieldValue.arrayUnion(currentUserId)
+                    "memberIDs" to FieldValue.arrayRemove(currentUserId)
                 )
 
                 // If an admin leaves, remove their admin role too.
@@ -345,7 +346,8 @@ class CommunitySettingsFragment : Fragment() {
             .setNegativeButton(getString(R.string.cancel), null)
             .setPositiveButton(getString(R.string.remove_action)) { _, _ ->
                 val updates = mutableMapOf<String, Any>(
-                    "bannedUserIDs" to FieldValue.arrayUnion(memberId)
+                    "bannedUserIDs" to FieldValue.arrayUnion(memberId),
+                    "memberIDs" to FieldValue.arrayRemove(memberId)
                 )
 
                 // If owner removes an admin, also remove from adminIDs.
@@ -582,6 +584,17 @@ class CommunitySettingsFragment : Fragment() {
                         community?.adminIDs = cleanedAdmins.toMutableList()
                         FirebaseCommunity.getCommunityReference(communityID!!)
                             .update(mapOf("ownerID" to ownerId, "adminIDs" to cleanedAdmins))
+                    }
+
+                    // Backfill memberIDs for legacy docs (at least owner + admins).
+                    val currentMembers = community?.memberIDs?.filterNotNull()?.filter { it.isNotBlank() }?.toSet().orEmpty()
+                    if (currentMembers.isEmpty()) {
+                        val inferredMembers = (listOf(ownerId) + cleanedAdmins)
+                            .filter { it.isNotBlank() }
+                            .distinct()
+                        community?.memberIDs = inferredMembers.toMutableList()
+                        FirebaseCommunity.getCommunityReference(communityID!!)
+                            .update("memberIDs", inferredMembers)
                     }
                 }
 
@@ -835,49 +848,79 @@ class CommunitySettingsFragment : Fragment() {
     }
 
     private fun loadMembers() {
-        // Load all users from Firestore
-        FirebaseAuthentication.allUsersCollection().get()
-            .addOnSuccessListener { documents ->
-                membersList.clear()
-                var totalMembers = 0
+        val ownerId = community?.ownerID ?: community?.adminID
+        val adminIds = community?.adminIDs?.filterNotNull()?.toSet().orEmpty()
+        val bannedUserIDs = community?.bannedUserIDs ?: emptyList()
 
-                val bannedUserIDs = community?.bannedUserIDs ?: emptyList()
+        val rawMemberIds = community?.memberIDs
+            ?.filterNotNull()
+            ?.map { it.trim() }
+            ?.filter { it.isNotBlank() }
+            ?.distinct()
+            .orEmpty()
 
-                for (doc in documents) {
-                    val user = doc.toObject(userModel::class.java)
-                    if (user != null) {
+        val memberIds = rawMemberIds.filterNot { bannedUserIDs.contains(it) }
+
+        membersList.clear()
+        adapter?.notifyDataSetChanged()
+
+        if (memberIds.isEmpty()) {
+            membersCount.text = resources.getQuantityString(R.plurals.memberCount, 0, 0)
+            return
+        }
+
+        val chunks = memberIds.chunked(10)
+        var pending = chunks.size
+        val loadedUsers = mutableListOf<userModel>()
+
+        fun finalizeAndShow() {
+            // Sort: Owner first, then Admins, then others
+            loadedUsers.sortWith(
+                compareBy<userModel> {
+                    when {
+                        it.userID == ownerId -> 0
+                        it.userID != null && adminIds.contains(it.userID!!) -> 1
+                        else -> 2
+                    }
+                }.thenBy { it.username ?: "" }
+            )
+
+            membersList.clear()
+            membersList.addAll(loadedUsers)
+            val totalMembers = membersList.size
+            membersCount.text = resources.getQuantityString(R.plurals.memberCount, totalMembers, totalMembers)
+            adapter?.notifyDataSetChanged()
+        }
+
+        for (chunk in chunks) {
+            FirebaseAuthentication.allUsersCollection()
+                .whereIn(FieldPath.documentId(), chunk)
+                .get()
+                .addOnSuccessListener { documents ->
+                    for (doc in documents) {
+                        val user = doc.toObject(userModel::class.java)
                         if (user.userID.isNullOrBlank()) {
                             user.userID = doc.id
                         }
                         if (!user.userID.isNullOrBlank() && bannedUserIDs.contains(user.userID)) {
                             continue
                         }
-                        membersList.add(user)
-                        totalMembers++
+                        loadedUsers.add(user)
+                    }
+                    pending -= 1
+                    if (pending == 0) finalizeAndShow()
+                }
+                .addOnFailureListener { e ->
+                    Log.e("CommunitySettings", "Failed to load members", e)
+                    pending -= 1
+                    if (pending == 0) {
+                        if (loadedUsers.isEmpty()) {
+                            Toast.makeText(requireContext(), getString(R.string.failed_to_load_members), Toast.LENGTH_SHORT).show()
+                        }
+                        finalizeAndShow()
                     }
                 }
-
-                val ownerId = community?.ownerID ?: community?.adminID
-                val adminIds = community?.adminIDs?.filterNotNull()?.toSet().orEmpty()
-
-                // Sort: Owner first, then Admins, then others
-                membersList.sortWith(
-                    compareBy<userModel> {
-                        when {
-                            it.userID == ownerId -> 0
-                            it.userID != null && adminIds.contains(it.userID!!) -> 1
-                            else -> 2
-                        }
-                    }.thenBy { it.username ?: "" }
-                )
-
-                membersCount.text = resources.getQuantityString(R.plurals.memberCount, totalMembers, totalMembers)
-                adapter?.notifyDataSetChanged()
-            }
-            .addOnFailureListener { e ->
-                Log.e("CommunitySettings", "Failed to load members", e)
-                Toast.makeText(requireContext(), getString(R.string.failed_to_load_members), Toast.LENGTH_SHORT).show()
-            }
+        }
     }
 
     private fun showEditCommunityNameDialog() {

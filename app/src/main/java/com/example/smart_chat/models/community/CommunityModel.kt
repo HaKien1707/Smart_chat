@@ -32,6 +32,10 @@ class CommunityModel {
     @JvmField
     var bannedUserIDs: MutableList<String> = mutableListOf()
 
+    // Membership list (users who joined this community)
+    @JvmField
+    var memberIDs: MutableList<String> = mutableListOf()
+
     @JvmField
     var announcement: String? = null
 
@@ -67,6 +71,7 @@ class CommunityModel {
         this.communityType = "public"
         this.createdTimestamp = createdTimestamp
         this.bannedUserIDs = mutableListOf()
+        this.memberIDs = mutableListOf()
         this.announcement = null
     }
 }
