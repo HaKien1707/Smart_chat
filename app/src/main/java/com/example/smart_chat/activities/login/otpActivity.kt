@@ -10,7 +10,6 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.smart_chat.BuildConfig
 import com.example.smart_chat.R
 import com.example.smart_chat.utils.UI.LanguageManager
 import com.example.smart_chat.utils.UI.ThemeManager
@@ -59,18 +58,7 @@ class otpActivity : AppCompatActivity() {
             onBackPressedDispatcher.onBackPressed()
         }
 
-        if (isSignUp) {
-            inputOTP.setText("000000")
-            inputOTP.setSelection(inputOTP.text.length)
-        }
-
-        // DEMO (debug only): for unregistered phone numbers, do not call Firebase PhoneAuth.
-        // Accept OTP == 000000 and continue to registration screen.
-        if (BuildConfig.DEBUG && isSignUp) {
-            textResendOTP.isEnabled = false
-        } else {
-            sendOTP(phoneNumber, false)
-        }
+        sendOTP(phoneNumber, false)
 
         confirmOtpBTN.setOnClickListener {
             val otp = inputOTP.text.toString().trim()
@@ -78,23 +66,6 @@ class otpActivity : AppCompatActivity() {
             if (otp.isEmpty() || otp.length < 6) {
                 inputOTP.error = "Enter valid OTP"
                 inputOTP.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake))
-                return@setOnClickListener
-            }
-
-            if (BuildConfig.DEBUG && isSignUp) {
-                if (otp != "000000") {
-                    inputOTP.error = "Invalid OTP"
-                    inputOTP.setText("")
-                    inputOTP.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake))
-                    return@setOnClickListener
-                }
-
-                val intent = Intent(this, SignUpActivity::class.java).apply {
-                    putExtra("phoneNumber", phoneNumber)
-                    putExtra("countryCode", countryCode)
-                }
-                startActivity(intent)
-                finish()
                 return@setOnClickListener
             }
 
@@ -108,9 +79,7 @@ class otpActivity : AppCompatActivity() {
         }
 
         textResendOTP.setOnClickListener {
-            if (!(BuildConfig.DEBUG && isSignUp)) {
-                sendOTP(phoneNumber, true)
-            }
+            sendOTP(phoneNumber, true)
         }
     }
 

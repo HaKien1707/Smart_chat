@@ -11,7 +11,6 @@ import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.smart_chat.BuildConfig
 import com.example.smart_chat.R
 import com.example.smart_chat.utils.UI.LanguageManager
 import com.example.smart_chat.utils.UI.ThemeManager
@@ -63,37 +62,22 @@ class LoginPhoneNumberActivity : AppCompatActivity() {
     }
 
     private fun checkUserAndProceed(phoneNumber: String, countryCode: String) {
-        // DEMO behavior (debug only): treat only these numbers as "already registered".
-        // Everything else goes through the SignUp flow where OTP == 000000.
-        if (BuildConfig.DEBUG) {
-            val demoRegisteredNumbers = setOf(
-                "+911234512345",
-                "+911234567890",
-                "+919874598745",
-                "+919874563210",
-                "+911478523690",
-            )
-
-            val normalized = phoneNumber.replace(" ", "")
-            val isSignUp = !demoRegisteredNumbers.contains(normalized)
-            proceedToOTP(phoneNumber, countryCode, isSignUp)
-            return
-        }
+        val normalizedPhoneNumber = phoneNumber.replace(" ", "")
 
         setInProgress(true)
 
         FirebaseAuthentication.allUsersCollection()
-            .whereEqualTo("phoneNumber", phoneNumber)
+            .whereEqualTo("phoneNumber", normalizedPhoneNumber)
             .limit(1)
             .get()
             .addOnSuccessListener { documents ->
                 setInProgress(false)
                 if (documents.isEmpty) {
                     // Phone number not registered, proceed to OTP for Sign Up
-                    proceedToOTP(phoneNumber, countryCode, true)
+                    proceedToOTP(normalizedPhoneNumber, countryCode, true)
                 } else {
                     // User exists, proceed to OTP for Login
-                    proceedToOTP(phoneNumber, countryCode, false)
+                    proceedToOTP(normalizedPhoneNumber, countryCode, false)
                 }
             }
             .addOnFailureListener { e ->

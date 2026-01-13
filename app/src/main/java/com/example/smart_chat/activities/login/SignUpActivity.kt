@@ -14,7 +14,6 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.example.smart_chat.BuildConfig
 import com.example.smart_chat.R
 import com.example.smart_chat.activities.MainActivity
 import com.example.smart_chat.utils.UI.LanguageManager
@@ -141,12 +140,6 @@ class SignUpActivity : AppCompatActivity() {
             return
         }
 
-        // DEMO: do not create account or navigate anywhere.
-        if (BuildConfig.DEBUG) {
-            Toast.makeText(this, getString(R.string.demo_register_no_navigation), Toast.LENGTH_SHORT).show()
-            return
-        }
-
         // All fields are valid, check username availability
         checkUsernameAvailability()
     }
@@ -182,11 +175,6 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun createAccount() {
-        if (BuildConfig.DEBUG) {
-            Toast.makeText(this, getString(R.string.demo_register_no_navigation), Toast.LENGTH_SHORT).show()
-            return
-        }
-
         val userId = FirebaseAuthentication.currentUserID()
         if (userId.isNullOrBlank()) {
             Toast.makeText(this, "Missing authentication. Please verify OTP again.", Toast.LENGTH_SHORT).show()
