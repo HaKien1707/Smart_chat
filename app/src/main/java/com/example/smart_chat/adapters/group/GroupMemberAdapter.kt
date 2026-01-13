@@ -50,13 +50,14 @@ class GroupMemberAdapter(
 
         // Show "You" for current user
         if (user.userID == currentUserID) {
-            holder.memberName.text = "${user.username} (You)"
+            val displayName = user.username ?: context.getString(R.string.unknown)
+            holder.memberName.text = "$displayName ${context.getString(R.string.you_in_parentheses)}"
         }
 
         // Show role badge
         if (isOwner || isAdmin) {
             holder.memberRole.visibility = View.VISIBLE
-            holder.memberRole.text = if (isOwner) "Owner" else "Admin"
+            holder.memberRole.text = if (isOwner) context.getString(R.string.owner) else context.getString(R.string.admin)
         } else {
             holder.memberRole.visibility = View.GONE
         }
@@ -104,7 +105,7 @@ class GroupMemberAdapter(
     private fun showMemberMenu(anchor: View, member: userModel, memberIsAdmin: Boolean) {
         val popup = PopupMenu(context, anchor, Gravity.END)
 
-        popup.menu.add(0, MENU_ID_CHAT, 0, "Chat")
+        popup.menu.add(0, MENU_ID_CHAT, 0, context.getString(R.string.action_chat))
 
         val memberId = member.userID
         val isOwnerMember = memberId != null && memberId == ownerID
@@ -112,16 +113,16 @@ class GroupMemberAdapter(
         // Owner-only: add/remove admin
         if (currentUserIsOwner && memberId != null && !isOwnerMember && memberId != currentUserID) {
             if (memberIsAdmin) {
-                popup.menu.add(0, MENU_ID_REMOVE_ADMIN, 1, "Remove from admin")
+                popup.menu.add(0, MENU_ID_REMOVE_ADMIN, 1, context.getString(R.string.action_remove_admin))
             } else {
-                popup.menu.add(0, MENU_ID_ADD_ADMIN, 1, "Add admin")
+                popup.menu.add(0, MENU_ID_ADD_ADMIN, 1, context.getString(R.string.action_add_admin))
             }
         }
 
         // Admins can remove members (but typically not other admins)
         val canRemove = currentUserIsAdmin && !memberIsAdmin && !isOwnerMember && member.userID != currentUserID
         if (canRemove) {
-            popup.menu.add(0, MENU_ID_REMOVE, 1, "Remove")
+            popup.menu.add(0, MENU_ID_REMOVE, 1, context.getString(R.string.remove_action))
         }
 
         popup.setOnMenuItemClickListener { item ->

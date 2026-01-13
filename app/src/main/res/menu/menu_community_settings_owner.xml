@@ -3,14 +3,14 @@
 
     <item
         android:id="@+id/action_community_type"
-        android:title="Community type" />
+        android:title="@string/community_type_title" />
 
     <item
         android:id="@+id/action_add_admins"
-        android:title="Add admin" />
+        android:title="@string/action_add_admin" />
 
     <item
         android:id="@+id/action_delete_community"
-        android:title="Delete community" />
+        android:title="@string/delete_community_title" />
 
 </menu>

@@ -21,6 +21,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -459,8 +460,7 @@ class GroupSettingsFragment : Fragment() {
             }
             .show()
             .apply {
-                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
-                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+                applyAccentToDialogButtons(this)
             }
     }
 
@@ -483,8 +483,7 @@ class GroupSettingsFragment : Fragment() {
             }
             .show()
             .apply {
-                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
-                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+                applyAccentToDialogButtons(this)
             }
     }
 
@@ -581,8 +580,7 @@ class GroupSettingsFragment : Fragment() {
             }
             .show()
             .apply {
-                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
-                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+                applyAccentToDialogButtons(this)
             }
     }
 
@@ -596,9 +594,15 @@ class GroupSettingsFragment : Fragment() {
             }
             .show()
             .apply {
-                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
-                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+                applyAccentToDialogButtons(this)
             }
+    }
+
+    private fun applyAccentToDialogButtons(dialog: AlertDialog) {
+        val accent = ContextCompat.getColor(requireContext(), R.color.settings_accent)
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(accent)
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(accent)
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.setTextColor(accent)
     }
 
     private fun leaveGroup() {
@@ -921,8 +925,7 @@ class GroupSettingsFragment : Fragment() {
             }
             .setNegativeButton(getString(R.string.cancel), null)
             .show().apply {
-                getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
-                getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+                applyAccentToDialogButtons(this)
             }
     }
 
