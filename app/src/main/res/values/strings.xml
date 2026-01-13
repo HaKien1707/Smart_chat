@@ -44,6 +44,7 @@
     <string name="tab_people">People</string>
     <string name="tab_communities">Communities</string>
     <string name="tab_groups">Groups</string>
+    <string name="join">Join</string>
     <string name="no_results_found">No results found</string>
     <string name="add_friend">Add friend</string>
     <string name="error_loading_group">Error loading group</string>

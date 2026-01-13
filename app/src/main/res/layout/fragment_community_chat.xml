@@ -73,16 +73,52 @@
         layout="@layout/layout_reply_preview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/chatBoxPanel"/>
+        android:layout_above="@id/bottomPanel"/>
 
-    <!-- Chat Input Panel -->
-    <RelativeLayout
-        android:id="@+id/chatBoxPanel"
+    <!-- Bottom panels: JOIN (non-member) or COMPOSER (owner/admin) -->
+    <FrameLayout
+        android:id="@+id/bottomPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:padding="10dp"
         android:background="?attr/backgroundColor">
+
+        <!-- Join Panel (shown when user is NOT a member) -->
+        <LinearLayout
+            android:id="@+id/joinPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:gravity="center_vertical"
+            android:background="@color/header_green"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/joinHint"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/join"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/joinBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/join"
+                android:textAllCaps="false" />
+        </LinearLayout>
+
+        <!-- Chat Input Panel (shown only for owner/admin) -->
+        <RelativeLayout
+            android:id="@+id/chatBoxPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:background="?attr/backgroundColor">
 
         <!-- Chat box with image button inside -->
         <RelativeLayout
@@ -143,6 +179,8 @@
             app:tint="@color/chat_composer_icon_tint"
             android:contentDescription="send" />
 
-    </RelativeLayout>
+        </RelativeLayout>
+
+    </FrameLayout>
 
 </RelativeLayout>

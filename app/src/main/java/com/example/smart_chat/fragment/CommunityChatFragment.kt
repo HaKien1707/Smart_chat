@@ -12,6 +12,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -56,6 +57,10 @@ class CommunityChatFragment : Fragment() {
     private lateinit var sendFileBtn: ImageButton
     private lateinit var chatList: RecyclerView
     private lateinit var communityImage: ImageView
+
+    private lateinit var chatBoxPanel: View
+    private lateinit var joinPanel: View
+    private lateinit var joinBtn: Button
 
     // Reply preview views
     private lateinit var replyPreviewContainer: View
@@ -152,6 +157,10 @@ class CommunityChatFragment : Fragment() {
         sendFileBtn = view.findViewById(R.id.send_file_btn)
         chatList = view.findViewById(R.id.chatList)
 
+        chatBoxPanel = view.findViewById(R.id.chatBoxPanel)
+        joinPanel = view.findViewById(R.id.joinPanel)
+        joinBtn = view.findViewById(R.id.joinBtn)
+
         val profileContainer = view.findViewById<View>(R.id.profile_image_container)
         communityImage = profileContainer.findViewById(R.id.profile_image)
 
@@ -193,6 +202,10 @@ class CommunityChatFragment : Fragment() {
         cancelReplyBtn.setOnClickListener {
             cancelReply()
         }
+
+        joinBtn.setOnClickListener {
+            joinCommunity()
+        }
     }
 
     private fun checkBanStatus() {
@@ -207,13 +220,53 @@ class CommunityChatFragment : Fragment() {
                         Toast.LENGTH_LONG
                     ).show()
                     activity?.finish()
-                } else {
-                    // Treat opening a community as joining it.
-                    FirebaseCommunity.getCommunityReference(communityID!!)
-                        .update("memberIDs", FieldValue.arrayUnion(currentUserID))
                 }
             }
         }
+    }
+
+    private fun joinCommunity() {
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
+        joinBtn.isEnabled = false
+
+        FirebaseCommunity.getCommunityReference(communityID!!)
+            .update("memberIDs", FieldValue.arrayUnion(currentUserID))
+            .addOnSuccessListener {
+                // Refresh local state/UI
+                joinBtn.isEnabled = true
+                loadCommunityDetails()
+            }
+            .addOnFailureListener { e ->
+                joinBtn.isEnabled = true
+                Log.e("CommunityChatFragment", "Join community failed: ${e.message}")
+                Toast.makeText(requireContext(), "Join failed", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun applyAccessControlUI() {
+        val currentUserID = FirebaseAuthentication.currentUserID() ?: return
+
+        val ownerId = community?.ownerID ?: community?.adminID
+        val adminIds = community?.adminIDs?.filterNotNull()?.toSet().orEmpty()
+        val isOwnerOrAdmin = (!ownerId.isNullOrBlank() && ownerId == currentUserID) || adminIds.contains(currentUserID)
+
+        val isMember = community?.memberIDs?.contains(currentUserID) == true
+
+        // Rules wanted:
+        // - Not a member: show JOIN panel; hide composer (and file/image/send)
+        // - Member but not owner/admin: can read only (hide composer)
+        // - Owner/admin: can chat (show composer). They are also members by default on create.
+        joinPanel.visibility = if (!isMember) View.VISIBLE else View.GONE
+        chatBoxPanel.visibility = if (isOwnerOrAdmin) View.VISIBLE else View.GONE
+
+        // Reply preview should not appear when composer is hidden.
+        if (chatBoxPanel.visibility != View.VISIBLE) {
+            replyPreviewContainer.visibility = View.GONE
+            cancelReply()
+        }
+
+        // Keep settings accessible (you can tighten this later if desired).
+        communitySettingsBtn.visibility = View.VISIBLE
     }
 
     private fun getCurrentUserName() {
@@ -244,6 +297,8 @@ class CommunityChatFragment : Fragment() {
 
                 // Settings screen should be accessible for all members.
                 communitySettingsBtn.visibility = View.VISIBLE
+
+                applyAccessControlUI()
             }
             .addOnFailureListener { e ->
                 Log.e("CommunityChatFragment", "Failed to load community: ${e.message}")

@@ -44,6 +44,7 @@
     <string name="tab_people">Người</string>
     <string name="tab_communities">Cộng đồng</string>
     <string name="tab_groups">Nhóm</string>
+    <string name="join">Tham gia</string>
     <string name="no_results_found">Không tìm thấy kết quả</string>
     <string name="add_friend">Thêm bạn</string>
     <string name="error_loading_group">Lỗi tải nhóm</string>
