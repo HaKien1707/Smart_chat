@@ -114,7 +114,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         binding.bottomNavigation.removeBadge(R.id.menu_notifications)
                     } else {
                         val badge = binding.bottomNavigation.getOrCreateBadge(R.id.menu_notifications)
-                        // Show exact unread count (avoid 9+/0+ style)
+                        // Show exact unread count
                         badge.maxCharacterCount = 4
                         badge.number = count
                         badge.isVisible = true

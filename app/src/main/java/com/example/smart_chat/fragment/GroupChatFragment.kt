@@ -17,6 +17,8 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -64,6 +66,8 @@ class GroupChatFragment : Fragment() {
     private lateinit var sendFileBtn: ImageButton
     private lateinit var chatList: RecyclerView
     private lateinit var groupImage: ImageView
+
+    private lateinit var chatBoxPanel: View
 
     // Reply preview views
     private lateinit var replyPreviewContainer: View
@@ -143,6 +147,7 @@ class GroupChatFragment : Fragment() {
         CloudinaryHelper.initCloudinary(requireContext())
 
         initViews(view)
+        setupImeInsets(view)
         setupListeners()
         getCurrentUserName()
         loadGroupDetails()
@@ -160,6 +165,8 @@ class GroupChatFragment : Fragment() {
         sendFileBtn = view.findViewById(R.id.send_file_btn)
         chatList = view.findViewById(R.id.chatList)
 
+        chatBoxPanel = view.findViewById(R.id.chatBoxPanel)
+
         val profileContainer = view.findViewById<View>(R.id.profile_image_container)
         groupImage = profileContainer.findViewById(R.id.profile_image)
 
@@ -170,6 +177,26 @@ class GroupChatFragment : Fragment() {
         replySenderName = replyPreviewContainer.findViewById(R.id.reply_sender_name)
         replyTextContainer = replyPreviewContainer.findViewById(R.id.reply_text_container)
         cancelReplyBtn = replyPreviewContainer.findViewById(R.id.cancel_reply_btn)
+    }
+
+    private fun setupImeInsets(root: View) {
+        val initialBottomMargin =
+            (chatBoxPanel.layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
+
+        ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
+            val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            val systemBarsBottom = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+            val extraBottom = maxOf(0, imeBottom - systemBarsBottom)
+
+            val layoutParams = chatBoxPanel.layoutParams
+            if (layoutParams is ViewGroup.MarginLayoutParams) {
+                layoutParams.bottomMargin = initialBottomMargin + extraBottom
+                chatBoxPanel.layoutParams = layoutParams
+            }
+            insets
+        }
+
+        ViewCompat.requestApplyInsets(root)
     }
 
     private fun setupListeners() {

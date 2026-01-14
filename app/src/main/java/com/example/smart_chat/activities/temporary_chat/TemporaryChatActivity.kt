@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.RadioGroup
 import android.widget.EditText
 import android.widget.ImageButton
@@ -18,6 +19,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -105,6 +108,8 @@ class TemporaryChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_temporary_chat)
 
+        setupImeInsets()
+
         // Match User chat header color.
         window.statusBarColor = ContextCompat.getColor(this, R.color.header_green)
 
@@ -181,6 +186,29 @@ class TemporaryChatActivity : AppCompatActivity() {
         }
 
         loadChatDetails()
+    }
+
+    private fun setupImeInsets() {
+        val root = findViewById<View>(android.R.id.content) ?: return
+        val bottomPanel = findViewById<View>(R.id.bottomPanel) ?: return
+
+        val initialBottomMargin =
+            (bottomPanel.layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
+
+        ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
+            val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            val systemBarsBottom = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+            val extraBottom = maxOf(0, imeBottom - systemBarsBottom)
+
+            val layoutParams = bottomPanel.layoutParams
+            if (layoutParams is ViewGroup.MarginLayoutParams) {
+                layoutParams.bottomMargin = initialBottomMargin + extraBottom
+                bottomPanel.layoutParams = layoutParams
+            }
+            insets
+        }
+
+        ViewCompat.requestApplyInsets(root)
     }
 
     private fun showMoreOptionsMenu() {

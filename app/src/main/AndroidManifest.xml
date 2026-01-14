@@ -56,7 +56,8 @@
             android:exported="false" />
         <activity
             android:name=".activities.temporary_chat.TemporaryChatActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
             android:name=".activities.community.UnbanUserActivity"
             android:exported="false" />
@@ -71,7 +72,8 @@
             android:exported="false" />
         <activity
             android:name=".activities.community.CommunityChatActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
             android:name=".activities.others.ForwardMessageActivity"
             android:exported="false" />
@@ -95,7 +97,8 @@
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".activities.group_chat.GroupChatActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
             android:name=".activities.group_chat.GroupChatSettingsActivity"
             android:exported="false" />
@@ -110,7 +113,8 @@
             android:exported="false" />
         <activity
             android:name=".activities.user_chat.ChatActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
             android:name=".activities.user_chat.SearchUserActivity"
             android:exported="false" />
